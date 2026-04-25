@@ -1,0 +1,109 @@
+/* --- STILURI PENTRU PC (Desktop) --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 5%;
+  background-color: #fafafa;
+  position: relative;
+}
+
+.nav-logo a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: #1e293b;
+}
+
+.nav-logo span {
+  color: #01696f; /* Punctul colorat */
+}
+
+/* Ascundem butonul de hamburger pe PC */
+.hamburger {
+  display: none;
+  cursor: pointer;
+}
+
+.hamburger .bar {
+  display: block;
+  width: 25px;
+  height: 3px;
+  margin: 5px auto;
+  background-color: #1e293b;
+  transition: all 0.3s ease-in-out;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #64748b;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #01696f;
+}
+
+.btn-accent {
+  background-color: #01696f;
+  color: white !important;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+/* --- STILURI PENTRU TELEFON (Responsive) --- */
+@media (max-width: 768px) {
+  
+  .hamburger {
+    display: block;
+  }
+
+  /* 1. Meniul (containerul principal care ține meniul și iconița) 
+     trebuie să permită conținutului să curgă pe verticală */
+  .navbar {
+    flex-direction: column; /* Pune elementele unele sub altele */
+    align-items: stretch;   /* Întinde elementele pe toată lățimea */
+  }
+
+  /* 2. Containerul pentru Logo și Hamburger */
+  /* Ca să rămână pe același rând sus */
+  .nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* 3. Aici e secretul: ascundem linkurile micșorând înălțimea la 0 */
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    gap: 15px;
+    padding: 0;
+    
+    /* În loc de position: absolute, folosim overflow și height */
+    max-height: 0; 
+    overflow: hidden; /* Ascunde ce depășește înălțimea de 0 */
+    transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; /* Animație smooth pentru înălțime */
+  }
+
+  /* 4. Când meniul e activ, îi dăm o înălțime suficient de mare cât să încapă linkurile */
+  .nav-links.active {
+    max-height: 300px; /* Ajustează valoarea asta dacă ai mai multe linkuri și nu încap */
+    padding: 20px 0;   /* Adaugă spațiu doar când e deschis */
+  }
+
+  /* Animația pentru X la hamburger rămâne la fel */
+  .hamburger.active .bar:nth-child(2) { opacity: 0; }
+  .hamburger.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .hamburger.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+}

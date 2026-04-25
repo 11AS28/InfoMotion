@@ -1,0 +1,88 @@
+/* --- STILUL GENERAL AL FOOTER-ULUI --- */
+.site-footer {
+  background-color: #0f172a; /* Același albastru-marin închis ca la fereastra de cod */
+  color: #f8fafc; /* Text alb-gri deschis */
+  padding: 60px 5% 30px; /* Spațiu generos sus */
+  margin-top: 100px; /* Împinge footer-ul în jos față de restul site-ului */
+  font-family: 'Satoshi', 'Inter', sans-serif;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- PARTEA DE SUS (Brand + Social) --- */
+.footer-top {
+  display: flex;
+  justify-content: space-between; /* Brand la stânga, Social la dreapta */
+  align-items: center;
+  padding-bottom: 40px; /* Spațiu până la linia despărțitoare */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Înlocuiește <hr /> cu o linie super fină */
+}
+
+/* Stil pentru Logo/Nume */
+.footer-brand h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+/* Punctul colorat de la finalul logo-ului */
+.footer-brand span {
+  color: #01696f; /* Accentul tău teal */
+}
+
+.footer-brand p {
+  color: #94a3b8; /* Gri deschis */
+  font-size: 1rem;
+}
+
+/* --- ICONIȚELE DE SOCIAL MEDIA --- */
+.social-links {
+  display: flex;
+  gap: 20px;
+}
+
+.social-links a {
+  color: #94a3b8;
+  font-size: 1.5rem; /* Mărește iconițele */
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05); /* Un mic fundal pătrat, transparent */
+}
+
+/* Efectul de Hover (când treci cu mouse-ul) */
+.social-links a:hover {
+  color: #ffffff; /* Iconița se face albă pură */
+  background-color: #01696f; /* Pătrățelul din spate se face teal */
+  transform: translateY(-3px); /* Se ridică puțin */
+}
+
+/* --- PARTEA DE JOS (Copyright) --- */
+.footer-bottom {
+  padding-top: 30px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* --- RESPONSIVE DESIGN (Pentru telefoane) --- */
+@media (max-width: 600px) {
+  .footer-top {
+    flex-direction: column; /* Pune elementele unele sub altele */
+    text-align: center; /* Centrează textul */
+    gap: 30px; /* Spațiu între brand și social media */
+  }
+  
+  .social-links {
+    justify-content: center; /* Centrează iconițele */
+  }
+}

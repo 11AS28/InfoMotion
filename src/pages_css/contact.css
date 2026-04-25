@@ -1,0 +1,138 @@
+/* --- RESET GENERAL --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #fafafa;
+  color: #1e293b;
+  font-family: 'Satoshi', 'Inter', sans-serif;
+}
+
+/* Pentru ca Footer-ul să stea jos chiar dacă pagina are conținut puțin */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ocupă tot ecranul */
+}
+
+/* --- STRUCTURA PAGINII DE CONTACT --- */
+.contact-container {
+  flex: 1; /* Împinge footer-ul în jos */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrează absolut totul pe orizontală */
+  justify-content: center; /* Centrează pe verticală */
+  padding: 100px 5%;
+  max-width: 800px; /* Nu vrem să se întindă textul prea mult */
+  margin: 0 auto;
+  text-align: center; /* Toate textele vor fi pe mijloc */
+}
+
+/* --- TITLURI (Header) --- */
+.contact-header h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 10px;
+  /* Animație */
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.contact-header h1 span {
+  color: #01696f; /* Accent pe punct */
+}
+
+.contact-header h2 {
+  font-size: 1.5rem;
+  color: #475569;
+  font-weight: 500;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+/* --- PARAGRAF DESCRIERE --- */
+.contact-description {
+  font-size: 1.1rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+/* --- LINKURI DE CONTACT (Carduri) --- */
+.contact-links {
+  list-style: none; /* Scoatem punctele urâte de la listă */
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Spațiu între Discord și Github */
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+  flex-wrap: wrap; /* Pe telefon vor cădea unul sub altul */
+}
+
+/* Designul fiecărui "buton" de contact */
+.social-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #ffffff;
+  padding: 15px 30px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.social-card .icon {
+  font-size: 1.5rem;
+}
+
+/* Efect la Hover pentru Discord (Culoarea specifică de blurple) */
+.social-card.discord:hover {
+  background-color: #5865F2;
+  color: #ffffff;
+  border-color: #5865F2;
+  transform: translateY(-3px); /* Se ridică puțin */
+  box-shadow: 0 10px 20px rgba(88, 101, 242, 0.2);
+}
+
+/* Efect la Hover pentru Github (Negru/Gri închis) */
+.social-card.github:hover {
+  background-color: #24292e;
+  color: #ffffff;
+  border-color: #24292e;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(36, 41, 46, 0.2);
+}
+
+/* --- ANIMAȚIA COMUNĂ FADE UP --- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 600px) {
+  .contact-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .contact-links {
+    flex-direction: column; /* Le pune unul sub altul pe telefon */
+    width: 100%;
+  }
+  
+  .social-card {
+    justify-content: center; /* Centrează conținutul butonului */
+    width: 100%;
+  }
+}

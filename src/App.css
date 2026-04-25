@@ -1,0 +1,26 @@
+:root {
+    /* Setăm fonturile */
+    --font-titluri: 'Cabinet Grotesk', sans-serif;
+    --font-text: 'Satoshi', sans-serif;
+    --font-cod: 'Fira Code', monospace;
+}
+
+/* Aplicăm fontul de text pe tot site-ul */
+body {
+    font-family: var(--font-text);
+}
+
+/* Aplicăm fontul de titluri doar pe H-uri */
+h1, h2, h3, h4 {
+    font-family: var(--font-titluri);
+    font-weight: 700; /* Le facem mai îngroșate */
+}
+
+/* Aplicăm fontul de cod pe tag-urile <code> sau <pre> */
+code, pre {
+    font-family: var(--font-cod);
+    background-color: #1e293b; /* Un fundal închis pentru cod */
+    color: #38bdf8; /* Un text colorat pentru cod */
+    padding: 4px 8px;
+    border-radius: 6px;
+}
