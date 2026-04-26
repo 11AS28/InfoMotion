@@ -7,6 +7,7 @@ import Contact from './pages/contact';
 import Lectii from './pages/Lectii';
 import LessonPage from './pages/LessonPage';
 import Intro from './pages/introlectii';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/despre" element={<Intro />} />
       <Route path="/lectii" element={<Lectii />} />
       <Route path="/lectie/:idLectie" element={<LessonPage />} />
+      <Route path="/admin" element={<Admin />} />
     </Routes>
   );
 }
