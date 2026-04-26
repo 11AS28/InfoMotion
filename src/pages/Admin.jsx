@@ -6,8 +6,8 @@ import '../pages_css/admin.css';
 //  CREDENȚIALE ADMIN — modifică aici username-urile și parolele
 // ============================================================
 const ADMINS = [
-  { username: 'admin1', password: 'infomotion2025' },
-  { username: 'admin2', password: 'lectii2025' },
+  { username: 'fane', password: 'infomotion2025' },
+  { username: 's.m._.maria', password: 'lectii2025' },
 ];
 // ============================================================
 
