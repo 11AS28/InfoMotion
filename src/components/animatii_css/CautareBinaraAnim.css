@@ -1,0 +1,182 @@
+.cautare-binara-container {
+  background-color: #f8fafc;
+  border-radius: 16px;
+  padding: 30px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.target-info {
+  background-color: #1e293b;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.target-info strong {
+  color: #fbbf24; /* Galben pentru evidențierea țintei */
+  font-size: 1.4rem;
+}
+
+/* ============================
+   STILIZAREA VECTORULUI
+   ============================ */
+.array-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.array-element-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60px;
+}
+
+.pointer-container {
+  height: 25px;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 5px;
+}
+
+.pointer {
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.st-pointer { background-color: #ef4444; color: white; } /* Roșu */
+.dr-pointer { background-color: #ef4444; color: white; } /* Roșu */
+.m-pointer { background-color: #f59e0b; color: white; } /* Galben */
+
+/* Cutia cu numărul (cu animații fine de tranziție a culorii) */
+.array-box {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 12px;
+  transition: all 0.4s ease;
+  border: 2px solid transparent;
+}
+
+/* Culorile pentru diferitele stări ale elementelor din vector */
+.array-box.active {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border-color: #7dd3fc;
+}
+
+.array-box.inactive {
+  background-color: #f1f5f9;
+  color: #cbd5e1;
+  transform: scale(0.9); /* Se micșorează ușor pentru a arăta că e ignorat */
+}
+
+.array-box.mid {
+  background-color: #fef3c7;
+  color: #b45309;
+  border-color: #fbbf24;
+  transform: translateY(-5px); /* Se ridică pentru a ieși în evidență */
+  box-shadow: 0 10px 15px rgba(245, 158, 11, 0.2);
+}
+
+.array-box.found {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #22c55e;
+  transform: scale(1.1); /* Se mărește când e găsit */
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+}
+
+.index-label {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* ============================
+   CUTIA CU MESAJE
+   ============================ */
+.message-box {
+  width: 100%;
+  max-width: 600px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.message-box.running {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-left: 4px solid #3b82f6;
+}
+
+.message-box.found {
+  background-color: #dcfce7;
+  color: #166534;
+  border-left: 4px solid #22c55e;
+}
+
+.message-box.not_found {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+/* ============================
+   BUTOANELE
+   ============================ */
+.controls {
+  display: flex;
+  gap: 15px;
+}
+
+.control-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.step-btn {
+  background-color: #01696f;
+  color: white;
+}
+
+.step-btn:hover:not(:disabled) {
+  background-color: #015257;
+  transform: translateY(-2px);
+}
+
+.step-btn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.reset-btn {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.reset-btn:hover {
+  background-color: #cbd5e1;
+}

@@ -1,0 +1,208 @@
+/* =========================================
+   CONTAINER PRINCIPAL INTRO
+   ========================================= */
+.intro-container {
+  padding: 100px 5% 80px;
+  max-width: 900px;
+  margin: 0 auto;
+  flex: 1;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* =========================================
+   HERO SECTION (Partea de sus)
+   ========================================= */
+.intro-hero {
+  text-align: center;
+  margin-bottom: 70px;
+}
+
+.intro-hero h1 {
+  font-size: 3.5rem;
+  color: #0f172a;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.intro-hero h1 span {
+  color: #01696f; /* Accentul teal */
+}
+
+.intro-subtitle {
+  font-size: 1.3rem;
+  color: #64748b;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* =========================================
+   SECȚIUNILE DE CONȚINUT
+   ========================================= */
+.intro-section {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.intro-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+}
+
+.intro-section h2 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intro-section p {
+  font-size: 1.15rem;
+  color: #475569;
+  line-height: 1.8;
+}
+
+/* Misiunea (cuvântul "PbInfo" boldat va ieși în evidență) */
+.intro-section strong {
+  color: #01696f;
+  font-weight: 700;
+}
+
+/* =========================================
+   GRILA DE FUNCȚIONALITĂȚI (FEATURES)
+   ========================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.feature-card {
+  background-color: #f8fafc;
+  padding: 30px 20px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background-color: #ffffff;
+  border-color: #01696f;
+  box-shadow: 0 10px 20px rgba(1, 105, 111, 0.08);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* =========================================
+   SECȚIUNEA TEHNOLOGII (Tags)
+   ========================================= */
+.tech-section {
+  text-align: center;
+  background-color: #f1f5f9; /* Un fundal puțin diferit pentru această secțiune */
+}
+
+.tech-section h2 {
+  justify-content: center;
+}
+
+.tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.tech-tag {
+  background-color: #ffffff;
+  color: #01696f;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: 2px solid #01696f;
+  box-shadow: 0 4px 6px rgba(1, 105, 111, 0.1);
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.tech-tag:hover {
+  background-color: #01696f;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+/* =========================================
+   ANIMAȚIE INTRARE Pagină
+   ========================================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   MEDIA QUERIES (Responsivitate Telefon/Tabletă)
+   ========================================= */
+@media (max-width: 900px) {
+  .features-grid {
+    /* Pe tablete trecem la 2 carduri pe rând, iar ultimul se întinde */
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .intro-container {
+    padding: 80px 20px 40px;
+  }
+
+  .intro-hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .intro-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .intro-section {
+    padding: 25px;
+  }
+
+  .intro-section h2 {
+    font-size: 1.6rem;
+  }
+
+  .features-grid {
+    /* Pe telefoane, 1 singur card pe rând */
+    grid-template-columns: 1fr;
+  }
+
+  .tech-tag {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+}
