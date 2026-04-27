@@ -27,7 +27,7 @@ function Lectii() {
 
   return (
     <div className="page-wrapper">
-      <Nav />
+      
       
       <main className="lectii-container">
         <div className="lectii-header">
@@ -103,7 +103,7 @@ function Lectii() {
 
       </main>
 
-      <Footer />
+      
     </div>
   );
 }

@@ -262,3 +262,49 @@
     gap: 10px;
   }
 }
+
+
+
+
+
+
+
+/*chestii noi cum ar veni alea cu auth*/
+
+.lesson-finish-action {
+  margin: 40px 0;
+  padding: 20px;
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-finish-lesson {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-finish-lesson:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.lesson-completed-msg {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-icon {
+  font-size: 1.5rem;
+}

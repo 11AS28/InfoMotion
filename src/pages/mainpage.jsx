@@ -66,7 +66,6 @@ function MainPage() {
 
   return (
     <div className="main-page">
-      <Nav />
       
       <section className="hero-section">
         
@@ -163,8 +162,6 @@ function MainPage() {
     </li>
   </ul>
 </section>
-
-        <Footer />
     </div>
   );
 }

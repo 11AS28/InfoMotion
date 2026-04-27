@@ -2,23 +2,14 @@ import '../components_css/nav.css';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext'; // 1. Importăm contextul de Auth
+import { useAuth } from '../context/AuthContext'; 
 
 function Nav() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { currentUser, logout } = useAuth(); // 2. Luăm user-ul și funcția de logout
+  const { currentUser, logout } = useAuth(); 
 
   const toggleMenu = () => setIsOpen(!isOpen);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Opțional: poți redirecționa user-ul folosind useNavigate
-    } catch (error) {
-      console.error("Eroare la logout:", error);
-    }
-  };
 
   return (
     <nav className="navbar">
@@ -38,8 +29,8 @@ function Nav() {
         <li><Link to="/">Acasă</Link></li>
         <li><Link to="/despre">Despre</Link></li>
         
-        {/* Afișăm link-ul de Admin doar dacă avem user (sau poți pune condiție de email) */}
-        {currentUser && <li><Link to="/admin">Admin</Link></li>}
+        {/* Contactul a revenit la locul lui de cinste */}
+        <li><Link to="/contact">Contact</Link></li>
 
         <li>
           <button
@@ -55,11 +46,11 @@ function Nav() {
           </button>
         </li>
 
-        {/* ZONA DE AUTH - Aici se întâmplă magia */}
+        {/* Zona de User: Login sau Logout */}
         {currentUser ? (
           <li className="nav-user-info">
             <span className="user-email">{currentUser.email.split('@')[0]}</span>
-            <button onClick={handleLogout} className="btn-logout">Ieșire</button>
+            <button onClick={() => logout()} className="btn-logout">Ieșire</button>
           </li>
         ) : (
           <li><Link to="/auth" className="btn-login">Logare</Link></li>

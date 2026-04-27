@@ -6,7 +6,7 @@ import '../pages_css/intro.css'; // Va trebui să creezi acest CSS scurt
 function Intro() {
   return (
     <div className="page-wrapper">
-      <Nav />
+     
       
       <main className="intro-container">
         {/* Partea de sus: Titlu și Misiune */}
@@ -64,7 +64,7 @@ function Intro() {
 
       </main>
 
-      <Footer />
+      
     </div>
   );
 }

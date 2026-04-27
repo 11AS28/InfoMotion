@@ -6,7 +6,7 @@ import { FaDiscord, FaGithub } from "react-icons/fa";
 function Contact() {
     return (
         <div className="page-wrapper">
-            <Nav />
+           
 
             {/* Containerul principal al paginii */}
             <main className="contact-container">
@@ -42,7 +42,7 @@ function Contact() {
 
             </main>
 
-            <Footer />
+            
         </div>
     );
 }
