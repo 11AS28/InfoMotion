@@ -1,0 +1,51 @@
+.code-card {
+  background-color: #0f172a;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  margin-top: auto;
+  opacity: 0;
+  animation: floatInCard 1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+}
+
+@keyframes floatInCard {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.code-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.red { background-color: #ff5f56; }
+.yellow { background-color: #ffbd2e; }
+.green { background-color: #27c93f; }
+
+.code-card pre {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #38bdf8;
+}
+
+.code-label {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-family: 'Satoshi', sans-serif;
+  text-align: center;
+}

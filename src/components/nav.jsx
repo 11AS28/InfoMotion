@@ -28,23 +28,24 @@ function Nav() {
       <ul className={`nav-links ${isOpen ? 'active' : ''}`}>
         <li><Link to="/">Acasă</Link></li>
         <li><Link to="/despre">Despre</Link></li>
-        
-        {/* Contactul a revenit la locul lui de cinste */}
         <li><Link to="/contact">Contact</Link></li>
 
+        {/* --- NOUL BUTON DE DARK MODE --- */}
         <li>
           <button
-            className="theme-toggle"
+            className={`theme-toggle ${theme === 'dark' ? 'dark-active' : ''}`}
             onClick={toggleTheme}
             aria-label="Schimbă tema"
           >
             <div className="theme-toggle-track">
-              <div className="theme-toggle-thumb">
-                {theme === 'dark' ? '🌙' : '☀️'}
-              </div>
+              <span className="icon-sun">☀️</span>
+              <span className="icon-moon">🌙</span>
+              {/* Cercul care se va mișca */}
+              <div className="theme-toggle-thumb"></div>
             </div>
           </button>
         </li>
+        {/* -------------------------------- */}
 
         {/* Zona de User: Login sau Logout */}
         {currentUser ? (

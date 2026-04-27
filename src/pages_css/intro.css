@@ -19,18 +19,18 @@
 
 .intro-hero h1 {
   font-size: 3.5rem;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 20px;
   line-height: 1.2;
 }
 
 .intro-hero h1 span {
-  color: #01696f; /* Accentul teal */
+  color: var(--accent-color); /* Accentul teal */
 }
 
 .intro-subtitle {
   font-size: 1.3rem;
-  color: #64748b;
+  color: var(--text-secondary);
   max-width: 700px;
   margin: 0 auto;
   line-height: 1.6;

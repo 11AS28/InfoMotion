@@ -1,10 +1,11 @@
 /* --- STILUL GENERAL AL FOOTER-ULUI --- */
 .site-footer {
-  background-color: #0f172a; /* Același albastru-marin închis ca la fereastra de cod */
+  background-color: var(--bg-footer); /* Același albastru-marin închis ca la fereastra de cod */
   color: #f8fafc; /* Text alb-gri deschis */
   padding: 60px 5% 30px; /* Spațiu generos sus */
   margin-top: 100px; /* Împinge footer-ul în jos față de restul site-ului */
   font-family: 'Satoshi', 'Inter', sans-serif;
+  border-top: 1px solid var(--border-color); 
 }
 
 .footer-content {

@@ -1,25 +1,30 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
 
-  useEffect(() => {
-    // Aplicăm clasa pe document.documentElement (adică pe tag-ul <html>)
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
+  // Funcția care schimbă tema
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
+
+  // ACEST useEffect ESTE OBLIGATORIU:
+  // El "lipește" clasa de CSS 'dark' pe tot site-ul când apeși pe buton
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
 export const useTheme = () => useContext(ThemeContext);

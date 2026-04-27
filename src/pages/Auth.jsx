@@ -58,6 +58,7 @@ function Auth() {
 
         <div className="auth-switch">
           <p>
+            <br />
             {isLogin ? "Nu ai cont?" : "Ai deja cont?"} 
             <span onClick={() => setIsLogin(!isLogin)}>
               {isLogin ? " Înregistrează-te" : " Loghează-te"}

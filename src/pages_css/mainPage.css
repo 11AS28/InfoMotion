@@ -6,9 +6,11 @@
 }
 
 body {
-  background-color: #fafafa;
-  color: #1e293b;
+  /* AM SCHIMBAT AICI: Folosim variabila globală pentru fundal și text */
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   font-family: 'Satoshi', 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* --- STRUCTURA PRINCIPALĂ (HERO) --- */
@@ -24,9 +26,10 @@ body {
   flex-wrap: wrap;
 }
 
-span{
-    color: #01696f;
+span {
+  color: var(--accent-color); /* AM SCHIMBAT AICI */
 }
+
 .hero-left, .hero-right {
   flex: 1;
   min-width: 340px;
@@ -42,7 +45,7 @@ span{
 .hero-text-intro h1 {
   font-size: 3.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #0f172a) */
   margin-bottom: 15px;
   opacity: 0;
   animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -50,7 +53,7 @@ span{
 
 .hero-text-intro h2 {
   font-size: 1.5rem;
-  color: #475569;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #475569) */
   font-weight: 500;
   margin-bottom: 10px;
   opacity: 0;
@@ -59,7 +62,7 @@ span{
 
 .hero-text-intro p {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #64748b) */
   opacity: 0;
   animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
 }
@@ -71,11 +74,11 @@ span{
 
 /* --- PARTEA STÂNGĂ: CARDUL DE COD --- */
 .code-card {
-  background-color: #0f172a;
+  background-color: var(--bg-card); /* AM SCHIMBAT AICI (în loc de #0f172a, poți folosi --bg-card dacă ai creat una pentru carduri negre) */
   border-radius: 16px;
   padding: 20px 24px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #e2e8f0) */
   font-family: 'Fira Code', 'Courier New', monospace;
   margin-top: auto;
   opacity: 0;
@@ -109,14 +112,14 @@ span{
   font-size: 0.9rem;
   line-height: 1.6;
   overflow-x: auto;
-  color: #38bdf8;
+  color: #38bdf8; /* Lăsăm așa pentru că e culoare de cod */
 }
 
 .code-label {
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #94a3b8) */
   font-size: 0.85rem;
   font-family: 'Satoshi', sans-serif;
   text-align: center;
@@ -124,11 +127,11 @@ span{
 
 /* --- PARTEA DREAPTĂ: VISUALIZER-UL BUBBLE SORT --- */
 .visualizer-container {
-  background-color: #ffffff;
+  background-color: var(--bg-card); /* AM SCHIMBAT AICI (în loc de #ffffff) */
   border-radius: 16px;
   padding: 40px 30px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color); /* AM SCHIMBAT AICI (în loc de #e2e8f0) */
   text-align: center;
   height: 100%;
   display: flex;
@@ -139,7 +142,7 @@ span{
 }
 
 .visualizer-container h3 {
-  color: #0f172a;
+  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #0f172a) */
   margin-bottom: 40px;
   font-size: 1.5rem;
   font-weight: 700;
@@ -153,19 +156,17 @@ span{
   gap: 12px;
   height: 220px;
   margin-bottom: 40px;
-  border-bottom: 2px solid #cbd5e1;
+  border-bottom: 2px solid var(--border-color); /* AM SCHIMBAT AICI (în loc de #cbd5e1) */
   padding-bottom: 10px;
 }
 
 .bar {
   width: 40px;
-  background-color: #01696f;
+  background-color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #01696f) */
   border-radius: 6px 6px 0 0;
   position: relative;
   display: flex;
   justify-content: center;
-  /* Această linie e esențială ca să fie o tranziție smooth dacă se adaugă animația din JS, 
-     deși noi o facem pur în CSS mai jos */
   transition: all 0.3s ease; 
 }
 
@@ -173,7 +174,7 @@ span{
   position: absolute;
   top: -28px;
   font-weight: 700;
-  color: #475569;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #475569) */
   font-size: 0.9rem;
 }
 
@@ -185,17 +186,16 @@ span{
 .bar-5 { height: 190px; }
 .bar-6 { height: 40px; }
 
-
 /* --- AICI ERA PARTEA LIPSĂ: ANIMAȚIA DE BUBBLE SORT --- */
 
 @keyframes compareSwap {
   0%, 100% { 
-    background-color: #01696f; 
+    background-color: var(--accent-color); /* AM SCHIMBAT AICI */
     transform: translateY(0); 
   }
   50% { 
-    background-color: #ef4444; /* Culoarea roșie */
-    transform: translateY(-15px); /* Sare puțin în sus */
+    background-color: #ef4444; /* Lăsăm roșu, fiindcă e pentru highlight vizual */
+    transform: translateY(-15px); 
   }
 }
 
@@ -205,9 +205,8 @@ span{
 
 /* ---------------------------------------------------- */
 
-
 .viz-text {
-  color: #64748b;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #64748b) */
   font-size: 0.95rem;
   margin-bottom: 30px;
 }
@@ -221,23 +220,21 @@ span{
   letter-spacing: 5px;
   text-transform: uppercase;
   cursor: pointer;
-  color: #2c9caf;
+  color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #2c9caf) */
   transition: all 1000ms;
   font-size: 15px;
   position: relative;
   overflow: hidden;
-  outline: 2px solid #2c9caf;
-  /* Centrarea butonului */
+  outline: 2px solid var(--accent-color); /* AM SCHIMBAT AICI */
   display: inline-block;
   margin: 0 auto;
 }
 
-/* Corectat cu .button în loc de button tag */
 .button:hover {
   color: #ffffff;
   transform: scale(1.1);
-  outline: 2px solid #70bdca;
-  box-shadow: 4px 5px 17px -4px #268391;
+  outline: 2px solid var(--accent-hover); /* AM SCHIMBAT AICI */
+  box-shadow: 4px 5px 17px -4px var(--accent-hover); /* AM SCHIMBAT AICI */
 }
 
 .button::before {
@@ -247,7 +244,7 @@ span{
   top: 0;
   width: 0;
   height: 100%;
-  background-color: #2c9caf;
+  background-color: var(--accent-color); /* AM SCHIMBAT AICI */
   transform: skewX(45deg);
   z-index: -1;
   transition: width 1000ms;
@@ -271,21 +268,21 @@ span{
   }
 }
 
-
 /* --- SECȚIUNEA FEATURES --- */
 .features-section {
-  padding: 100px 5%; /* Spațiu generos sus și jos */
+  padding: 100px 5%; 
   max-width: 1400px;
   margin: 0 auto;
-  background-color: #fafafa; /* Același fundal ca Hero-ul */
+  background-color: var(--bg-color); /* AM SCHIMBAT AICI (în loc de #fafafa) */
+  transition: background-color 0.3s ease; /* Animație smooth la schimbare temă */
 }
 
 /* Titlul Secțiunii */
 .features-title {
   text-align: center;
   font-size: 2.5rem;
-  color: #0f172a;
-  margin-bottom: 60px; /* Lasă mult spațiu sub titlu */
+  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #0f172a) */
+  margin-bottom: 60px; 
   position: relative;
 }
 
@@ -295,7 +292,7 @@ span{
   display: block;
   width: 60px;
   height: 4px;
-  background-color: #01696f; /* Culoarea ta de accent (teal) */
+  background-color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #01696f) */
   margin: 15px auto 0;
   border-radius: 2px;
 }
@@ -303,76 +300,63 @@ span{
 /* Containerul Grid (Lista <ul>) */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Creează 3 coloane egale */
-  gap: 40px; /* Spațiu mare între carduri */
-  list-style: none; /* Ascunde punctele de la <li> */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 40px; 
+  list-style: none; 
   padding: 0;
 }
 
 /* Stilul fiecărui Card (Elementul <li>) */
 .feature-card {
-  background-color: #ffffff;
+  background-color: var(--bg-card); /* AM SCHIMBAT AICI (în loc de #ffffff) */
   padding: 40px 30px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); /* Umbră foarte fină și elegantă */
-  border: 1px solid #e2e8f0; /* Un contur extrem de discret */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); 
+  border: 1px solid var(--border-color); /* AM SCHIMBAT AICI (în loc de #e2e8f0) */
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animație la hover */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; 
 }
 
-/* Efect când treci cu mouse-ul peste card (se ridică ușor) */
+/* Efect când treci cu mouse-ul peste card */
 .feature-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-}
-
-/* Iconița de sus din fiecare card */
-.feature-icon {
-  font-size: 3rem; /* Emojii-urile vor fi mari */
-  margin-bottom: 20px;
-  /* Dacă folosești iconițe SVG în viitor, dă-le culoarea teal (#01696f) aici */
 }
 
 /* Titlul din card (<strong>-ul tău) */
 .feature-card strong {
   display: block;
   font-size: 1.25rem;
-  color: #1e293b;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #1e293b) */
   margin-bottom: 15px;
 }
 
 /* Textul descriptiv (<p>) */
 .feature-card p {
-  color: #64748b;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #64748b) */
   font-size: 1rem;
   line-height: 1.6;
 }
 
 /* --- RESPONSIVE DESIGN --- */
-
-/* Pentru Tablete (Sub 900px): Punem cardurile pe 2 coloane sau 1 mai lată */
 @media (max-width: 900px) {
   .features-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 coloane */
+    grid-template-columns: repeat(2, 1fr); 
   }
 }
 
-/* Pentru Telefoane (Sub 600px): Punem cardurile unele sub altele */
 @media (max-width: 600px) {
   .features-section {
     padding: 60px 5%;
   }
-
   .features-title {
     font-size: 2rem;
     margin-bottom: 40px;
   }
-
   .features-grid {
-    grid-template-columns: 1fr; /* 1 singură coloană pe telefon */
+    grid-template-columns: 1fr; 
     gap: 20px;
   }
-  
   .feature-card {
     padding: 30px 20px;
   }

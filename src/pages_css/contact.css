@@ -6,8 +6,8 @@
 }
 
 body {
-  background-color: #fafafa;
-  color: #1e293b;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   font-family: 'Satoshi', 'Inter', sans-serif;
 }
 
@@ -35,7 +35,7 @@ body {
 .contact-header h1 {
   font-size: 3.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 10px;
   /* Animație */
   opacity: 0;
@@ -43,12 +43,12 @@ body {
 }
 
 .contact-header h1 span {
-  color: #01696f; /* Accent pe punct */
+  color: var(--accent-color); /* Accent pe punct */
 }
 
 .contact-header h2 {
   font-size: 1.5rem;
-  color: #475569;
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 40px;
   opacity: 0;
@@ -58,7 +58,7 @@ body {
 /* --- PARAGRAF DESCRIERE --- */
 .contact-description {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--text-tertiary);
   line-height: 1.6;
   margin-bottom: 40px;
   opacity: 0;
@@ -81,12 +81,12 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   padding: 15px 30px;
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;

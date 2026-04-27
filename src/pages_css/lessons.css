@@ -12,7 +12,7 @@
 /* Butonul de Înapoi */
 .back-link {
   display: inline-block;
-  color: #64748b;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 600;
   margin-bottom: 30px;
@@ -20,7 +20,7 @@
 }
 
 .back-link:hover {
-  color: #01696f; /* Accentul teal */
+  color: var(--accent-color); /* Accentul teal */
   transform: translateX(-5px); /* Se mută puțin la stânga */
 }
 
@@ -30,11 +30,11 @@
 .lesson-header {
   margin-bottom: 40px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color); /* Înlocuit cu variabilă */
 }
 
 .lesson-badge {
-  background-color: #01696f;
+  background-color: var(--accent-color);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 700;
@@ -48,7 +48,7 @@
 
 .lesson-header h1 {
   font-size: 2.8rem;
-  color: #0f172a;
+  color: var(--text-primary); /* Înlocuit cu variabilă */
   line-height: 1.2;
 }
 
@@ -66,7 +66,7 @@
 .lesson-animation h2,
 .lesson-code h2 {
   font-size: 1.5rem;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 15px;
   display: flex;
   align-items: center;
@@ -74,21 +74,96 @@
 }
 
 .lesson-theory p {
-  color: #475569;
+  color: var(--text-secondary);
   font-size: 1.1rem;
   line-height: 1.7;
 }
 
 /* Placeholder pentru când nu ai încă animația gata */
 .animation-placeholder {
-  background-color: #f8fafc;
-  border: 2px dashed #cbd5e1;
+  background-color: var(--bg-card); /* Ajustat pentru Dark Mode */
+  border: 2px dashed var(--border-color);
   border-radius: 16px;
   padding: 80px 20px;
   text-align: center;
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 1.2rem;
+}
+
+/* =========================================
+   ZONA DE FINALIZARE LECȚIE (Cu Auth/Progres)
+   ========================================= */
+.lesson-finish-action {
+  margin: 50px 0 40px 0;
+  padding: 30px;
+  background-color: var(--bg-card); 
+  border-radius: 16px;
+  border: 1px dashed var(--accent-color); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.btn-finish-lesson {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border: none;
+  padding: 16px 36px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(1, 105, 111, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-finish-lesson:hover:not(:disabled) {
+  background-color: var(--accent-hover, #015257);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(1, 105, 111, 0.35);
+}
+
+.btn-finish-lesson:disabled {
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.lesson-completed-msg {
+  color: #10b981; 
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(16, 185, 129, 0.1); 
+  padding: 15px 30px;
+  border-radius: 12px;
+  animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.check-icon {
+  font-size: 1.4rem;
+  background-color: #10b981;
+  color: white;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* =========================================
@@ -99,11 +174,11 @@
 }
 
 .lesson-code pre {
-  background-color: #1e293b; /* Fundal închis ca într-un editor de cod */
-  color: #f8fafc; /* Text deschis */
+  background-color: #1e293b; /* Rămâne mereu închis ca un editor real */
+  color: #f8fafc; 
   padding: 25px;
   border-radius: 12px;
-  overflow-x: auto; /* Dacă linia e prea lungă, apare scroll orizontal */
+  overflow-x: auto; 
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -117,20 +192,20 @@
    SECȚIUNEA EXERSEAZĂ (PBINFO)
    ========================================= */
 .lesson-practice {
-  background-color: #f8fafc;
+  background-color: var(--bg-card); /* Adaptat la temă */
   padding: 30px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .lesson-practice h2 {
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 10px;
   font-size: 1.5rem;
 }
 
 .lesson-practice p {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-bottom: 20px;
   font-size: 1.05rem;
 }
@@ -144,48 +219,49 @@
 .pbinfo-card {
   display: flex;
   align-items: center;
-  background-color: #ffffff;
+  background-color: var(--bg-color); /* Adaptat */
   padding: 15px 20px;
   border-radius: 12px;
   text-decoration: none;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .pbinfo-card:hover {
-  border-color: #01696f;
+  border-color: var(--accent-color);
   box-shadow: 0 4px 12px rgba(1, 105, 111, 0.1);
   transform: translateX(5px);
 }
 
 .pbinfo-id {
   font-weight: 700;
-  color: #01696f;
-  background-color: #e6f0f0;
+  color: var(--accent-color);
+  background-color: var(--bg-card);
   padding: 6px 12px;
   border-radius: 8px;
   margin-right: 15px;
   min-width: 60px;
   text-align: center;
+  border: 1px solid var(--border-color);
 }
 
 .pbinfo-title {
-  color: #1e293b;
+  color: var(--text-primary);
   font-weight: 600;
   flex: 1;
   font-size: 1.05rem;
 }
 
 .pbinfo-arrow {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: bold;
   font-size: 1.2rem;
   transition: color 0.2s ease;
 }
 
 .pbinfo-card:hover .pbinfo-arrow {
-  color: #01696f;
+  color: var(--accent-color);
 }
 
 /* =========================================
@@ -203,12 +279,12 @@
 
 .not-found-lesson h2 {
   font-size: 2rem;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 20px;
 }
 
 .back-btn {
-  background-color: #01696f;
+  background-color: var(--accent-color);
   color: #ffffff;
   text-decoration: none;
   padding: 12px 28px;
@@ -218,7 +294,7 @@
 }
 
 .back-btn:hover {
-  background-color: #015257;
+  background-color: var(--accent-hover, #015257);
 }
 
 /* =========================================
@@ -234,77 +310,70 @@
    ========================================= */
 @media (max-width: 768px) {
   .lesson-container {
-    padding: 80px 20px 40px; /* Padding mai mic */
+    padding: 80px 15px 40px; /* Am micșorat padding-ul lateral */
+    width: 100%;             /* Mă asigur că nu depășește ecranul */
+    box-sizing: border-box;  /* Esențial ca să nu apară scroll orizontal */
   }
 
+  /* Tăiem drastic din mărimea titlului pe telefon */
   .lesson-header h1 {
-    font-size: 2.2rem;
+    font-size: 1.8rem; 
+    word-wrap: break-word; /* Obligă cuvintele lungi să se spargă pe alt rând dacă e nevoie */
   }
 
   .lesson-theory p {
     font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .lesson-finish-action {
+    padding: 20px 15px;
+    margin: 30px 0;
+  }
+
+  .btn-finish-lesson {
+    width: 100%; 
+    justify-content: center;
+    padding: 14px 15px;
+    font-size: 1rem;
+  }
+
+  .lesson-completed-msg {
+    width: 100%;
+    justify-content: center;
+    font-size: 1rem; /* Mai mic ca să încapă textul verde */
+    padding: 15px 10px;
+    text-align: center;
   }
 
   .lesson-code pre {
     padding: 15px;
+    border-radius: 8px;
   }
 
   .lesson-code code {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .lesson-practice {
-    padding: 20px;
+    padding: 20px 15px;
   }
 
+  /* Reparăm cardul de PbInfo care "sărea" în afară */
   .pbinfo-card {
-    flex-wrap: wrap; /* Pe telefoane f. mici titlul poate trece pe rândul următor */
+    flex-direction: column; /* Pe telefon le punem unele sub altele */
+    align-items: flex-start;
     gap: 10px;
+    padding: 15px;
   }
-}
 
+  .pbinfo-id {
+    margin-right: 0;
+    font-size: 0.9rem;
+  }
 
-
-
-
-
-
-/*chestii noi cum ar veni alea cu auth*/
-
-.lesson-finish-action {
-  margin: 40px 0;
-  padding: 20px;
-  background: rgba(0, 123, 255, 0.1);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-}
-
-.btn-finish-lesson {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn-finish-lesson:hover {
-  background: #0056b3;
-  transform: scale(1.05);
-}
-
-.lesson-completed-msg {
-  color: #28a745;
-  font-weight: bold;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.check-icon {
-  font-size: 1.5rem;
+  .pbinfo-title {
+    font-size: 1rem;
+    width: 100%; /* Forțăm să ocupe tot spațiul, nu să iasă din cutie */
+  }
 }
