@@ -253,5 +253,142 @@ int main() {
     
     return 0;
 }`
-  }
+  },
+  {
+  id: "test",
+  clasa: "clasa-9",
+  titlu: "algoritm de test",
+  descriere: "este un test, trebuie sa vad cum pot sterge articole puse din greseala sau ca teste ",
+  teorie: `eaceste este un test.`,
+  problemePbinfo: [],
+  animatie: "BubbleSortAnim",
+  codCPlusPlus: `#include <bits/stdc++.h>
+using namespace std;
+using pii = pair<int,int>;
+ifstream f ("toi.in");
+ofstream g ("toi.out");
+int n;
+int a[500][500];
+bool vis[500][500];
+bool fis[500][500];
+int dist[500][500];
+int di[] = {-1,1, 0,0};
+int dj[] = { 0,0,-1,1};
+
+bool emat(int i,int j){
+    return i < n && j < n && i > -1 && j > -1;
+}
+
+void lee(int is,int js,int gre){
+    deque <pii> q;
+    q.push_front({is,js});
+    dist[is][js] = 0;
+    vis[is][js] = true;
+
+    while(!q.empty()){
+        pii c = q.front();
+        q.pop_front();
+
+        for(int i = 0; i < 4; i++){
+            int ni = c.first + di[i];
+            int nj = c.second + dj[i];
+
+            if(emat(ni,nj) && !vis[ni][nj] && a[ni][nj] >= gre){
+                dist[ni][nj] = dist[c.first][c.second] + 0;
+                vis[ni][nj] =  true;
+                q.push_front({ni,nj});
+            }
+            else if(emat(ni,nj) && !vis[ni][nj] && a[ni][nj] < gre){
+                dist[ni][nj] = dist[c.first][c.second] + 1;
+                vis[ni][nj] =  true;
+                q.push_back({ni,nj});
+            }
+        }
+    }
+}
+
+
+
+
+bool leev2 (int cautat){
+    memset (fis, 0, sizeof(fis));
+
+    if(a[0][0] < cautat) //nu prea ar avea sens daca fix din prima ar fi mai mica greutatea
+        return false;
+
+    queue <pii> q;
+    q.push({0,0});
+    fis[0][0] = true;
+
+
+
+    while(!q.empty()){
+        pii c = q.front();
+        q.pop();
+
+        if(c.first == n - 1 && c.second == n - 1)
+            return true;
+
+        for(int i = 0; i < 4; i++){
+            int ni = c.first + di[i];
+            int nj = c.second + dj[i];
+
+            if(emat(ni,nj) && !fis[ni][nj] && a[ni][nj] >= cautat){
+                fis[ni][nj] = true;
+                q.push({ni,nj});
+            }
+        }
+    }
+    return false;
+}
+
+
+int main(){
+    int v,gre;
+    f >> v;
+
+    if(v == 1){
+        f >> n >> gre;
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j ++)
+                f >> a[i][j];
+
+        lee(0,0,gre);
+
+        g << dist[n-1][n-1];
+
+    }else{
+        f >> n;
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j ++)
+                f >> a[i][j];
+
+
+        int st = 1, dr = 10000, rsp = 0;;
+
+        while(st <= dr){
+            int mid = (st+dr) / 2;
+
+            if(leev2(mid)){
+                rsp = mid;
+                st = mid + 1;
+            }else
+                dr = mid - 1;
+        }
+
+        g << rsp;
+    }
+    return 0;
+}`
+}
 ];
+
+
+
+
+
+/*
+
+
+
+*/

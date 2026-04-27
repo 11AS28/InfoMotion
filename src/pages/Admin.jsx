@@ -7,7 +7,7 @@ import '../pages_css/admin.css';
 // ============================================================
 const ADMINS = [
   { username: 'fane', password: 'infomotion2025' },
-  { username: 's.m._.maria', password: 'lectii2025' },
+  { username: 's.m._.maria', password: 'nevasta-mea-neatinsa-ca-o-floare' },
 ];
 // ============================================================
 

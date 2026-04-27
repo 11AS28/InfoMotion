@@ -1,0 +1,389 @@
+/* ============================================================
+   theme.css — Variabile de culoare pentru InfoMotion
+   Importă acest fișier în main.jsx sau App.jsx (primul import)
+   ============================================================ */
+
+/* ── MODUL LUMINOS (implicit) ─────────────────────────────── */
+:root {
+  --bg-body:        #fafafa;
+  --bg-card:        #ffffff;
+  --bg-card-alt:    #f8fafc;
+  --bg-subtle:      #f1f5f9;
+
+  --text-primary:   #0f172a;
+  --text-heading:   #1e293b;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
+  --text-faint:     #94a3b8;
+
+  --border:         #e2e8f0;
+  --border-hover:   #cbd5e1;
+
+  --accent:         #01696f;
+  --accent-hover:   #015257;
+  --accent-bg:      rgba(1, 105, 111, 0.08);
+  --accent-bg-soft: #e6f0f0;
+
+  --nav-bg:         #fafafa;
+  --footer-bg:      #0f172a;
+  --footer-text:    #94a3b8;
+
+  --shadow-sm:      0 4px 6px rgba(0,0,0,0.03);
+  --shadow-md:      0 10px 30px rgba(0,0,0,0.06);
+  --shadow-lg:      0 20px 40px rgba(0,0,0,0.08);
+
+  --code-bg:        #1e293b;
+  --code-color:     #38bdf8;
+
+  --toggle-bg:      #e2e8f0;
+  --toggle-thumb:   #ffffff;
+  --toggle-icon:    '☀️';
+}
+
+/* ── MODUL ÎNTUNECAT ──────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-body:        #0d1117;
+  --bg-card:        #161b22;
+  --bg-card-alt:    #1a2130;
+  --bg-subtle:      #1e2736;
+
+  --text-primary:   #e6edf3;
+  --text-heading:   #cdd9e5;
+  --text-secondary: #adbac7;
+  --text-muted:     #768390;
+  --text-faint:     #545d68;
+
+  --border:         #30363d;
+  --border-hover:   #484f58;
+
+  --accent:         #2ea8b0;
+  --accent-hover:   #3cbfc8;
+  --accent-bg:      rgba(46, 168, 176, 0.12);
+  --accent-bg-soft: rgba(46, 168, 176, 0.15);
+
+  --nav-bg:         #161b22;
+  --footer-bg:      #090d12;
+  --footer-text:    #545d68;
+
+  --shadow-sm:      0 4px 6px rgba(0,0,0,0.3);
+  --shadow-md:      0 10px 30px rgba(0,0,0,0.4);
+  --shadow-lg:      0 20px 40px rgba(0,0,0,0.5);
+
+  --code-bg:        #0d1117;
+  --code-color:     #79c0ff;
+
+  --toggle-bg:      #2ea8b0;
+  --toggle-thumb:   #0d1117;
+}
+
+/* ── APLICARE GLOBALĂ ─────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+html, body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+  background-color: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.nav-logo a {
+  color: var(--text-primary);
+}
+
+.nav-links a {
+  color: var(--text-muted);
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+.hamburger .bar {
+  background-color: var(--text-primary);
+}
+
+/* ── Toggle buton dark mode ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-toggle-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: var(--toggle-bg);
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--toggle-thumb);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+}
+
+[data-theme="dark"] .theme-toggle-thumb {
+  transform: translateX(20px);
+}
+
+.theme-toggle-icon {
+  font-size: 1rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background-color: var(--footer-bg) !important;
+}
+
+[data-theme="dark"] .site-footer {
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   PAGINA PRINCIPALĂ
+   ============================================================ */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+}
+
+.hero-text-intro h1 { color: var(--text-primary); }
+.hero-text-intro h2 { color: var(--text-secondary); }
+.hero-text-intro p  { color: var(--text-muted); }
+
+.visualizer-container {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.visualizer-container h3 { color: var(--text-primary); }
+
+.bar { background-color: var(--accent); }
+.bar .val { color: var(--text-secondary); }
+
+.bars-container {
+  border-bottom-color: var(--border);
+}
+
+.features-section { background-color: var(--bg-body); }
+.features-title    { color: var(--text-primary); }
+
+.feature-card {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-card strong { color: var(--text-heading); }
+.feature-card p      { color: var(--text-muted); }
+
+/* ============================================================
+   PAGINA LECTII
+   ============================================================ */
+.lectii-header h1  { color: var(--text-primary); }
+.lectii-header p   { color: var(--text-muted); }
+
+.search-bar input {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.search-bar input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.filter-btn {
+  background-color: var(--bg-card);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.filter-btn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.filter-btn.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.lectie-card {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.lectie-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+
+.lectie-badge {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.lectie-titlu   { color: var(--text-heading); }
+.lectie-descriere { color: var(--text-muted); }
+
+.lectie-footer-card {
+  border-top-color: var(--border);
+  color: var(--accent);
+}
+
+.no-results {
+  background-color: var(--bg-card);
+  border-color: var(--border-hover);
+}
+
+.no-results h3 { color: var(--text-primary); }
+.no-results p  { color: var(--text-muted); }
+
+/* ============================================================
+   PAGINA LECTIE INDIVIDUALĂ
+   ============================================================ */
+.lesson-header { border-bottom-color: var(--border); }
+.lesson-header h1 { color: var(--text-primary); }
+.back-link        { color: var(--text-muted); }
+.back-link:hover  { color: var(--accent); }
+
+.lesson-theory h2,
+.lesson-animation h2,
+.lesson-code h2 { color: var(--text-heading); }
+
+.lesson-theory p  { color: var(--text-secondary); }
+
+.lesson-practice {
+  background-color: var(--bg-card-alt);
+  border-color: var(--border);
+}
+
+.lesson-practice h2 { color: var(--text-primary); }
+.lesson-practice p  { color: var(--text-muted); }
+
+.pbinfo-card {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+}
+
+.pbinfo-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px var(--accent-bg);
+}
+
+.pbinfo-id {
+  color: var(--accent);
+  background-color: var(--accent-bg-soft);
+}
+
+.pbinfo-title { color: var(--text-heading); }
+.pbinfo-arrow { color: var(--text-faint); }
+.pbinfo-card:hover .pbinfo-arrow { color: var(--accent); }
+
+/* ============================================================
+   PAGINA INTRO (DESPRE)
+   ============================================================ */
+.intro-hero h1          { color: var(--text-primary); }
+.intro-subtitle         { color: var(--text-muted); }
+
+.intro-section {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.intro-section h2 { color: var(--text-heading); }
+.intro-section p  { color: var(--text-secondary); }
+.intro-section strong { color: var(--accent); }
+
+.feature-card {
+  background-color: var(--bg-card-alt);
+  border-color: var(--border);
+}
+
+.feature-card:hover {
+  background-color: var(--bg-card);
+  border-color: var(--accent);
+}
+
+.feature-card h3 { color: var(--text-primary); }
+.feature-card p  { color: var(--text-muted); }
+
+.tech-section { background-color: var(--bg-subtle); }
+
+.tech-tag {
+  background-color: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tech-tag:hover {
+  background-color: var(--accent);
+  color: #ffffff;
+}
+
+/* ============================================================
+   PAGINA CONTACT
+   ============================================================ */
+.contact-header h1  { color: var(--text-primary); }
+.contact-header h2  { color: var(--text-secondary); }
+.contact-description { color: var(--text-muted); }
+
+.social-card {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   COD SNIPPET
+   ============================================================ */
+code, pre {
+  background-color: var(--code-bg);
+  color: var(--code-color);
+}
+
+.animation-placeholder {
+  background-color: var(--bg-card-alt);
+  border-color: var(--border-hover);
+  color: var(--text-muted);
+}
