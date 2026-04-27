@@ -14,56 +14,60 @@ import LessonPage from './pages/LessonPage';
 import Intro from './pages/introlectii';
 import Admin from './pages/Admin';
 import Auth from './pages/Auth';
+import { ThemeProvider } from './context/ThemeContext';
 
 import './App.css';
 
 function App() {
   return (
-    <AuthProvider>
-      {/* Punem Nav-ul aici ca să fie vizibil pe toate paginile site-ului */}
-      <Nav />
-      
-      <main style={{ minHeight: '80vh' }}>
-        <Routes>
-          {/* Rute Publice (Oricine le poate vedea) */}
-          <Route path="/" element={<MainPage />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/despre" element={<Intro />} />
+    <ThemeProvider>
+      <AuthProvider>
+        {/* Punem Nav-ul aici ca să fie vizibil pe toate paginile site-ului */}
+        <Nav />
 
-          {/* Rute Protejate (Doar pentru cei logați) */}
-          <Route 
-            path="/lectii" 
-            element={
-              <PrivateRoute>
-                <Lectii />
-              </PrivateRoute>
-            } 
-          />
-          
-          <Route 
-            path="/lectie/:idLectie" 
-            element={
-              <PrivateRoute>
-                <LessonPage />
-              </PrivateRoute>
-            } 
-          />
+        <main style={{ minHeight: '80vh' }}>
+          <Routes>
+            {/* Rute Publice (Oricine le poate vedea) */}
+            <Route path="/" element={<MainPage />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/despre" element={<Intro />} />
 
-          {/* Ruta de Admin - Poți adăuga ulterior și o protecție specială de tip AdminRoute */}
-          <Route 
-            path="/admin" 
-            element={
-              <PrivateRoute>
-                <Admin />
-              </PrivateRoute>
-            } 
-          />
-        </Routes>
-      </main>
+            {/* Rute Protejate (Doar pentru cei logați) */}
+            <Route
+              path="/lectii"
+              element={
+                <PrivateRoute>
+                  <Lectii />
+                </PrivateRoute>
+              }
+            />
 
-      <Footer />
-    </AuthProvider>
+            <Route
+              path="/lectie/:idLectie"
+              element={
+                <PrivateRoute>
+                  <LessonPage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Ruta de Admin - Poți adăuga ulterior și o protecție specială de tip AdminRoute */}
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </main>
+
+        <Footer />
+      </AuthProvider>
+    </ThemeProvider>
+
   );
 }
 
