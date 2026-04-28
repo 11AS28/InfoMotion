@@ -5,10 +5,10 @@ import '../pages_css/auth.css';
 
 function Auth() {
   const navigate = useNavigate();
-  const { loginWithGoogle, login } = useAuth();
+  const { loginWithGoogle, login, signup } = useAuth();
   
-  // State-uri pentru a controla ce afișăm
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false); // Switch între Login și Register
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState("");
@@ -22,13 +22,18 @@ function Auth() {
     }
   };
 
-  const handleEmailLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     try {
-      await login(email, password);
+      if (isRegistering) {
+        await signup(email, password); // Creare cont nou
+      } else {
+        await login(email, password); // Logare cont existent
+      }
       navigate('/lectii');
     } catch (error) {
-      setError("Email sau parolă incorectă.");
+      setError(isRegistering ? "Nu am putut crea contul. Email valid?" : "Email sau parolă incorectă.");
     }
   };
 
@@ -37,12 +42,11 @@ function Auth() {
       <div className="auth-card">
         <div className="auth-header">
           <h1>InfoMotion<span>.</span></h1>
-          <p>Contul tău de elev</p>
+          <p>{isRegistering ? "Creează un cont nou" : "Contul tău de elev"}</p>
         </div>
 
-        {error && <div className="auth-error" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
+        {error && <div className="auth-error" style={{color: '#ff4d4d', marginBottom: '10px', fontSize: '14px'}}>{error}</div>}
         
-        {/* Dacă NU am apăsat pe "Folosește email", arătăm butonul de Google */}
         {!showEmailForm ? (
           <>
             <button className="google-btn" onClick={handleGoogleLogin}>
@@ -56,15 +60,14 @@ function Auth() {
               <span 
                 className="auth-link" 
                 onClick={() => setShowEmailForm(true)} 
-                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: '600', textDecoration: 'underline' }}
+                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: '600' }}
               >
                 Folosește Email și Parolă
               </span>
             </p>
           </>
         ) : (
-          /* Dacă AM apăsat, arătăm formularul de login clasic */
-          <form onSubmit={handleEmailLogin} className="auth-form-classic">
+          <form onSubmit={handleSubmit} className="auth-form-classic">
             <div className="admin-field">
               <label>Email</label>
               <input 
@@ -85,14 +88,26 @@ function Auth() {
                 required 
               />
             </div>
+            
             <button type="submit" className="admin-btn-login" style={{width: '100%', marginTop: '10px'}}>
-              Intră în cont
+              {isRegistering ? "Creează contul" : "Intră în cont"}
             </button>
+
+            <p style={{textAlign: 'center', marginTop: '15px', fontSize: '14px'}}>
+              {isRegistering ? "Ai deja cont?" : "Nu ai cont?"} {' '}
+              <span 
+                onClick={() => setIsRegistering(!isRegistering)} 
+                style={{color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold'}}
+              >
+                {isRegistering ? "Loghează-te" : "Înregistrează-te"}
+              </span>
+            </p>
+
             <p 
-              onClick={() => setShowEmailForm(false)} 
-              style={{cursor: 'pointer', fontSize: '13px', marginTop: '15px', textAlign: 'center', color: 'var(--text-muted)'}}
+              onClick={() => {setShowEmailForm(false); setIsRegistering(false);}} 
+              style={{cursor: 'pointer', fontSize: '12px', marginTop: '10px', textAlign: 'center', color: 'var(--text-muted)'}}
             >
-              ← Înapoi la logarea cu Google
+              ← Înapoi la Google
             </p>
           </form>
         )}
