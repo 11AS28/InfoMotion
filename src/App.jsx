@@ -1,10 +1,11 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Importăm componentele de bază
-import Nav from './components/nav'; // Asigură-te că numele fișierului e corect (nav.jsx)
+import Nav from './components/nav'; 
 import Footer from './components/footer';
-import PrivateRoute from './components/PrivateRoute'; // Componenta de protecție
+import PrivateRoute from './components/PrivateRoute'; 
 
 // Importăm paginile
 import MainPage from './pages/mainpage';
@@ -14,26 +15,34 @@ import LessonPage from './pages/LessonPage';
 import Intro from './pages/introlectii';
 import Admin from './pages/Admin';
 import Auth from './pages/Auth';
-import { ThemeProvider } from './context/ThemeContext';
 
-import './App.css';
+import './index.css'; 
 
 function App() {
+  // Folosim useLocation pentru a detecta unde ne aflăm în site
+  const location = useLocation();
+  
+  // Verificăm dacă suntem pe pagina de admin
+  const isAdminPage = location.pathname === '/admin';
+
   return (
     <ThemeProvider>
       <AuthProvider>
-        {/* Punem Nav-ul aici ca să fie vizibil pe toate paginile site-ului */}
-        <Nav />
+        {/* Nav-ul apare DOAR dacă NU suntem pe admin */}
+        {!isAdminPage && <Nav />}
 
         <main style={{ minHeight: '80vh' }}>
           <Routes>
-            {/* Rute Publice (Oricine le poate vedea) */}
+            {/* ─── RUTE PUBLICE ─── */}
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/despre" element={<Intro />} />
 
-            {/* Rute Protejate (Doar pentru cei logați) */}
+            {/* Administrare - fără PrivateRoute (se ocupă Admin.jsx de login) */}
+            <Route path="/admin" element={<Admin />} />
+
+            {/* ─── RUTE PROTEJATE ─── */}
             <Route
               path="/lectii"
               element={
@@ -51,23 +60,13 @@ function App() {
                 </PrivateRoute>
               }
             />
-
-            {/* Ruta de Admin - Poți adăuga ulterior și o protecție specială de tip AdminRoute */}
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute>
-                  <Admin />
-                </PrivateRoute>
-              }
-            />
           </Routes>
         </main>
 
-        <Footer />
+        {/* Footer-ul apare DOAR dacă NU suntem pe admin */}
+        {!isAdminPage && <Footer />}
       </AuthProvider>
     </ThemeProvider>
-
   );
 }
 
