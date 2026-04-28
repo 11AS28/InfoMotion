@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../firebase';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { 
+  onAuthStateChanged, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup 
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -12,17 +20,37 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Funcția de înregistrare
+  // Login cu Google
+  async function loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Salvăm automat în Firestore la prima logare
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        nume: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        dataCrearii: new Date(),
+        progres: {}
+      });
+    }
+    return user;
+  }
+
   function signup(email, password) {
     return createUserWithEmailAndPassword(auth, email, password);
   }
 
-  // Funcția de login
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
-  // Funcția de logout
   function logout() {
     return signOut(auth);
   }
@@ -39,7 +67,8 @@ export function AuthProvider({ children }) {
     currentUser,
     login,
     signup,
-    logout
+    logout,
+    loginWithGoogle // Exportăm și asta
   };
 
   return (
