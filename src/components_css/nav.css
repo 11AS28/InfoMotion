@@ -4,12 +4,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 5%;
- background-color: var(--bg-nav);
-  position: relative;
-  border: var(--bg-nav);
+  background-color: var(--nav-bg); /* Modificat din bg-nav */
+  border-bottom: 1px solid var(--border); /* Reparat bordura, inainte aveai doar border: var(--bg-nav) */
   position: sticky;
   top: 0; 
-   z-index: 9999;
+  z-index: 9999;
 }
 
 .nav-logo a {
@@ -20,7 +19,7 @@
 }
 
 .nav-logo span {
-  color: #01696f; /* Punctul colorat */
+  color: var(--accent); /* Culoarea accentului pentru o parte din logo */
 }
 
 /* Ascundem butonul de hamburger pe PC */
@@ -83,28 +82,29 @@
   }
 
   /* Cum arată meniul când este deschis pe telefon */
+    /* Cum arată meniul când este deschis pe telefon */
   .nav-links {
     position: absolute;
-    top: 70px; /* Cade fix sub bara de logo */
+    top: 100%; /* Acum cade FIX sub bară, fără găuri! (înainte era 70px) */
     left: 0;
     right: 0;
-    background-color: var(--bg-nav, #ffffff);
+    background-color: var(--nav-bg); /* Modificat din bg-nav */
     flex-direction: column;
     align-items: center;
     width: 100%;
     padding: 0;
     gap: 0;
-    /* Ascundem meniul complet prin height 0 */
     max-height: 0; 
     overflow: hidden;
     transition: max-height 0.4s ease-in-out;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     z-index: 9998;
+
   }
 
-  /* Când dăm click pe hamburger și punem clasa .active în React */
+  /* Când dăm click pe hamburger */
   .nav-links.active {
-    max-height: 400px; /* Suficient loc ca să apară tot meniul */
+    max-height: 600px; /* Am mărit de la 400px ca să nu mai taie butoanele de jos! */
     padding: 20px 0;
   }
 

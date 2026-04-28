@@ -27,7 +27,7 @@ body {
 }
 
 span {
-  color: var(--accent-color); /* AM SCHIMBAT AICI */
+  color: var(--accent); /* AM SCHIMBAT AICI */
 }
 
 .hero-left, .hero-right {
@@ -162,7 +162,7 @@ span {
 
 .bar {
   width: 40px;
-  background-color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #01696f) */
+  background-color: var(--accent); /* AM SCHIMBAT AICI (în loc de #01696f) */
   border-radius: 6px 6px 0 0;
   position: relative;
   display: flex;
@@ -220,21 +220,22 @@ span {
   letter-spacing: 5px;
   text-transform: uppercase;
   cursor: pointer;
-  color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #2c9caf) */
+  color: var(--accent); /* AM SCHIMBAT AICI (în loc de #2c9caf) */
   transition: all 1000ms;
   font-size: 15px;
   position: relative;
   overflow: hidden;
-  outline: 2px solid var(--accent-color); /* AM SCHIMBAT AICI */
+  outline: 2px solid var(--accent); /* AM SCHIMBAT AICI */
   display: inline-block;
   margin: 0 auto;
 }
 
 .button:hover {
-  color: #ffffff;
+ 
   transform: scale(1.1);
   outline: 2px solid var(--accent-hover); /* AM SCHIMBAT AICI */
   box-shadow: 4px 5px 17px -4px var(--accent-hover); /* AM SCHIMBAT AICI */
+  color: aliceblue; /* AM SCHIMBAT AICI (în loc de #ffffff) */
 }
 
 .button::before {
@@ -244,7 +245,7 @@ span {
   top: 0;
   width: 0;
   height: 100%;
-  background-color: var(--accent-color); /* AM SCHIMBAT AICI */
+  background-color: var(--accent); /* AM SCHIMBAT AICI */
   transform: skewX(45deg);
   z-index: -1;
   transition: width 1000ms;
@@ -292,9 +293,10 @@ span {
   display: block;
   width: 60px;
   height: 4px;
-  background-color: var(--accent-color); /* AM SCHIMBAT AICI (în loc de #01696f) */
+  background-color: var(--accent); /* AM SCHIMBAT AICI (în loc de #01696f) */
   margin: 15px auto 0;
   border-radius: 2px;
+  
 }
 
 /* Containerul Grid (Lista <ul>) */

@@ -87,8 +87,8 @@
 .auth-btn {
   width: 100%;
   padding: 16px;
-  background-color: var(--accent-color); /* Teal-ul tău principal */
-  color: #ffffff;
+  background-color: var(--accent); /* Teal-ul tău principal */
+  color: #fff;
   border: none;
   border-radius: 12px;
   cursor: pointer;

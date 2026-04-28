@@ -5,7 +5,7 @@
 
 /* ── MODUL LUMINOS (implicit) ─────────────────────────────── */
 :root {
-  --bg-body:        #fafafa;
+  --bg-color:        #fafafa;
   --bg-card:        #ffffff;
   --bg-card-alt:    #f8fafc;
   --bg-subtle:      #f1f5f9;
@@ -22,7 +22,7 @@
   --accent:         #01696f;
   --accent-hover:   #015257;
   --accent-bg:      rgba(1, 105, 111, 0.08);
-  --accent-bg-soft: #e6f0f0;
+
 
   --nav-bg:         #fafafa;
   --footer-bg:      #0f172a;
@@ -38,11 +38,14 @@
   --toggle-bg:      #e2e8f0;
   --toggle-thumb:   #ffffff;
   --toggle-icon:    '☀️';
+    --font-titluri: 'Cabinet Grotesk', sans-serif;
+  --font-text:    'Satoshi', sans-serif;
+  --font-cod:     'Fira Code', monospace;
 }
 
 /* ── MODUL ÎNTUNECAT ──────────────────────────────────────── */
-[data-theme="dark"] {
-  --bg-body:        #0d1117;
+.dark {
+  --bg-color:        #0d1117;
   --bg-card:        #161b22;
   --bg-card-alt:    #1a2130;
   --bg-subtle:      #1e2736;
@@ -85,7 +88,7 @@
 }
 
 html, body {
-  background-color: var(--bg-body);
+  background-color: var(--bg-color);
   color: var(--text-primary);
 }
 
@@ -151,7 +154,7 @@ html, body {
   line-height: 1;
 }
 
-[data-theme="dark"] .theme-toggle-thumb {
+.dark .theme-toggle-thumb {
   transform: translateX(20px);
 }
 
@@ -168,7 +171,7 @@ html, body {
   background-color: var(--footer-bg) !important;
 }
 
-[data-theme="dark"] .site-footer {
+.dark .site-footer {
   border-top: 1px solid var(--border);
 }
 
@@ -176,7 +179,7 @@ html, body {
    PAGINA PRINCIPALĂ
    ============================================================ */
 body {
-  background-color: var(--bg-body);
+  background-color: var(--bg-color);
   color: var(--text-primary);
 }
 
@@ -199,7 +202,7 @@ body {
   border-bottom-color: var(--border);
 }
 
-.features-section { background-color: var(--bg-body); }
+.features-section { background-color: var(--bg-color); }
 .features-title    { color: var(--text-primary); }
 
 .feature-card {

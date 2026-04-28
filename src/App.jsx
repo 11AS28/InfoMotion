@@ -16,7 +16,7 @@ import Intro from './pages/introlectii';
 import Admin from './pages/Admin';
 import Auth from './pages/Auth';
 
-import './index.css'; 
+import './theme.css'; 
 
 function App() {
   // Folosim useLocation pentru a detecta unde ne aflăm în site
