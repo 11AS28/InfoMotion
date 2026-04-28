@@ -88,9 +88,9 @@
 }
 
 .filter-btn {
-  background-color: #ffffff;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   padding: 10px 24px;
   border-radius: 30px;
   font-size: 0.95rem;
@@ -101,9 +101,9 @@
 }
 
 .filter-btn:hover {
-  background-color: #f8fafc;
-  color: #1e293b;
-  border-color: #cbd5e1;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
   transform: translateY(-2px);
 }
 
@@ -149,8 +149,8 @@
 }
 
 .lectie-badge {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--accent);
+  color: #f8fafc;
   font-size: 0.8rem;
   font-weight: 700;
   padding: 6px 12px;
@@ -180,10 +180,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #01696f;
+  color: var(--accent);
   font-weight: 600;
   font-size: 0.95rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
   padding-top: 20px;
 }
 
@@ -198,9 +198,9 @@
 .no-results {
   text-align: center;
   padding: 60px 20px;
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: 16px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--accent);
   max-width: 600px;
   margin: 0 auto;
   animation: fadeUp 0.5s ease forwards;
@@ -208,18 +208,18 @@
 
 .no-results h3 {
   font-size: 1.5rem;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 10px;
 }
 
 .no-results p {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-bottom: 25px;
   font-size: 1.1rem;
 }
 
 .reset-btn {
-  background-color: #01696f;
+  background-color: var(--accent);
   color: #ffffff;
   border: none;
   padding: 12px 28px;
@@ -231,7 +231,7 @@
 }
 
 .reset-btn:hover {
-  background-color: #015257;
+  background-color: var(--accent-hover, #015257);
 }
 
 /* =========================================
@@ -304,14 +304,14 @@
 
 .lesson-practice {
   margin-top: 50px;
-  background-color: #f8fafc;
+  background-color: var(--bg-card);
   padding: 30px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .lesson-practice h2 {
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -319,7 +319,7 @@
 }
 
 .lesson-practice p {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-bottom: 20px;
 }
 
@@ -332,25 +332,26 @@
 .pbinfo-card {
   display: flex;
   align-items: center;
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   padding: 15px 20px;
   border-radius: 12px;
   text-decoration: none;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  color: var(--accent);
 }
 
 .pbinfo-card:hover {
-  border-color: #01696f; /* Culoarea ta principală */
+  border-color: var(--accent); /* Culoarea ta principală */
   box-shadow: 0 4px 12px rgba(1, 105, 111, 0.1);
   transform: translateX(5px); /* Efect de deplasare la dreapta */
 }
 
 .pbinfo-id {
   font-weight: 700;
-  color: #01696f;
-  background-color: #e6f0f0;
+  color: var(--accent);
+  background-color: var(--accent-light);
   padding: 5px 10px;
   border-radius: 8px;
   margin-right: 15px;
@@ -359,18 +360,22 @@
 }
 
 .pbinfo-title {
-  color: #1e293b;
+  color: var(--text-primary);
   font-weight: 600;
   flex: 1; /* Ocupă tot spațiul rămas */
 }
 
 .pbinfo-arrow {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: bold;
 }
 
+.pbinfo-arrow:hover {
+  color: var(--accent);
+}
+
 .pbinfo-card:hover .pbinfo-arrow {
-  color: #01696f;
+  color: var(--accent);
 }
 
 /* Responsivitate pentru zona PbInfo */

@@ -34,7 +34,7 @@
 }
 
 .lesson-badge {
-  background-color: var(--accent-color);
+  background-color: var(--accent);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 700;
@@ -107,7 +107,7 @@
 }
 
 .btn-finish-lesson {
-  background-color: var(--accent-color);
+  background-color: var(--accent);
   color: #ffffff;
   border: none;
   padding: 16px 36px;

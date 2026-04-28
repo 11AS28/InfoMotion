@@ -310,7 +310,7 @@ span {
 
 /* Stilul fiecărui Card (Elementul <li>) */
 .feature-card {
-  background-color: var(--bg-card); /* AM SCHIMBAT AICI (în loc de #ffffff) */
+  background-color: var(--bg-color) !important; /* AM SCHIMBAT AICI (în loc de #ffffff) */
   padding: 40px 30px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); 

@@ -37,6 +37,12 @@ function Contact() {
                                 <span>@11AS28</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="https://github.com/antidate723" target="_blank" rel="noopener noreferrer" className="social-card github">
+                                <FaGithub className="icon" /> 
+                                <span>@antidate723</span>
+                            </a>
+                        </li>
                     </ul>
                 </section>
 

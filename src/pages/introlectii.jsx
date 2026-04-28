@@ -59,6 +59,7 @@ function Intro() {
             <span className="tech-tag">React Router</span>
             <span className="tech-tag">CSS Grid & Flexbox</span>
             <span className="tech-tag">JavaScript ES6+</span>
+            <span className="tech-tag">Firebase</span>
           </div>
         </section>
 

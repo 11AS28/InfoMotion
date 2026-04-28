@@ -255,130 +255,58 @@ int main() {
 }`
   },
   {
-  id: "test",
-  clasa: "clasa-9",
-  titlu: "algoritm de test",
-  descriere: "este un test, trebuie sa vad cum pot sterge articole puse din greseala sau ca teste ",
-  teorie: `eaceste este un test.`,
-  problemePbinfo: [],
-  animatie: "BubbleSortAnim",
-  codCPlusPlus: `#include <bits/stdc++.h>
-using namespace std;
-using pii = pair<int,int>;
-ifstream f ("toi.in");
-ofstream g ("toi.out");
-int n;
-int a[500][500];
-bool vis[500][500];
-bool fis[500][500];
-int dist[500][500];
-int di[] = {-1,1, 0,0};
-int dj[] = { 0,0,-1,1};
+  id: "divide-et-impera",
+  clasa: "clasa-10",
+  titlu: "Divide Et Impera",
+  descriere: "Învață cum să folosești faimoasa strategie a liderilor antici pentru a scrie cod mai inteligent! Descoperă metoda Divide et Impera.",
+  teorie: `Ce înseamnă „Divide et Impera”?
 
-bool emat(int i,int j){
-    return i < n && j < n && i > -1 && j > -1;
-}
+În Istorie: A pornit ca o strategie („Dezbină și stăpânește”), atribuită liderilor romani precum Iulius Cezar sau Octavian Augustus. Ei divizau populațiile sau adversarii pentru a-i controla mult mai ușor.
 
-void lee(int is,int js,int gre){
-    deque <pii> q;
-    q.push_front({is,js});
-    dist[is][js] = 0;
-    vis[is][js] = true;
+În Informatică: Păstrează aceeași idee, dar cu un scop nobil: rezolvarea prin împărțire inteligentă.
 
-    while(!q.empty()){
-        pii c = q.front();
-        q.pop_front();
+Cum funcționează principiul (Cei 3 pași magici):
 
-        for(int i = 0; i < 4; i++){
-            int ni = c.first + di[i];
-            int nj = c.second + dj[i];
+DIVIDE (Împarte): Problema dată se descompune în două (sau mai multe) subprobleme de același tip, dar de dimensiuni mai mici. Se repetă împărțirea până se ajunge la o problemă elementară (ex: un vector cu un singur element).
 
-            if(emat(ni,nj) && !vis[ni][nj] && a[ni][nj] >= gre){
-                dist[ni][nj] = dist[c.first][c.second] + 0;
-                vis[ni][nj] =  true;
-                q.push_front({ni,nj});
-            }
-            else if(emat(ni,nj) && !vis[ni][nj] && a[ni][nj] < gre){
-                dist[ni][nj] = dist[c.first][c.second] + 1;
-                vis[ni][nj] =  true;
-                q.push_back({ni,nj});
-            }
-        }
+IMPERA (Stăpânește): Se rezolvă independent fiecare subproblemă elementară.
+
+COMBINĂ: Se combină rezultatele obținute pentru a reconstrui și afla rezultatul problemei mari inițiale.
+
+De reținut: Fiindcă se auto-apelează la infinit până ajunge la elementul de bază, metoda folosește recursivitatea.`,
+  problemePbinfo: [
+      {
+        idProblema: "#1015",
+        titluProblema: "sumvec",
+        url: "https://www.pbinfo.ro/probleme/1015/sumvec"
+      },
+      {
+        idProblema: "#1149",
+        titluProblema: "existaprimedivimp",
+        url: "https://www.pbinfo.ro/probleme/1149/existaprimedivimp"
+      }
+    ],
+  animatie: "DivideAnim",
+  codCPlusPlus: `void divimp(int p, int u, tip &rez) {
+    tip rez1, rez2; 
+    int m;
+    
+    // 1. IMPERA: Cazul de bază (Când am ajuns la un singur element)
+    if (p == u) {
+        rez = v[p]; // Preluăm elementul
+    } 
+    else {
+        // 2. DIVIDE: Împărțim vectorul exact la jumătate
+        m = (p + u) / 2; 
+        
+        // Auto-apelăm funcția pentru prima jumătate și a doua jumătate
+        divimp(p, m, rez1);
+        divimp(m + 1, u, rez2);
+        
+        // 3. COMBINĂ: Aici combinăm rez1 și rez2
+        // (De exemplu: rez = rez1 + rez2; pentru sumă)
+        // (Sau: if (rez1 > rez2) rez = rez1; pentru maxim)
     }
-}
-
-
-
-
-bool leev2 (int cautat){
-    memset (fis, 0, sizeof(fis));
-
-    if(a[0][0] < cautat) //nu prea ar avea sens daca fix din prima ar fi mai mica greutatea
-        return false;
-
-    queue <pii> q;
-    q.push({0,0});
-    fis[0][0] = true;
-
-
-
-    while(!q.empty()){
-        pii c = q.front();
-        q.pop();
-
-        if(c.first == n - 1 && c.second == n - 1)
-            return true;
-
-        for(int i = 0; i < 4; i++){
-            int ni = c.first + di[i];
-            int nj = c.second + dj[i];
-
-            if(emat(ni,nj) && !fis[ni][nj] && a[ni][nj] >= cautat){
-                fis[ni][nj] = true;
-                q.push({ni,nj});
-            }
-        }
-    }
-    return false;
-}
-
-
-int main(){
-    int v,gre;
-    f >> v;
-
-    if(v == 1){
-        f >> n >> gre;
-        for(int i = 0; i < n; i++)
-            for(int j = 0; j < n; j ++)
-                f >> a[i][j];
-
-        lee(0,0,gre);
-
-        g << dist[n-1][n-1];
-
-    }else{
-        f >> n;
-        for(int i = 0; i < n; i++)
-            for(int j = 0; j < n; j ++)
-                f >> a[i][j];
-
-
-        int st = 1, dr = 10000, rsp = 0;;
-
-        while(st <= dr){
-            int mid = (st+dr) / 2;
-
-            if(leev2(mid)){
-                rsp = mid;
-                st = mid + 1;
-            }else
-                dr = mid - 1;
-        }
-
-        g << rsp;
-    }
-    return 0;
 }`
 }
 ];
