@@ -40,7 +40,7 @@
    SECȚIUNILE DE CONȚINUT
    ========================================= */
 .intro-section {
-  background-color: #ffffff;
+  background-color: var(--bg-color);
   border-radius: 20px;
   padding: 40px;
   margin-bottom: 40px;
@@ -56,7 +56,7 @@
 
 .intro-section h2 {
   font-size: 2rem;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -65,13 +65,13 @@
 
 .intro-section p {
   font-size: 1.15rem;
-  color: #475569;
+  color: var(--text-secondary);
   line-height: 1.8;
 }
 
 /* Misiunea (cuvântul "PbInfo" boldat va ieși în evidență) */
 .intro-section strong {
-  color: #01696f;
+  color: var(--accent-color);
   font-weight: 700;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .feature-card {
-  background-color: #f8fafc;
+  background-color: var(--bg-color);
   padding: 30px 20px;
   border-radius: 16px;
   text-align: center;
@@ -95,8 +95,8 @@
 }
 
 .feature-card:hover {
-  background-color: #ffffff;
-  border-color: #01696f;
+  background-color: var(--bg-color) !important;
+  border-color: var(--accent-color);
   box-shadow: 0 10px 20px rgba(1, 105, 111, 0.08);
 }
 
@@ -108,13 +108,13 @@
 
 .feature-card h3 {
   font-size: 1.25rem;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 10px;
 }
 
 .feature-card p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -123,7 +123,7 @@
    ========================================= */
 .tech-section {
   text-align: center;
-  background-color: #f1f5f9; /* Un fundal puțin diferit pentru această secțiune */
+  background-color: var(--bg-color); /* Un fundal puțin diferit pentru această secțiune */
 }
 
 .tech-section h2 {
@@ -139,7 +139,7 @@
 }
 
 .tech-tag {
-  background-color: #ffffff;
+  background-color: var(--bg-color);
   color: #01696f;
   font-weight: 700;
   font-size: 1rem;

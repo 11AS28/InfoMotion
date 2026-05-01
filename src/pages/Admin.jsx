@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { lessonsData } from '../lessonsData';
 import '../pages_css/admin.css';
+import Footer from '../components/footer';
 
 // ============================================================
 //  CREDENȚIALE ADMIN — modifică aici username-urile și parolele
 // ============================================================
 const ADMINS = [
-  { username: 'fane', password: 'infomotion2025' },
-  { username: 's.m._.maria', password: 'nevasta-mea-neatinsa-ca-o-floare' },
+  { 
+    username: import.meta.env.VITE_ADMIN_1_USER, 
+    password: import.meta.env.VITE_ADMIN_1_PASS 
+  },
+  { 
+    username: import.meta.env.VITE_ADMIN_2_USER, 
+    password: import.meta.env.VITE_ADMIN_2_PASS 
+  },
 ];
 // ============================================================
 
@@ -193,6 +200,7 @@ function Dashboard({ username, onLogout }) {
         <div className="admin-header-logo">
           InfoMotion<span>.</span> <em>Admin</em>
         </div>
+        
         <div className="admin-header-right">
           <span className="admin-user-pill">👤 {username}</span>
           <button className="admin-btn-logout" onClick={onLogout}>
@@ -281,7 +289,7 @@ function Dashboard({ username, onLogout }) {
             <div className="admin-card">
               <div className="admin-section-title">Animații existente</div>
               <div className="admin-anim-list">
-                {['BubbleSortAnim', 'CautareBinaraAnim'].map((a) => (
+                {['BubbleSortAnim', 'CautareBinaraAnim', 'InsertionSortAnim'].map((a) => (
                   <div key={a} className="admin-anim-pill">
                     <span className="admin-anim-dot" />
                     {a}
@@ -512,6 +520,7 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
       </main>
+      
     </div>
   );
 }

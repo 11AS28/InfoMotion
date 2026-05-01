@@ -1,0 +1,108 @@
+.di-container {
+  background-color: var(--bg-card);
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  margin: 20px 0;
+  transition: all 0.3s ease;
+}
+
+.di-title {
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.di-desc {
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 40px;
+  min-height: 24px;
+}
+
+.di-visual {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  min-height: 80px;
+  margin-bottom: 40px;
+}
+
+.di-array {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background-color: var(--bg-subtle);
+  border-radius: 8px;
+  border: 2px dashed var(--border-hover);
+  transition: transform 0.3s ease;
+}
+
+.di-array.highlight {
+  border: 2px solid var(--accent);
+  background-color: var(--accent-bg-soft, rgba(1, 105, 111, 0.1));
+}
+
+.di-box {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.di-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.di-controls button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.di-controls .btn-primary {
+  background-color: var(--accent);
+  color: white;
+}
+
+.di-controls .btn-primary:not(:disabled):hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.di-controls .btn-secondary {
+  background-color: var(--bg-body);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.di-controls .btn-reset {
+  background-color: transparent;
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

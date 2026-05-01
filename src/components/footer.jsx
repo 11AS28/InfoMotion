@@ -17,12 +17,10 @@ function Footer() {
 
                     <div className="social-links">
                         {/* Pune linkurile tale reale aici */}
-                        <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub">
+                        <a href="https://github.com/11AS28/InfoMotion" target="_blank" rel="noreferrer" aria-label="GitHub">
                             <FaGithub />
                         </a>  
-                        <a href="https://vercel.com" target="_blank" rel="noreferrer" aria-label="Vercel">
-                            <IoLogoVercel />
-                        </a>
+                        
                     </div>
                     
                 </div>
