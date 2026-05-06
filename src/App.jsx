@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Importăm componentele de bază
 import Nav from './components/nav'; 
@@ -26,11 +27,12 @@ function App() {
   const isAdminPage = location.pathname === '/admin';
 
   return (
+    
     <ThemeProvider>
       <AuthProvider>
         {/* Nav-ul apare DOAR dacă NU suntem pe admin */}
         {!isAdminPage && <Nav />}
-
+    
         <main style={{ minHeight: '80vh' }}>
           <Routes>
             {/* ─── RUTE PUBLICE ─── */}
@@ -66,6 +68,7 @@ function App() {
         {/* Footer-ul apare DOAR dacă NU suntem pe admin */}
         {!isAdminPage && <Footer />}
       </AuthProvider>
+      <SpeedInsights />
     </ThemeProvider>
   );
 }
