@@ -9,6 +9,12 @@
   animation: fadeIn 0.6s ease forwards;
 }
 
+body {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
 /* Butonul de Înapoi */
 .back-link {
   display: inline-block;
@@ -31,6 +37,7 @@
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-color); /* Înlocuit cu variabilă */
+  
 }
 
 .lesson-badge {
@@ -77,6 +84,7 @@
   color: var(--text-secondary);
   font-size: 1.1rem;
   line-height: 1.7;
+  
 }
 
 /* Placeholder pentru când nu ai încă animația gata */

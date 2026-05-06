@@ -41,6 +41,7 @@
     --font-titluri: 'Cabinet Grotesk', sans-serif;
   --font-text:    'Satoshi', sans-serif;
   --font-cod:     'Fira Code', monospace;
+  
 }
 
 /* ── MODUL ÎNTUNECAT ──────────────────────────────────────── */
@@ -90,6 +91,7 @@
 html, body {
   background-color: var(--bg-color);
   color: var(--text-primary);
+  justify-content: center;
 }
 
 /* ============================================================

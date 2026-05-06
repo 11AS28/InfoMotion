@@ -2,6 +2,7 @@ import Nav from "../components/nav";
 import Footer from "../components/footer";
 import '../pages_css/contact.css';
 import { FaDiscord, FaGithub } from "react-icons/fa";
+import { CgMail } from "react-icons/cg";
 
 function Contact() {
     return (
@@ -25,6 +26,12 @@ function Contact() {
                     
                     {/* Așa se face corect o listă de linkuri sociale */}
                     <ul className="contact-links">
+                        <li>
+                            <a href="mailto:infomotion2026@gmail.com" className="social-card gmail">
+                                <CgMail className="icon" /> 
+                                <span>infomotion2026@gmail.com</span>
+                            </a>
+                        </li>
                         <li>
                             <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="social-card discord">
                                 <FaDiscord className="icon" /> 

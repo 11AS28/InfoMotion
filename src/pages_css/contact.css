@@ -9,6 +9,8 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   font-family: 'Satoshi', 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Pentru ca Footer-ul să stea jos chiar dacă pagina are conținut puțin */
@@ -112,6 +114,15 @@ body {
   border-color: #24292e;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px rgba(36, 41, 46, 0.2);
+}
+
+
+.social-card.gmail:hover {
+  background-color: #D14836;
+  color: #ffffff;
+  border-color: #D14836;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(209, 72, 54, 0.2);
 }
 
 /* --- ANIMAȚIA COMUNĂ FADE UP --- */

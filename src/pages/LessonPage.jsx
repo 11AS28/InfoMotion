@@ -10,6 +10,7 @@ import CodeSnippet from '../components/CodeSnippet';
 import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
 import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
 import DivideAnim from '../components/animatii/DivideAnim';
+import GreedyAnim from '../components/animatii/GreedyAnim';
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -57,6 +58,8 @@ function LessonPage() {
         return <CautareBinaraAnim />;
       case "DivideAnim":
         return <DivideAnim />;
+      case "GreedyAnim":
+        return <GreedyAnim />;
       default:
         return (
           <div className="animation-placeholder">

@@ -6,8 +6,13 @@
   margin-top: 100px; /* Împinge footer-ul în jos față de restul site-ului */
   font-family: 'Satoshi', 'Inter', sans-serif;
   border-top: 1px solid var(--border-color); 
+  
 }
-
+body{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Asigură că footer-ul stă jos chiar dacă conținutul e mic */
+}
 .footer-content {
   max-width: 1400px;
   margin: 0 auto;

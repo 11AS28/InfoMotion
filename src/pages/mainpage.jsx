@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // <--- IMPORT NOU
+import { useAuth } from '../context/AuthContext'; // <--- IMPORT NOU
 import '../pages_css/mainPage.css';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
@@ -7,11 +9,12 @@ import Footer from '../components/footer';
 const INITIAL_ARRAY = [24, 18, 35, 12, 42, 8];
 
 function MainPage() {
+  // --- AICI LUĂM USER-UL LOGAT ---
+  const { currentUser } = useAuth(); 
+
   // Starea pentru vector (ce se afișează efectiv pe ecran)
   const [array, setArray] = useState(INITIAL_ARRAY);
-  // Starea care ne spune ce indici sunt comparați acum (ca să îi colorăm cu roșu)
   const [activeIndices, setActiveIndices] = useState([]);
-  // Starea care ne spune ce indici au fost deja sortați și sunt la locul final (verde)
   const [sortedIndices, setSortedIndices] = useState([]);
 
   // Funcția care generează toate mutările și le redă încet pe ecran
@@ -22,42 +25,35 @@ function MainPage() {
     let n = arr.length;
     let localSorted = [];
 
-    // O funcție mică pentru a aștepta (delay) între pașii animației (în milisecunde)
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     for (let i = 0; i < n - 1; i++) {
       let swapped = false;
       for (let j = 0; j < n - i - 1; j++) {
-        // Colorăm barele curente în roșu pentru a arăta că sunt comparate
         setActiveIndices([j, j + 1]);
-        await sleep(500); // Stăm jumătate de secundă ca să se vadă comparația
+        await sleep(500); 
 
         if (arr[j] > arr[j + 1]) {
-          // Facem swap în logică
           let temp = arr[j];
           arr[j] = arr[j + 1];
           arr[j + 1] = temp;
           
           swapped = true;
-          // Actualizăm React-ul ca să miște barele vizual
           setArray([...arr]); 
-          await sleep(500); // Așteptăm să se termine animația de mișcare CSS
+          await sleep(500); 
         }
       }
       
-      // Bara de la final este sortată sigur, o adăugăm în lista de elemente "verzi"
       localSorted.push(n - i - 1);
       setSortedIndices([...localSorted]);
       
       if (!swapped) break;
     }
     
-    // La final, totul e sortat, le colorăm pe toate cu verde
     setSortedIndices([...Array(n).keys()]);
-    setActiveIndices([]); // Scoatem roșul
+    setActiveIndices([]); 
   };
 
-  // Pornește animația automat la o secundă după ce se încarcă pagina
   useEffect(() => {
     setTimeout(() => {
       startBubbleSort();
@@ -66,9 +62,35 @@ function MainPage() {
 
   return (
     <div className="main-page">
+
+      {/* ──────────────────────────────────────────────────────────── */}
+      {/* ───────── NOUA SECȚIUNE DE JOS (ULTIMA DIN PAGINĂ) ───────── */}
+      {/* ──────────────────────────────────────────────────────────── */}
+      <section className="cta-bottom" style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: 'var(--bg-card)' }}>
+        <h2 style={{ fontSize: '2.5rem', color: 'var(--text-primary)', marginBottom: '15px' }}>
+          Ești pregătit să treci la următorul nivel?
+        </h2>
+        
+        {/* Schimbăm textul în funcție de logare */}
+        <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '40px' }}>
+          {currentUser 
+            ? "Mă bucur să te văd! Ești deja logat, alege o lecție și începe să înveți." 
+            : "Alătură-te elevilor de elită. Creează un cont gratuit și deblochează lecțiile!"}
+        </p>
+
+        {/* Schimbăm butonul în funcție de logare */}
+        {currentUser ? (
+          <Link to="/lectii" className="button" style={{ textDecoration: 'none' }}>
+            Începe să înveți
+          </Link>
+        ) : (
+          <Link to="/auth" className="button" style={{ textDecoration: 'none' }}>
+            Logare / Creare Cont
+          </Link>
+        )}
+      </section>
       
       <section className="hero-section">
-        
         {/* PARTEA STÂNGĂ: Cardul cu Cod */}
         <div className="hero-left">
           <div className="hero-text-intro">
@@ -76,6 +98,8 @@ function MainPage() {
             <h2>Descoperă logica din spatele codului.</h2>
             <p>Învață vizual, pas cu pas, algoritmi complecși.</p>
           </div>
+
+          
 
           <div className="code-card">
             <div className="code-top">
@@ -101,27 +125,26 @@ function MainPage() {
           </div>
         </div>
 
-        {/* PARTEA DREAPTĂ: Visualizer-ul Real Animati (React) */}
+        {/* PARTEA DREAPTĂ: Visualizer */}
         <div className="hero-right">
           <div className="visualizer-container">
             <h3>Visualizer Algoritm</h3>
             
             <div className="bars-container">
               {array.map((value, index) => {
-                // Stabilim culoarea fiecărei bare în funcție de stare
-                let bgColor = '#01696f'; // Teal implicit
+                let bgColor = '#01696f'; 
                 if (activeIndices.includes(index)) {
-                  bgColor = '#ef4444'; // Roșu dacă sunt comparate
+                  bgColor = '#ef4444'; 
                 } else if (sortedIndices.includes(index)) {
-                  bgColor = '#22c55e'; // Verde dacă e la poziția finală
+                  bgColor = '#22c55e'; 
                 }
 
                 return (
                   <div 
-                    key={index} // ATENȚIE: În React e foarte important să punem cheia pe index aici ca să se miște smooth
+                    key={index} 
                     className="bar" 
                     style={{ 
-                      height: `${value * 4}px`, // Înălțimea se adaptează dinamic la număr
+                      height: `${value * 4}px`, 
                       backgroundColor: bgColor 
                     }}
                   >
@@ -135,33 +158,39 @@ function MainPage() {
             <button className="button" onClick={startBubbleSort}>Resetează Animația</button>
           </div>
         </div>
-
       </section>
 
 
+
+
+
+
+
+      
+
       <section id="Features" className="features-section">
-  <h2 className="features-title">De ce să alegi InfoMotion?</h2>
-  
-  <ul className="features-grid">
-    <li className="feature-card">
-      <div className="feature-icon">👁️</div> {/* Opțional: poți pune un emoji sau o iconiță SVG */}
-      <strong>Vizualizare Interactivă</strong>
-      <p>Înțelege algoritmii și structurile de date prin animații clare și intuitive.</p>
-    </li>
-    
-    <li className="feature-card">
-      <div className="feature-icon">📝</div>
-      <strong>Explicații Pas cu Pas</strong>
-      <p>Fiecare linie de cod este explicată în detaliu, astfel încât să poți urmări logica.</p>
-    </li>
-    
-    <li className="feature-card">
-      <div className="feature-icon">🎮</div>
-      <strong>Gamificare</strong>
-      <p>Transformă învățarea într-o experiență distractivă și captivantă, cu provocări.</p>
-    </li>
-  </ul>
-</section>
+        <h2 className="features-title">De ce să alegi InfoMotion?</h2>
+        <ul className="features-grid">
+          <li className="feature-card">
+            <div className="feature-icon">👁️</div> 
+            <strong>Vizualizare Interactivă</strong>
+            <p>Înțelege algoritmii și structurile de date prin animații clare și intuitive.</p>
+          </li>
+          <li className="feature-card">
+            <div className="feature-icon">📝</div>
+            <strong>Explicații Pas cu Pas</strong>
+            <p>Fiecare linie de cod este explicată în detaliu, astfel încât să poți urmări logica.</p>
+          </li>
+          <li className="feature-card">
+            <div className="feature-icon">📚</div>
+            <strong>Resurse Educaționale</strong>
+            <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme de algoritmi.</p>
+          </li>
+        </ul>
+      </section>
+
+      
+      
     </div>
   );
 }

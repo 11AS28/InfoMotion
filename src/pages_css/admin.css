@@ -2,6 +2,12 @@
    admin.css — InfoMotion Admin Dashboard
    ============================================================ */
 
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 /* ── LOGIN ─────────────────────────────────────────────────── */
 .admin-login-wrapper {
   min-height: 100vh;

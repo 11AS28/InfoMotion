@@ -25,13 +25,13 @@ Deși este foarte ușor de înțeles și de scris, Bubble Sort nu este eficient 
     problemePbinfo: [
       {
         idProblema: "#119",
-        titluProblema: "Sortare",
+        titluProblema: "2maxim",
         url: "https://www.pbinfo.ro/probleme/119/sortare"
       },
       {
         idProblema: "#120",
-        titluProblema: "Sortare Descrescător",
-        url: "https://www.pbinfo.ro/probleme/120/sortaredesc"
+        titluProblema: "Ordonare",
+        url: "https://www.pbinfo.ro/probleme/509/ordonare"
       }
     ],
     // ------------------------------------
@@ -108,12 +108,12 @@ Reguli pentru numele variabilelor:
     problemePbinfo: [
       {
         idProblema: "#1",
-        titluProblema: "Suma",
+        titluProblema: "sum",
         url: "https://www.pbinfo.ro/probleme/1/suma"
       },
       {
         idProblema: "#1260",
-        titluProblema: "Adunare",
+        titluProblema: "asii",
         url: "https://www.pbinfo.ro/probleme/1260/adunare"
       }
     ],
@@ -195,8 +195,8 @@ Eficiența acestui algoritm este extraordinară! În loc de o complexitate O(n) 
       },
       {
         idProblema: "#2442",
-        titluProblema: "Cautare Binara 2",
-        url: "https://www.pbinfo.ro/probleme/2442/cautare-binara-2"
+        titluProblema: "cb_0",
+        url: "https://www.pbinfo.ro/probleme/4856/cb-0"
       }
     ],
 
@@ -307,6 +307,92 @@ De reținut: Fiindcă se auto-apelează la infinit până ajunge la elementul de
         // (De exemplu: rez = rez1 + rez2; pentru sumă)
         // (Sau: if (rez1 > rez2) rez = rez1; pentru maxim)
     }
+}`
+},
+{
+  id: "metoda-greedy",
+  clasa: "clasa-11",
+  titlu: "Metoda Greedy (Lacomă)",
+  descriere: "Fii lacom, dar inteligent! Metoda Greedy (Lacomă) te învață cum să rezolvi probleme de optimizare luând de fiecare dată cea mai bună decizie pe moment.",
+  teorie: `Cuvântul „greedy” vine din engleză și înseamnă „lacom”.
+
+Imaginează-ți că ești la un bufet suedez uriaș și ai o singură farfurie. Scopul tău este să pui pe ea cea mai scumpă și gustoasă mâncare posibilă. Cum procedezi? Vei fi „lacom”: o să te duci direct la caviar sau la friptura de vită, le pui pe farfurie până nu mai e loc, și abia apoi, dacă îți mai rămâne un colțișor liber, pui și niște cartofi prăjiți.
+
+În informatică, Metoda Greedy este o tehnică de programare folosită pentru probleme de optimizare (adică atunci când ți se cere să găsești un cost minim, un profit maxim, un timp minim etc.).
+
+Algoritmul construiește soluția finală pas cu pas. La fiecare pas, el alege elementul care pare cel mai bun în acel moment exact (optimul local), fără să se gândească deloc la consecințele din viitor. Speranța lui este că, făcând alegeri perfecte la fiecare pas, va ajunge la cea mai bună soluție finală (optimul global).
+
+
+Orice problemă rezolvată cu Greedy respectă mereu aceeași schemă logică. Iată ce faci efectiv la școală / în cod:
+
+1. Pornești la drum cu o soluție goală (ex: o sumă 0, un număr de obiecte 0).
+
+2. SORTAREA (Cel mai important pas!): În 99% din probleme, înainte să începi să alegi elemente, trebuie să le sortezi după un anumit criteriu care definește „lăcomia”.
+
+Exemplu: La problema restului, sortezi bancnotele descrescător (de la cea mai mare la cea mai mică). La problema spectacolelor, sortezi spectacolele după ora de terminare.
+
+3. ALEGEREA: Iei pe rând fiecare element din șirul proaspăt sortat.
+
+4. VERIFICAREA (Fezabilitatea): Te întrebi: „Dacă adaug acest element în soluția mea, stric vreo regulă?” (Ex: Dacă mai pun spectacolul ăsta, se suprapune cu celălalt? Dacă mai bag obiectul ăsta în rucsac, mi se rupe rucsacul?).
+
+Dacă NU strică regula => îl adaugi definitiv în soluție.
+
+Dacă STRICĂ regula => îl ignori definitiv și treci la următorul.
+
+5. Te oprești când ai atins scopul problemei (ex: ai restul 0, ți s-a umplut rucsacul) sau ai terminat de verificat toate elementele.
+
+
+
+Avantajul major: Este un algoritm extrem de rapid și scurt de scris. Sortarea durează cel mai mult, apoi doar parcurgi vectorul cu un singur for.
+
+Dezavantajul (Capcana Greedy): NU dă mereu rezultatul corect!
+Spre deosebire de metoda Backtracking (care testează absolut toate combinațiile posibile ca să fie sigură), Greedy este orb. Odată ce a luat o decizie, NU se mai întoarce niciodată (nu face pași înapoi).`,
+  problemePbinfo: [
+      {
+        idProblema: "#353",
+        titluProblema: "Spectacole",
+        url: "https://www.pbinfo.ro/probleme/353/spectacole"
+      },
+      {
+        idProblema: "#1340",
+        titluProblema: "Rucsac",
+        url: "https://www.pbinfo.ro/probleme/1340/rucsac"
+      }
+    ],
+  animatie: "GreedyAnim",
+  codCPlusPlus: `#include <iostream>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // Avem 4 tipuri de monede: de 1, 5, 10 și 50
+    int monede[] = {1, 5, 10, 50}; 
+    int n = 4; // numărul de tipuri de monede
+    int suma = 87; // Suma pe care vrem s-o plătim
+    int numar_monede_folosite = 0;
+
+    // Pasul 1: Sortăm monedele DESCRESCĂTOR (ca să fim "lacomi")
+    // (În cazul nostru, vectorul sortat invers ar fi: 50, 10, 5, 1)
+    sort(monede, monede + n, greater<int>());
+
+    // Pasul 2: Aplicăm strategia GREEDY
+    for(int i = 0; i < n; i++) {
+        if(suma == 0) break; // Ne oprim dacă am plătit tot
+
+        // Câte monede de tipul curent putem folosi?
+        int cate_incap = suma / monede[i]; 
+
+        if (cate_incap > 0) {
+            cout << "Folosim " << cate_incap << " monede de " << monede[i] << " RON\n";
+            numar_monede_folosite += cate_incap;
+            
+            // Scădem din sumă valoarea plătită cu aceste monede
+            suma = suma % monede[i]; 
+        }
+    }
+
+    cout << "\nTotal monede folosite: " << numar_monede_folosite;
+    return 0;
 }`
 }
 ];

@@ -1,6 +1,14 @@
 /* =========================================
    CONTAINER PRINCIPAL
    ========================================= */
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 .lectii-container {
   padding: 100px 5%;
   max-width: 1200px;

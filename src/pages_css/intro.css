@@ -9,6 +9,12 @@
   animation: fadeIn 0.8s ease forwards;
 }
 
+body{
+  display: flex;
+    justify-content: center;
+  min-height: 100vh;
+}
+
 /* =========================================
    HERO SECTION (Partea de sus)
    ========================================= */
