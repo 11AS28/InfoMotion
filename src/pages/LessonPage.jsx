@@ -10,7 +10,7 @@ import CodeSnippet from '../components/CodeSnippet';
 import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
 import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
 import DivideAnim from '../components/animatii/DivideAnim';
-import GreedyAnim from '../components/animatii/GreedyAnim';
+import GreedyAnim from '../components/animatii/greedyAnim';
 
 function LessonPage() {
   const { idLectie } = useParams();
