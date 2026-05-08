@@ -265,8 +265,50 @@
 
 
 
+/* Containerul tip pastilă pentru Username */
+.nav-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: rgba(1, 105, 111, 0.1); /* O nuanță foarte slabă din culoarea ta de accent */
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
+.nav-user-badge:hover {
+  background-color: var(--accent);
+  transform: translateY(-2px);
+}
 
+/* Schimbăm culoarea textului când punem mouse-ul (hover) */
+.nav-user-badge:hover .user-name-text,
+.nav-user-badge:hover .user-icon-mini {
+  color: white;
+}
 
+.user-icon-mini {
+  font-size: 1rem;
+  color: var(--accent);
+}
 
+.user-name-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ajustare pentru mobil ca să nu ocupe tot ecranul */
+@media (max-width: 768px) {
+  .nav-user-badge {
+    margin: 10px auto;
+    width: fit-content;
+  }
+}
 /*se termina*/

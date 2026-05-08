@@ -1,13 +1,15 @@
-import '../components_css/nav.css';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext'; 
+import SidebarStats from './SidebarStats'; 
+import '../components_css/nav.css';
 
 function Nav() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { currentUser, logout } = useAuth(); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -26,11 +28,11 @@ function Nav() {
       </div>
 
       <ul className={`nav-links ${isOpen ? 'active' : ''}`}>
-        <li><Link to="/">Acasă</Link></li>
-        <li><Link to="/despre">Despre</Link></li>
-        <li><Link to="/contact">Contact</Link></li>
+        <li><Link to="/" onClick={() => setIsOpen(false)}>Acasă</Link></li>
+        <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
+        <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
 
-        {/* --- NOUL BUTON DE DARK MODE --- */}
+        {/* --- BUTON DARK MODE --- */}
         <li>
           <button
             className={`theme-toggle ${theme === 'dark' ? 'dark-active' : ''}`}
@@ -40,27 +42,35 @@ function Nav() {
             <div className="theme-toggle-track">
               <span className="icon-sun">☀️</span>
               <span className="icon-moon">🌙</span>
-              {/* Cercul care se va mișca */}
               <div className="theme-toggle-thumb"></div>
             </div>
           </button>
         </li>
-        {/* -------------------------------- */}
 
-        {/* Zona de User: Login sau Logout */}
+        {/* Zona de User */}
         {currentUser ? (
           <li className="nav-user-info">
-            <span className="user-email">{currentUser.email.split('@')[0]}</span>
-            <button onClick={() => logout()} className="btn-logout">Ieșire</button>
-          </li>
+    <div className="nav-user-badge" onClick={() => setIsSidebarOpen(true)}>
+      <span className="user-icon-mini">👤</span> 
+      <span className="user-name-text">
+        {currentUser.nume || currentUser.email.split('@')[0]}
+      </span>
+    </div>
+  </li>
         ) : (
-          <li><Link to="/auth" className="btn-login">Logare</Link></li>
+          <li><Link to="/auth" className="btn-login" onClick={() => setIsOpen(false)}>Logare</Link></li>
         )}
 
         <li className="nav-cta">
-          <Link to="/lectii" className="btn-accent">Începe să înveți</Link>
+          <Link to="/lectii" className="btn-accent" onClick={() => setIsOpen(false)}>Începe să înveți</Link>
         </li>
       </ul>
+
+      {/* Componenta Sidebar este în afara UL-ului pentru a nu strica layout-ul de mobil */}
+      <SidebarStats 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
     </nav>
   );
 }
