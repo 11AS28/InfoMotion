@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../firebase';
 import { 
   onAuthStateChanged, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut,
   GoogleAuthProvider,
-  signInWithPopup 
+  signInWithPopup,
+  sendEmailVerification 
 } from 'firebase/auth';
+import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
+
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -37,11 +39,10 @@ export function AuthProvider({ children }) {
 
     return {
       terminate,
-      total: totalLectiiReale, // Trimitem și totalul ca să îl poți afișa (ex: "5 din 5")
+      total: totalLectiiReale, 
       progresProcent
     };
   };
-  // --- FUNCȚII NOI PENTRU REPARAREA ERORILOR DIN LESSONPAGE ---
 
   // Verifică dacă id-ul lecției există în obiectul progres al userului
   const verificaDacaEGata = (idLectie) => {
@@ -56,7 +57,6 @@ export function AuthProvider({ children }) {
     const userRef = doc(db, 'users', currentUser.uid);
     
     try {
-      // Folosim sintaxa de obiect dinamic pentru a nu suprascrie tot progresul
       await updateDoc(userRef, {
         [`progres.${idLectie}`]: {
           terminatLa: new Date(),
@@ -91,7 +91,14 @@ export function AuthProvider({ children }) {
 
   function logout() { return signOut(auth); }
   function login(email, password) { return signInWithEmailAndPassword(auth, email, password); }
-  function signup(email, password) { return createUserWithEmailAndPassword(auth, email, password); }
+  
+  function signup(email, password) {
+    return createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Imediat după ce s-a creat contul, trimitem emailul
+        return sendEmailVerification(userCredential.user);
+      });
+  }
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -114,7 +121,6 @@ export function AuthProvider({ children }) {
     return unsubscribeAuth;
   }, []);
 
-  // Am adăugat noile funcții aici în value
   const value = { 
     currentUser, 
     login, 

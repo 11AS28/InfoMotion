@@ -291,3 +291,12 @@
 }
 
 .logout-btn-sidebar:hover { background: #ff4757; color: white; }
+
+@media screen and (max-width: 768px) {
+  .sidebar-container {
+   
+    z-index: 3000 !important;
+  }
+
+
+}

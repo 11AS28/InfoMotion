@@ -1,16 +1,16 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext'; // Importăm tema
+import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout } = useAuth();
-  const { theme } = useTheme(); // Aflăm dacă e 'dark' sau 'light'
+  const { theme } = useTheme(); 
   const stats = getStatistici();
 
   if (!currentUser) return null;
 
-  // Calculăm un "Nivel" simbolic
+  // Calc lvl
   const { progresProcent } = getStatistici();
 
 let nivel = "Începător";
@@ -36,7 +36,7 @@ if (progresProcent >= 80) {
           
           <div className="stats-grid">
             <div className="stat-box">
-              <span className="stat-label">Lecții Gata</span>
+              <span className="stat-label">Lecții Terminate</span>
               <span className="stat-value">{stats.terminate}</span>
             </div>
             <div className="stat-box">
