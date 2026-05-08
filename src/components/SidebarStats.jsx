@@ -11,8 +11,14 @@ function SidebarStats({ isOpen, onClose }) {
   if (!currentUser) return null;
 
   // Calculăm un "Nivel" simbolic
-  const nivel = stats.terminate < 3 ? 'Începător' : stats.terminate < 7 ? 'Intermediar' : 'Expert';
+  const { progresProcent } = getStatistici();
 
+let nivel = "Începător";
+if (progresProcent >= 80) {
+  nivel = "Expert";
+} else if (progresProcent >= 40) {
+  nivel = "Intermediar";
+}
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}

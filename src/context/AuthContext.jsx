@@ -9,7 +9,7 @@ import {
   signInWithPopup 
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
-
+import { lessonsData } from '../lessonsData';
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -23,14 +23,24 @@ export function AuthProvider({ children }) {
   // Funcția care calculează statisticile
   const getStatistici = () => {
     if (!currentUser || !currentUser.progres) return { terminate: 0, progresProcent: 0 };
+    
+    // 1. Calculăm numărul de lecții terminate din obiectul "progres"
     const terminate = Object.keys(currentUser.progres).length;
-    const totalLectii = 10; 
+    
+    // 2. AFLĂM NUMĂRUL REAL de lecții din fișierul tău de date
+    const totalLectiiReale = lessonsData.length; 
+    
+    // 3. Calculăm procentul dinamic
+    const progresProcent = totalLectiiReale > 0 
+      ? (terminate / totalLectiiReale) * 100 
+      : 0;
+
     return {
       terminate,
-      progresProcent: (terminate / totalLectii) * 100
+      total: totalLectiiReale, // Trimitem și totalul ca să îl poți afișa (ex: "5 din 5")
+      progresProcent
     };
   };
-
   // --- FUNCȚII NOI PENTRU REPARAREA ERORILOR DIN LESSONPAGE ---
 
   // Verifică dacă id-ul lecției există în obiectul progres al userului
