@@ -291,3 +291,36 @@
 }
 
 .logout-btn-sidebar:hover { background: #ff4757; color: white; }
+
+
+.handle-input-group input {
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-card-alt);
+  color: var(--text-primary);
+  margin-top: 5px;
+}
+
+.handle-input-group input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.save-status {
+  color: #2ecc71;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  display: block;
+}
+
+.handle-input-group input {
+  /* ... restul stilurilor ... */
+  border: 1px solid var(--border);
+  transition: border-color 0.3s;
+}
+
+.handle-input-group input:focus {
+  border-color: #2ecc71; /* Se face verde când scrii în ea */
+}

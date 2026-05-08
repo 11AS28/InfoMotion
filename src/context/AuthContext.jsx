@@ -20,6 +20,19 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+  const updateCodeforcesHandle = async (handle) => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, {
+        codeforcesHandle: handle
+      });
+      // Nu e nevoie de setState, onSnapshot se ocupă de refresh
+    } catch (error) {
+      console.error("Eroare la salvarea handle-ului:", error);
+    }
+  };
   // Funcția care calculează statisticile
   const getStatistici = () => {
     if (!currentUser || !currentUser.progres) return { terminate: 0, progresProcent: 0 };
@@ -114,6 +127,26 @@ export function AuthProvider({ children }) {
     return unsubscribeAuth;
   }, []);
 
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setCurrentUser({ ...user, ...docSnap.data() });
+          } else {
+            setCurrentUser(user);
+          }
+          setLoading(false);
+        });
+        return () => unsubscribeDb();
+      } else {
+        setCurrentUser(null);
+        setLoading(false);
+      }
+    });
+    return unsubscribeAuth;
+  }, []);
   // Am adăugat noile funcții aici în value
   const value = { 
     currentUser, 

@@ -1,24 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext'; // Importăm tema
+import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
 
 function SidebarStats({ isOpen, onClose }) {
-  const { currentUser, getStatistici, logout } = useAuth();
-  const { theme } = useTheme(); // Aflăm dacă e 'dark' sau 'light'
+  // Am adăugat updateCodeforcesHandle aici pentru a repara eroarea de "not defined"
+  const { currentUser, getStatistici, logout, updateCodeforcesHandle } = useAuth();
+  const [handleInput, setHandleInput] = useState("");
+  const { theme } = useTheme();
+  
   const stats = getStatistici();
+  const progresProcent = stats.progresProcent;
+
+  // Sincronizăm input-ul cu datele din Firebase când se încarcă userul
+  useEffect(() => {
+    if (currentUser?.codeforcesHandle) {
+      setHandleInput(currentUser.codeforcesHandle);
+    }
+  }, [currentUser]);
 
   if (!currentUser) return null;
 
-  // Calculăm un "Nivel" simbolic
-  const { progresProcent } = getStatistici();
+  // Funcția de salvare apelată la Blur sau Enter
+  const handleSave = () => {
+    if (handleInput !== currentUser?.codeforcesHandle) {
+      // Acum updateCodeforcesHandle este definit și va funcționa
+      updateCodeforcesHandle(handleInput);
+    }
+  };
 
-let nivel = "Începător";
-if (progresProcent >= 80) {
-  nivel = "Expert";
-} else if (progresProcent >= 40) {
-  nivel = "Intermediar";
-}
+  // Calculăm Nivelul
+  let nivel = "Începător";
+  if (progresProcent >= 80) {
+    nivel = "Expert";
+  } else if (progresProcent >= 40) {
+    nivel = "Intermediar";
+  }
+
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
@@ -48,10 +66,10 @@ if (progresProcent >= 80) {
           <div className="progress-section">
             <div className="progress-info">
               <span>Progres Curs</span>
-              <span>{Math.round(stats.progresProcent)}%</span>
+              <span>{Math.round(progresProcent)}%</span>
             </div>
             <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: `${stats.progresProcent}%` }}></div>
+              <div className="progress-bar-fill" style={{ width: `${progresProcent}%` }}></div>
             </div>
           </div>
 
@@ -60,6 +78,25 @@ if (progresProcent >= 80) {
               <span>Email:</span>
               <strong>{currentUser.email}</strong>
             </div>
+            
+            {/* Secțiunea Codeforces Handle mutată în interiorul listei pentru aspect mai curat */}
+            <div className="info-item-input">
+              <span>Codeforces Handle:</span>
+              <div className="handle-input-group">
+                <input 
+                  type="text" 
+                  placeholder="ex: tourist" 
+                  value={handleInput}
+                  onChange={(e) => setHandleInput(e.target.value)}
+                  onBlur={handleSave}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                />
+              </div>
+              {currentUser?.codeforcesHandle && (
+                <small className="save-status">✓ Salvat în profil</small>
+              )}
+            </div>
+
             <div className="info-item">
               <span>Status:</span>
               <strong className="status-online">Activ</strong>
