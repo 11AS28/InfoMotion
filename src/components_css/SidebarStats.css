@@ -5,14 +5,16 @@
   right: -350px; /* Ascuns implicit */
   width: 320px;
   height: 100vh;
-  background-color: #ffffff;
   z-index: 2000;
-  padding: 40px 25px;
+  padding: 30px 20px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Tranziție fluidă */
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* Culori default (Light) */
+  background-color: #ffffff;
+  color: #333;
 }
 
 /* Când sidebar-ul este deschis */
@@ -30,6 +32,13 @@
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px); /* Efect de blur la restul site-ului */
   z-index: 1999;
+}
+
+/* --- LOGICA DE DARK MODE --- */
+.sidebar-container[data-theme='dark'] {
+  background-color: #121212; /* Fundal închis */
+  color: #f5f5f5;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.5);
 }
 
 /* Butonul de închidere (X) */
@@ -50,171 +59,18 @@
   color: #ff4757;
 }
 
-/* Header-ul (Poza + Nume) */
-.sidebar-header {
-  text-align: center;
+/* Header & Avatar */
+.sidebar-header { 
+  text-align: center; 
   margin-top: 20px;
+  margin-bottom: 25px; 
   border-bottom: 1px solid #eee;
   padding-bottom: 25px;
 }
 
-.sidebar-header img {
-  width: 85px;
-  height: 85px;
-  border-radius: 50%;
-  border: 3px solid #646cff;
-  object-fit: cover;
-  margin-bottom: 15px;
-}
-
-.sidebar-header h3 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: #2d3436;
-}
-
-.sidebar-header p {
-  color: #636e72;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-/* Secțiunea de Progres */
-.sidebar-content {
-  padding: 10px 0;
-}
-
-.sidebar-content h4 {
-  color: #2d3436;
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.stat-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8f9fa;
-  padding: 12px 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-}
-
-.stat-card span {
-  color: #636e72;
-}
-
-.stat-card strong {
-  color: #646cff;
-  font-size: 1.2rem;
-}
-
-/* Bara de progres */
-.progress-bar-container {
-  width: 100%;
-  height: 10px;
-  background: #e9ecef;
-  border-radius: 20px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #646cff, #8e94f2);
-  border-radius: 20px;
-  transition: width 0.8s ease-out;
-}
-
-.percent-text {
-  text-align: right;
-  font-weight: 600;
-  color: #646cff;
-  font-size: 0.9rem;
-}
-
-/* Butonul de Logout */
-.logout-btn-sidebar {
-  margin-top: auto; /* Îl împinge la fundul listei */
-  padding: 14px;
-  background-color: #fff1f2;
-  color: #ff4757;
-  border: 1px solid #ff4757;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.logout-btn-sidebar:hover {
-  background-color: #ff4757;
-  color: white;
-}
-
-/* Suport pentru DARK MODE */
-[data-theme='dark'] .sidebar-container {
-  background-color: #1e1e1e;
-}
-
-[data-theme='dark'] .sidebar-header h3,
-[data-theme='dark'] .sidebar-content h4 {
-  color: #f1f2f6;
-}
-
-[data-theme='dark'] .stat-card {
-  background: #2d2d2d;
-}
-
-[data-theme='dark'] .stat-card span {
-  color: #b2bec3;
-}
-
-[data-theme='dark'] .sidebar-header {
+.sidebar-container[data-theme='dark'] .sidebar-header {
   border-bottom-color: #333;
 }
-
-
-.user-avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  background: #eee;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  margin: 0 auto 15px auto;
-  border: 2px solid var(--accent);
-}
-
-/* Container principal */
-.sidebar-container {
-  position: fixed;
-  top: 0;
-  right: -350px;
-  width: 320px;
-  height: 100vh;
-  z-index: 2000;
-  padding: 30px 20px;
-  transition: all 0.4s ease;
-  display: flex;
-  flex-direction: column;
-  /* Culori default (Light) */
-  background-color: #ffffff;
-  color: #333;
-}
-
-/* --- LOGICA DE DARK MODE --- */
-.sidebar-container[data-theme='dark'] {
-  background-color: #121212; /* Fundal închis */
-  color: #f5f5f5;
-  box-shadow: -5px 0 20px rgba(0,0,0,0.5);
-}
-
-.sidebar-container.open { right: 0; }
-
-/* Header & Avatar */
-.sidebar-header { text-align: center; margin-bottom: 25px; }
 
 .user-avatar-placeholder {
   width: 70px; height: 70px;
@@ -229,10 +85,27 @@
   border-color: #00b4d8;
 }
 
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: inherit;
+}
+
 .badge-nivel {
   background: #01696f; color: white;
   padding: 4px 12px; border-radius: 20px;
   font-size: 0.8rem; font-weight: bold;
+}
+
+/* Secțiunea de Progres */
+.sidebar-content {
+  padding: 10px 0;
+}
+
+.sidebar-content h4 {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: inherit;
 }
 
 /* Statistici Grid */
@@ -256,6 +129,7 @@
 
 /* Progres */
 .progress-section { margin-bottom: 25px; }
+
 .progress-info {
   display: flex; justify-content: space-between;
   font-size: 0.9rem; margin-bottom: 8px;
@@ -263,6 +137,7 @@
 
 .progress-bar-container {
   height: 8px; background: #eee; border-radius: 10px; overflow: hidden;
+  width: 100%;
 }
 
 .sidebar-container[data-theme='dark'] .progress-bar-container { background: #333; }
@@ -273,6 +148,7 @@
 
 /* Lista de info */
 .info-list { display: flex; flex-direction: column; gap: 10px; }
+
 .info-item {
   display: flex; justify-content: space-between; font-size: 0.85rem;
   padding-bottom: 8px; border-bottom: 1px solid #eee;
@@ -281,6 +157,36 @@
 .sidebar-container[data-theme='dark'] .info-item { border-bottom-color: #333; }
 
 .status-online { color: #2ecc71; }
+
+/* Codeforces Handle Input */
+.handle-input-group input {
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #333;
+  margin-top: 5px;
+  transition: border-color 0.3s;
+}
+
+.sidebar-container[data-theme='dark'] .handle-input-group input {
+  background: #2a2a2a;
+  color: #f5f5f5;
+  border-color: #444;
+}
+
+.handle-input-group input:focus {
+  border-color: #2ecc71; /* Se face verde când scrii în ea */
+  outline: none;
+}
+
+.save-status {
+  color: #2ecc71;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  display: block;
+}
 
 /* Buton Logout */
 .logout-btn-sidebar {
@@ -292,11 +198,9 @@
 
 .logout-btn-sidebar:hover { background: #ff4757; color: white; }
 
+/* Responsive Media Queries */
 @media screen and (max-width: 768px) {
   .sidebar-container {
-   
     z-index: 3000 !important;
   }
-
-
 }

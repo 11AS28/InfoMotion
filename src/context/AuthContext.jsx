@@ -22,40 +22,39 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Funcția care calculează statisticile
-  const getStatistici = () => {
-    if (!currentUser || !currentUser.progres) return { terminate: 0, progresProcent: 0 };
-    
-    // 1. Calculăm numărul de lecții terminate din obiectul "progres"
-    const terminate = Object.keys(currentUser.progres).length;
-    
-    // 2. AFLĂM NUMĂRUL REAL de lecții din fișierul tău de date
-    const totalLectiiReale = lessonsData.length; 
-    
-    // 3. Calculăm procentul dinamic
-    const progresProcent = totalLectiiReale > 0 
-      ? (terminate / totalLectiiReale) * 100 
-      : 0;
+  // Funcția pentru Codeforces
+  const updateCodeforcesHandle = async (handle) => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, {
+        codeforcesHandle: handle
+      });
+      console.log("Handle salvat cu succes:", handle);
+    } catch (error) {
+      console.error("Eroare la salvarea handle-ului:", error);
+    }
+  };
 
+  const getStatistici = () => {
+    if (!currentUser || !currentUser.progres) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
+    const terminate = Object.keys(currentUser.progres).length;
+    const totalLectiiReale = lessonsData.length; 
     return {
       terminate,
-      total: totalLectiiReale, 
-      progresProcent
+      total: totalLectiiReale,
+      progresProcent: totalLectiiReale > 0 ? (terminate / totalLectiiReale) * 100 : 0
     };
   };
 
-  // Verifică dacă id-ul lecției există în obiectul progres al userului
   const verificaDacaEGata = (idLectie) => {
     if (!currentUser || !currentUser.progres) return false;
     return !!currentUser.progres[idLectie];
   };
 
-  // Updatează progresul direct în Firestore
   const marcheazaLectieTerminata = async (idLectie) => {
     if (!currentUser) return;
-
     const userRef = doc(db, 'users', currentUser.uid);
-    
     try {
       await updateDoc(userRef, {
         [`progres.${idLectie}`]: {
@@ -63,12 +62,12 @@ export function AuthProvider({ children }) {
           status: 'complet'
         }
       });
-      console.log(`Progres salvat pentru: ${idLectie}`);
     } catch (error) {
-      console.error("Eroare la salvarea lecției:", error);
+      console.error("Eroare la salvarea progresului:", error);
     }
   };
 
+  // --- LOGIN / LOGOUT LOGIC ---
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
@@ -83,7 +82,8 @@ export function AuthProvider({ children }) {
         email: user.email,
         photoURL: user.photoURL,
         dataCrearii: new Date(),
-        progres: {}
+        progres: {},
+        codeforcesHandle: "" // Inițializăm gol
       });
     }
     return user;
@@ -121,6 +121,32 @@ export function AuthProvider({ children }) {
     return unsubscribeAuth;
   }, []);
 
+  const verificaProblemaCodeforces = async (problemId) => {
+    if (!currentUser?.codeforcesHandle) {
+      alert("Te rugăm să îți setezi Codeforces Handle-ul în profil mai întâi!");
+      return false;
+    }
+
+    try {
+      const response = await fetch(`https://codeforces.com/api/user.status?handle=${currentUser.codeforcesHandle}&from=1&count=50`);
+      const data = await response.json();
+
+      if (data.status === "OK") {
+        // Căutăm în ultimele 50 de trimiteri
+        const rezolvata = data.result.some(submission => {
+          const p = submission.problem;
+          const currentId = `${p.contestId}${p.index}`; // ex: "158A"
+          return currentId === problemId && submission.verdict === "OK";
+        });
+        return rezolvata;
+      }
+    } catch (error) {
+      console.error("Eroare la API-ul Codeforces:", error);
+    }
+    return false;
+  };
+
+  // Obiectul value conține tot ce se folosește în context
   const value = { 
     currentUser, 
     login, 
@@ -128,8 +154,10 @@ export function AuthProvider({ children }) {
     logout, 
     loginWithGoogle, 
     getStatistici,
+    updateCodeforcesHandle, 
     verificaDacaEGata,
-    marcheazaLectieTerminata
+    marcheazaLectieTerminata,
+    verificaProblemaCodeforces
   };
 
   return (
