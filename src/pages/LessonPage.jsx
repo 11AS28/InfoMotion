@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { lessonsData } from '../lessonsData';
-import { useAuth } from '../context/AuthContext'; // Importăm Auth
-import { completeazaLectie, verificaProgres } from '../services/progresService'; // Importăm serviciul de progres
+import { useAuth } from '../context/AuthContext'; 
 import '../pages_css/lessons.css';
 
-// Importăm componentele de animație
-import CodeSnippet from '../components/CodeSnippet';
+// Importă componentele tale de animație aici (păstrează-le pe ale tale)
 import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
 import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
 import DivideAnim from '../components/animatii/DivideAnim';
@@ -14,58 +12,43 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 
 function LessonPage() {
   const { idLectie } = useParams();
-  const { currentUser } = useAuth(); // Luăm user-ul logat
+  const { currentUser, marcheazaLectieTerminata, verificaDacaEGata } = useAuth();
   const [esteGata, setEsteGata] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const lectie = lessonsData.find(l => l.id === idLectie);
 
-  // Verificăm dacă lecția este deja terminată când se încarcă pagina
+  // Verificăm dacă lecția e terminată la încărcare
   useEffect(() => {
     async function checkProgres() {
       if (currentUser && idLectie) {
-        const status = await verificaProgres(currentUser.uid, idLectie);
+        const status = await verificaDacaEGata(idLectie);
         setEsteGata(status);
       }
     }
     checkProgres();
-  }, [idLectie, currentUser]);
+  }, [idLectie, currentUser, verificaDacaEGata]);
 
-  if (!lectie) {
-    return (
-      <div className="page-wrapper">
-        <main className="not-found-lesson">
-          <h2>Lecția nu a fost găsită.</h2>
-          <Link to="/lectii" className="back-btn">Înapoi la lecții</Link>
-        </main>
-      </div>
-    );
-  }
+  if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită.</h2></div>;
 
   const handleFinish = async () => {
+    if (!currentUser) {
+      alert("Loghează-te pentru a salva progresul!");
+      return;
+    }
     setLoading(true);
-    await completeazaLectie(currentUser.uid, idLectie);
+    await marcheazaLectieTerminata(idLectie);
     setEsteGata(true);
     setLoading(false);
-    // Opțional: un efect de confetti sau un mesaj de succes
   };
 
   const renderAnimation = () => {
     switch (lectie.animatie) {
-      case "BubbleSortAnim":
-        return <BubbleSortAnim />;
-      case "CautareBinaraAnim":
-        return <CautareBinaraAnim />;
-      case "DivideAnim":
-        return <DivideAnim />;
-      case "GreedyAnim":
-        return <GreedyAnim />;
-      default:
-        return (
-          <div className="animation-placeholder">
-             Această lecție nu conține o animație interactivă momentan.
-          </div>
-        );
+      case "BubbleSortAnim": return <BubbleSortAnim />;
+      case "CautareBinaraAnim": return <CautareBinaraAnim />;
+      case "DivideAnim": return <DivideAnim />;
+      case "GreedyAnim": return <GreedyAnim />;
+      default: return <div className="animation-placeholder">Fără animație momentan.</div>;
     }
   };
 
@@ -75,7 +58,7 @@ function LessonPage() {
         <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
         
         <header className="lesson-header">
-          <div className="lesson-badge">{lectie.clasa.toUpperCase().replace('-', ' ')}</div>
+          <div className="lesson-badge">{lectie.clasa.toUpperCase()}</div>
           <h1>{lectie.titlu}</h1>
         </header>
 
@@ -91,11 +74,10 @@ function LessonPage() {
           </div>
         </section>
 
-        {/* ZONA DE FINALIZARE LECȚIE */}
         <section className="lesson-finish-action">
           {esteGata ? (
             <div className="lesson-completed-msg">
-              <span className="check-icon">✔</span> Ai finalizat această lecție!
+              <span className="check-icon">✔</span> Lecție finalizată!
             </div>
           ) : (
             <button 
@@ -110,26 +92,8 @@ function LessonPage() {
 
         <section className="lesson-code">
           <h2>💻 Cod C++</h2>
-          <pre>
-            <code>{lectie.codCPlusPlus}</code>
-          </pre>
+          <pre><code>{lectie.codCPlusPlus}</code></pre>
         </section>
-
-        {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 && (
-          <section className="lesson-practice">
-            <h2>🏋️‍♂️ Exersează pe PbInfo</h2>
-            <p>Recomandăm următoarele probleme pentru practică:</p>
-            <div className="pbinfo-links">
-              {lectie.problemePbinfo.map((problema, index) => (
-                <a key={index} href={problema.url} target="_blank" rel="noopener noreferrer" className="pbinfo-card">
-                  <span className="pbinfo-id">{problema.idProblema}</span>
-                  <span className="pbinfo-title">{problema.titluProblema}</span>
-                  <span className="pbinfo-arrow">↗</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
       </main>
     </div>
   );
