@@ -9,9 +9,9 @@ function Auth() {
   const navigate = useNavigate();
   const { loginWithGoogle, login, signup, logout } = useAuth();
   
-
   const [isRegistering, setIsRegistering] = useState(false); 
-  const [email, setEmail] = useState('');
+  const [identificator, setIdentificator] = useState(''); // Poate fi email sau username
+  const [username, setUsername] = useState(''); // Folosit doar la înregistrare
   const [password, setPassword] = useState('');
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -26,56 +26,72 @@ function Auth() {
     }
   };
 
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); 
     setSuccessMsg(""); 
 
     try {
       if (isRegistering) {
-        await signup(email, password); 
+        // Verificăm dacă a introdus un username
+        if (!username.trim()) {
+          setError("Te rugăm să introduci un Username.");
+          return;
+        }
+        // La înregistrare, identificatorul TREBUIE să fie un email valid
+        if (!identificator.includes('@')) {
+          setError("Te rugăm să folosești o adresă de email validă pentru înregistrare.");
+          return;
+        }
+
+        // Trimitem emailul, parola și username-ul către funcția de signup
+        await signup(identificator, password, username); 
+        
         setSuccessMsg("Cont creat cu succes! Te rugăm să îți verifici emailul (inclusiv folderul Spam) pentru a activa contul.");
         setIsRegistering(false);
         setPassword(""); 
+        setUsername("");
       } else {
-        // Logare cont existent
-        const userCredential = await login(email, password); 
+        // Logare cont existent (identificator poate fi email sau username)
+        const userCredential = await login(identificator, password); 
         
         // --- VERIFICAREA EMAILULUI ---
-                if (!userCredential.user.emailVerified) {
+        if (!userCredential.user.emailVerified) {
           await logout(); 
           setError("Contul tău nu este activat. Te rugăm să dai click pe linkul primit pe email.");
-          setShowResendBtn(true); // <--- ACTIVĂM BUTONUL AICI
+          setShowResendBtn(true);
           return; 
         }
 
-        // Dacă e verificat, îl trimitem la lecții
         navigate('/lectii');
       }
     } catch (error) {
-      setError(isRegistering ? "Nu am putut crea contul. Email invalid sau deja folosit?" : "Email sau parolă incorectă.");
+      if (error.message.includes("auth/user-not-found")) {
+        setError("Username-ul nu a fost găsit.");
+      } else {
+        setError(isRegistering ? "Nu am putut crea contul. Email invalid sau deja folosit?" : "Email, username sau parolă incorectă.");
+      }
     }
   };
 
-
-
-    const handleResendEmail = async () => {
+  const handleResendEmail = async () => {
     try {
-      // 1. Logăm userul temporar în spate ca să aibă Firebase acces la el
-      const userCredential = await login(email, password);
-      
-      // 2. Îi trimitem emailul
+      // Trebuie să ne asigurăm că retrimiterea se face cu un email
+      const emailPentruRetrimitere = identificator.includes('@') ? identificator : null;
+      if(!emailPentruRetrimitere) {
+          setError("Pentru a retrimite emailul, te rugăm să te loghezi folosind adresa de email, nu username-ul.");
+          return;
+      }
+
+      const userCredential = await login(identificator, password);
       await sendEmailVerification(userCredential.user);
-      
-      // 3. Îl delogăm la loc imediat
       await logout();
       
-      // 4. Afișăm mesajul de succes
       setSuccessMsg("Emailul a fost retrimis! Verifică și folderul Spam.");
       setError("");
-      setShowResendBtn(false); // Ascundem butonul înapoi
+      setShowResendBtn(false); 
     } catch (err) {
-      setError("A apărut o eroare la retrimiterea emailului.");
+      setError("A apărut o eroare la retrimiterea emailului. Asigură-te că parola e corectă.");
     }
   };
 
@@ -88,20 +104,16 @@ function Auth() {
           <br />
         </div>
 
-        {/* Afișarea mesajului de succes */}
         {successMsg && (
           <div className="auth-success" style={{ color: '#155724', marginBottom: '15px', fontSize: '14px', textAlign: 'center', backgroundColor: '#d4edda', padding: '10px', borderRadius: '8px' }}>
             {successMsg}
           </div>
         )}
 
-        {/* Afișarea erorilor */}
-                {/* Afișarea erorilor și a butonului de retrimitere */}
         {error && (
           <div className="auth-error" style={{ color: '#ff4d4d', marginBottom: '15px', fontSize: '14px', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '8px' }}>
             {error}
             
-            {/* Butonul apare doar dacă showResendBtn este true */}
             {showResendBtn && (
               <div style={{ marginTop: '10px' }}>
                 <button 
@@ -116,31 +128,44 @@ function Auth() {
           </div>
         )}
         
-        {/* BUTONUL GOOGLE */}
         <button className="google-btn" onClick={handleGoogleLogin} style={{ width: '100%', marginBottom: '20px' }}>
           <FaGoogle />
           {isRegistering ? "Înregistrează-te cu Google" : "Continuă cu Google"}
         </button>
 
-        {/* DELIMITATORUL */}
         <div className="auth-divider" style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>
           <span style={{ backgroundColor: 'var(--bg-card)', padding: '0 10px', fontSize: '0.9rem' }}>
-            sau cu email
+            sau cu {isRegistering ? "email" : "email / username"}
           </span>
         </div>
 
-        {/* FORMULARUL DE EMAIL */}
         <form onSubmit={handleSubmit} className="auth-form-classic">
+          
+          {/* Câmpul de Username (vizibil doar la înregistrare) */}
+          {isRegistering && (
+            <div className="admin-field" style={{ marginBottom: '15px' }}>
+              <label>Username</label>
+              <input 
+                type="text" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                placeholder="ex: popescu_ion"
+                required={isRegistering} 
+              />
+            </div>
+          )}
+
           <div className="admin-field" style={{ marginBottom: '15px' }}>
-            <label>Email</label>
+            <label>{isRegistering ? "Email" : "Email"}</label>
             <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              placeholder="elev@exemplu.com"
+              type={isRegistering ? "email" : "email"} // La login permitem text normal pt username
+              value={identificator} 
+              onChange={(e) => setIdentificator(e.target.value)} 
+              placeholder={isRegistering ? "elev@exemplu.com" : "Email-ul tău"}
               required 
             />
           </div>
+          
           <div className="admin-field" style={{ marginBottom: '20px' }}>
             <label>Parolă</label>
             <input 
@@ -157,15 +182,16 @@ function Auth() {
           </button>
         </form>
 
-        {/* LINK-UL DE SWITCH (Login <-> Register) */}
         <p style={{ textAlign: 'center', marginTop: '25px', fontSize: '14px', color: 'var(--text-secondary)' }}>
           {isRegistering ? "Ai deja cont?" : "Nu ai cont?"} {' '}
           <span 
             onClick={() => {
               setIsRegistering(!isRegistering);
               setError(""); 
-              setSuccessMsg(""); // Curățăm și succesul când se mută între taburi
+              setSuccessMsg(""); 
               setPassword(""); 
+              setIdentificator(""); // Golim și emailul când schimbăm tab-ul
+              setUsername("");
             }} 
             style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
           >

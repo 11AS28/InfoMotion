@@ -1,40 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
+import { doc, updateDoc } from 'firebase/firestore'; 
+import { db } from '../firebase'; 
+import { FaFire } from "react-icons/fa";
 
 function SidebarStats({ isOpen, onClose }) {
-  // Am combinat hook-urile: am pastrat updateCodeforcesHandle, handleInput si theme
-  const { currentUser, getStatistici, logout, updateCodeforcesHandle } = useAuth();
-  const [handleInput, setHandleInput] = useState("");
-  const { theme } = useTheme();
-  
-  const stats = getStatistici();
-  const progresProcent = stats.progresProcent;
+  const { currentUser, getStatistici, logout, actualizeazaStreak } = useAuth();
+  const { theme } = useTheme(); 
 
-  // Sincronizăm input-ul cu datele din Firebase când se încarcă userul
+  const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
+  
   useEffect(() => {
-    if (currentUser?.codeforcesHandle) {
-      setHandleInput(currentUser.codeforcesHandle);
+    if (currentUser) {
+      setHandleInput(currentUser.codeforcesHandle || "");
     }
   }, [currentUser]);
 
-  if (!currentUser) return null;
+  useEffect(() => {
+    if (currentUser && isOpen) {
+      actualizeazaStreak();
+    }
+  }, [currentUser, isOpen]);
 
-  // Funcția de salvare apelată la Blur sau Enter
-  const handleSave = () => {
-    if (handleInput !== currentUser?.codeforcesHandle) {
-      updateCodeforcesHandle(handleInput);
+  const handleSave = async () => {
+    if (!currentUser || handleInput === currentUser.codeforcesHandle) return;
+
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, {
+        codeforcesHandle: handleInput
+      });
+      console.log("Handle salvat cu succes!");
+    } catch (error) {
+      console.error("Eroare la salvarea Codeforces Handle:", error);
     }
   };
 
-  // Calculăm Nivelul bazat pe progresProcent
+  if (!currentUser) return null;
+
+  const stats = getStatistici();
+  const { progresProcent } = stats;
+
   let nivel = "Începător";
   if (progresProcent >= 80) {
     nivel = "Expert";
   } else if (progresProcent >= 40) {
     nivel = "Intermediar";
   }
+
+  // 1. Declarăm numărul de zile PRIMUL
+  const currentCount = currentUser.streakCount || 0;
+
+  // 2. Funcția de culori
+  const getStreakColor = (streak) => {
+    if (streak >= 90) return "#00ffea"; 
+    if (streak >= 50) return "#cc00ff"; 
+    if (streak >= 10)  return "#ff4500"; 
+    if (streak >= 3)  return "#ffa500"; 
+    if (streak >= 1)  return "#ffd700"; 
+    return "#cccccc";                   
+  };
+
+  // 3. Calculăm culoarea folosind numărul de zile
+  const streakColor = getStreakColor(currentCount);
 
   return (
     <>
@@ -72,6 +102,27 @@ function SidebarStats({ isOpen, onClose }) {
             </div>
           </div>
 
+          <div>
+            <span>Streak Curent</span>
+            <div className="streak-display">
+              <p className="streak-count" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                {currentCount} zi{currentCount !== 1 ? "le" : ""} 
+                {/* ICONIȚA CU CULOARE DINAMICĂ ȘI UMBRĂ */}
+                <FaFire 
+                  id='foc' 
+                  color={streakColor} 
+                  size={22}
+                  style={{ 
+                    filter: `drop-shadow(0px 0px 4px ${streakColor})`, 
+                    transition: 'color 0.3s ease, filter 0.3s ease' 
+                  }} 
+                />
+              </p>
+            </div>  
+          </div>
+
+          <br />
+
           <div className="info-list">
             <div className="info-item">
               <span>Email:</span>
@@ -87,12 +138,13 @@ function SidebarStats({ isOpen, onClose }) {
                   placeholder="ex: tourist" 
                   value={handleInput}
                   onChange={(e) => setHandleInput(e.target.value)}
-                  onBlur={handleSave}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                  onBlur={handleSave} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleSave()} 
+                  style={{ width: '100%', padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
                 />
               </div>
-              {currentUser?.codeforcesHandle && (
-                <small className="save-status">✓ Salvat în profil</small>
+              {currentUser?.codeforcesHandle === handleInput && handleInput !== "" && (
+                <small className="save-status" style={{ color: 'green', fontSize: '12px' }}>✓ Salvat în profil</small>
               )}
             </div>
 

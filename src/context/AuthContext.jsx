@@ -9,7 +9,7 @@ import {
   sendEmailVerification 
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
 
 const AuthContext = createContext();
@@ -67,6 +67,55 @@ export function AuthProvider({ children }) {
     }
   };
 
+
+
+
+    // --- FUNCȚIE NOUĂ PENTRU STREAK ÎN FIREBASE ---
+  const actualizeazaStreak = async () => {
+    if (!currentUser) return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const azi = new Date().toLocaleDateString("en-US"); // Formatăm data ca "MM/DD/YYYY"
+    
+    // Extragem datele actuale. Dacă nu există, folosim valori default
+    const streakCurent = currentUser.streakCount || 0;
+    const ultimaLogare = currentUser.lastLoginDate;
+
+    let noulStreak = streakCurent;
+
+    if (!ultimaLogare) {
+      // Prima dată când intră vreodată
+      noulStreak = 1;
+    } else if (ultimaLogare === azi) {
+      // S-a logat deja azi, nu facem nimic
+      return; 
+    } else {
+      // Calculăm diferența de zile
+      const dataUltimaLogare = new Date(ultimaLogare);
+      const dataAzi = new Date(azi);
+      const diffTime = Math.abs(dataAzi - dataUltimaLogare);
+      const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffZile === 1) {
+        noulStreak += 1; // S-a logat și ieri -> Creștem
+      } else if (diffZile > 1) {
+        noulStreak = 1;  // A ratat o zi -> Resetăm la 1
+      }
+    }
+
+    // Salvăm noul streak în Firebase (folosim setDoc cu merge: true ca să nu ștergem restul datelor)
+    try {
+      await setDoc(userRef, {
+        streakCount: noulStreak,
+        lastLoginDate: azi
+      }, { merge: true });
+      // Notă: La următorul refresh, currentUser din state va avea automat noile date 
+      // pentru că folosești onSnapshot în useEffect!
+    } catch (error) {
+      console.error("Eroare la actualizarea streak-ului:", error);
+    }
+  };
+
   // --- LOGIN / LOGOUT LOGIC ---
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
@@ -90,14 +139,49 @@ export function AuthProvider({ children }) {
   }
 
   function logout() { return signOut(auth); }
-  function login(email, password) { return signInWithEmailAndPassword(auth, email, password); }
+  async function login(identificator, password) {
+    let emailDeLogare = identificator;
+
+    // Dacă NU conține '@', presupunem că este un username
+    if (!identificator.includes('@')) {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where("nume", "==", identificator));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error("auth/user-not-found"); // Aruncăm eroare dacă username-ul nu există
+      }
+      
+      // Dacă îl găsim, extragem emailul asociat lui
+      emailDeLogare = querySnapshot.docs[0].data().email;
+    }
+
+    // Apoi facem logarea standard cu Firebase
+    return signInWithEmailAndPassword(auth, emailDeLogare, password);
+  }
+
+
   
-  function signup(email, password) {
-    return createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Imediat după ce s-a creat contul, trimitem emailul
-        return sendEmailVerification(userCredential.user);
-      });
+  
+   async function signup(email, password, username) {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Salvăm username-ul în Firestore
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      nume: username, // Folosim câmpul tău existent 'nume' pentru username
+      email: user.email,
+      dataCrearii: new Date(),
+      progres: {},
+      codeforcesHandle: "",
+      streakCount: 0
+    });
+
+    // Trimitem emailul de verificare
+    await sendEmailVerification(user);
+    return userCredential;
   }
 
   useEffect(() => {
@@ -154,10 +238,9 @@ export function AuthProvider({ children }) {
     logout, 
     loginWithGoogle, 
     getStatistici,
-    updateCodeforcesHandle, 
     verificaDacaEGata,
     marcheazaLectieTerminata,
-    verificaProblemaCodeforces
+    actualizeazaStreak 
   };
 
   return (
