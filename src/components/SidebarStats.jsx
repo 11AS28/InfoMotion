@@ -127,7 +127,7 @@ function SidebarStats({ isOpen, onClose }) {
           
           {/* Restul codului pentru streak și input-uri rămâne la fel... */}
           <div className="streak-section">
-            <span>Streak Curent</span>
+            <span>Daily LogIn Streak</span>
             <div className="streak-display">
               <p className="streak-count" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
                 {currentCount} zi{currentCount !== 1 ? "le" : ""} 
@@ -135,6 +135,7 @@ function SidebarStats({ isOpen, onClose }) {
               </p>
             </div>  
           </div>
+          <br />
 
           <div className="info-list">
             {/* 1. SCHIMBARE USERNAME */}
@@ -184,7 +185,7 @@ function SidebarStats({ isOpen, onClose }) {
                 <small className="save-status"><FaCheckCircle /> Salvat</small>
               )}
             </div>
-
+            <br />
             <div className="info-item">
               <span>Status Cont:</span>
               <strong className="status-online">Activ</strong>

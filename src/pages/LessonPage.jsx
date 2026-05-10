@@ -46,14 +46,12 @@ function LessonPage() {
   }, [idLectie]);
 
   // 2. Verificăm progresul userului
-  useEffect(() => {
-    async function checkProgres() {
-      if (currentUser && idLectie) {
-        const status = await verificaDacaEGata(idLectie);
-        setEsteGata(status);
-      }
+ useEffect(() => {
+    if (currentUser && idLectie) {
+      // verificaDacaEGata întoarce true/false direct din currentUser.progres
+      const status = verificaDacaEGata(idLectie); 
+      setEsteGata(status);
     }
-    checkProgres();
   }, [idLectie, currentUser, verificaDacaEGata]);
 
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
@@ -105,7 +103,7 @@ function LessonPage() {
             {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
               lectie.problemePbinfo.map((prob, index) => (
                 <a key={index} href={prob.url} target="_blank" rel="noopener noreferrer" className="problem-card">
-                  <span className="prob-id">{prob.idProblema || prob.id}</span>
+                  <span className="prob-id"> {prob.idProblema || prob.id}</span>
                   <span className="prob-title">{prob.titluProblema || prob.titlu}</span>
                 </a>
               ))
@@ -123,25 +121,28 @@ function LessonPage() {
           ) : (
             <div className="finish-container">
               <p>Ești gata să testezi ce ai învățat?</p>
-              <button 
-                className="finish-btn" 
-                onClick={() => setIsQuizOpen(true)}
-              >
-                Finalizează Lecția (Quiz + Codeforces)
-              </button>
+                 <button 
+    className="finish-btn" 
+    onClick={() => {
+      console.log("Datele lecției sunt:", lectie);
+      setIsQuizOpen(true);
+    }}
+  >
+    Finalizează Lecția (Quiz + Codeforces)
+  </button>
             </div>
           )}
         </section>
 
-        <QuizModal 
-          isOpen={isQuizOpen} 
-          onClose={() => setIsQuizOpen(false)} 
-          lectie={lectie} 
-          onSucces={() => {
-            setIsQuizOpen(false);
-            setEsteGata(true);
-          }}
-        />
+          <QuizModal 
+    isOpen={isQuizOpen} 
+    onClose={() => setIsQuizOpen(false)} 
+    lectie={lectie} 
+    onSucces={() => {
+      setIsQuizOpen(false);
+      setEsteGata(true);
+    }}
+  />
       </main>
     </div>
   );

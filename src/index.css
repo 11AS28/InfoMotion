@@ -1,0 +1,4 @@
+html, body {
+  overflow-x: hidden; /* Taie orice element care iese în afara ecranului pe orizontală */
+  max-width: 100vw;
+}

@@ -260,7 +260,7 @@ const updateUsername = async (newUsername) => {
 };
 
   // Obiectul value conține tot ce se folosește în context
-  const value = { 
+ const value = { 
     currentUser, 
     login, 
     signup, 
@@ -270,7 +270,7 @@ const updateUsername = async (newUsername) => {
     verificaDacaEGata,
     marcheazaLectieTerminata,
     actualizeazaStreak,
-    updateUsername
+    verificaProblemaCodeforces // <--- ADAUGĂ LINIA ASTA AICI
   };
 
   return (

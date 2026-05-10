@@ -199,35 +199,32 @@ body {
 /* =========================================
    SECȚIUNEA EXERSEAZĂ (PBINFO)
    ========================================= */
-.lesson-practice {
-  background-color: var(--bg-card); /* Adaptat la temă */
+.lesson-problems {
+  background-color: var(--bg-card); 
   padding: 30px;
   border-radius: 16px;
   border: 1px solid var(--border-color);
+  margin-bottom: 40px;
 }
 
-.lesson-practice h2 {
+.lesson-problems h2 {
   color: var(--text-primary);
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   font-size: 1.5rem;
 }
 
-.lesson-practice p {
-  color: var(--text-secondary);
-  margin-bottom: 20px;
-  font-size: 1.05rem;
-}
-
-.pbinfo-links {
+/* Container-ul care ține toate problemele una sub alta */
+.problems-grid {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.pbinfo-card {
+/* Fiecare link (card) către pbInfo în parte */
+.problem-card {
   display: flex;
   align-items: center;
-  background-color: var(--bg-color); /* Adaptat */
+  background-color: var(--bg-color); 
   padding: 15px 20px;
   border-radius: 12px;
   text-decoration: none;
@@ -236,40 +233,72 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.pbinfo-card:hover {
+.problem-card:hover {
   border-color: var(--accent-color);
   box-shadow: 0 4px 12px rgba(1, 105, 111, 0.1);
-  transform: translateX(5px);
+  transform: translateX(5px); /* Efect mișto de deplasare la dreapta */
 }
 
-.pbinfo-id {
+/* Pilula cu ID-ul (#119) */
+.prob-id {
   font-weight: 700;
   color: var(--accent-color);
-  background-color: var(--bg-card);
+  background-color: var(--accent-bg-soft, #e6f0f0); 
   padding: 6px 12px;
   border-radius: 8px;
   margin-right: 15px;
   min-width: 60px;
   text-align: center;
-  border: 1px solid var(--border-color);
+  
 }
 
-.pbinfo-title {
+/* Titlul problemei */
+.prob-title {
   color: var(--text-primary);
   font-weight: 600;
   flex: 1;
   font-size: 1.05rem;
 }
 
-.pbinfo-arrow {
-  color: var(--text-secondary);
-  font-weight: bold;
-  font-size: 1.2rem;
-  transition: color 0.2s ease;
+/* =========================================
+   ZONA DE FINALIZARE LECȚIE (QUIZ BUTTON)
+   ========================================= */
+.finish-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
 }
 
-.pbinfo-card:hover .pbinfo-arrow {
+.finish-container p {
   color: var(--accent-color);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Butonul de Quiz */
+.finish-btn {
+  background-color: var(--accent-color);
+  color: var(--accent-color);
+  border: none;
+  padding: 16px 36px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(1, 105, 111, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.finish-btn:hover {
+  background-color: var(--accent-hover, #015257);
+  transform: translateY(-3px);
+ 
 }
 
 /* =========================================
@@ -368,20 +397,28 @@ body {
   }
 
   /* Reparăm cardul de PbInfo care "sărea" în afară */
-  .pbinfo-card {
-    flex-direction: column; /* Pe telefon le punem unele sub altele */
+    /* Reparație Card PbInfo pentru Telefon */
+  .problem-card {
+    flex-direction: column; /* Pe telefon punem ID-ul și titlul unul sub altul */
     align-items: flex-start;
     gap: 10px;
     padding: 15px;
   }
 
-  .pbinfo-id {
+  .prob-id {
     margin-right: 0;
     font-size: 0.9rem;
   }
 
-  .pbinfo-title {
+  .prob-title {
     font-size: 1rem;
-    width: 100%; /* Forțăm să ocupe tot spațiul, nu să iasă din cutie */
+    width: 100%;
+  }
+
+  /* Butonul de Quiz se face mare pe mobil */
+  .finish-btn {
+    width: 100%;
+    padding: 14px 15px;
+    font-size: 1rem;
   }
 }
