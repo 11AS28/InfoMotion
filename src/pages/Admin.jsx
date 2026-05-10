@@ -1,36 +1,13 @@
-import { useState } from 'react';
-import { lessonsData } from '../lessonsData';
+import { useState, useEffect } from 'react';
+import { lessonsData as localData } from '../lessonsData'; 
 import '../pages_css/admin.css';
-import Footer from '../components/footer';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
   { username: import.meta.env.VITE_ADMIN_2_USER, password: import.meta.env.VITE_ADMIN_2_PASS },
 ];
-
-async function migrareInMasa() {
-  const confirmare = window.confirm(`Ești sigur că vrei să urci toate cele ${lessonsData.length} lecții în Firebase?`);
-  if (!confirmare) return;
-
-  console.log("Migrarea a început...");
-  
-  for (const lectie of lessonsData) {
-    try {
-      // Creăm un document în colecția "lectii" folosind ID-ul lecției ca nume de document
-      await setDoc(doc(db, "lectii", lectie.id), {
-        ...lectie,
-        dataMigrarii: new Date().toISOString()
-      });
-      console.log(`✅ Succes: ${lectie.id}`);
-    } catch (e) {
-      console.error(`❌ Eroare la ${lectie.id}:`, e);
-    }
-  }
-  
-  alert("Migrarea s-a terminat! Verifică consola Firebase.");
-}
 
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -73,6 +50,7 @@ function LoginScreen({ onLogin }) {
 function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
+  const [firebaseLessons, setFirebaseLessons] = useState([]);
 
   // Form State
   const [fId, setFId] = useState('');
@@ -85,21 +63,48 @@ function Dashboard({ username, onLogout }) {
   const [fAnimCustom, setFAnimCustom] = useState('');
   const [pbRows, setPbRows] = useState([{ id: '', titlu: '', url: '' }]);
 
-  // Stats Logic (Pastrat din codul tau original)
-  const totalLectii = lessonsData.length;
-  const cuAnimatie = lessonsData.filter((l) => l.animatie).length;
-  const claseUnice = [...new Set(lessonsData.map((l) => l.clasa))].length;
-  const totalPbinfo = lessonsData.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
+  // Functia de refresh date din Firebase
+  const refreshData = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "lectii"));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setFirebaseLessons(data);
+    } catch (e) {
+      console.error("Eroare la preluare date:", e);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, [activeTab]);
+
+  // Migrare (utila daca vrei sa muti lectiile vechi in Cloud)
+  async function migrareInMasa() {
+    if (!window.confirm("Vrei să urci toate lecțiile locale în Firebase?")) return;
+    for (const lectie of localData) {
+      await setDoc(doc(db, "lectii", lectie.id), lectie);
+    }
+    alert("Migrare terminată!");
+    refreshData();
+  }
+
+  // Logica de statistici bazata pe datele din Firebase (sau local daca Firebase e gol)
+  const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
+  
+  const totalLectii = currentData.length;
+  const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
+  const claseUnice = [...new Set(currentData.map((l) => l.clasa))].length;
+  const totalPbinfo = currentData.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
 
   const countPerClasa = { 9: 0, 10: 0, 11: 0, 12: 0 };
-  lessonsData.forEach((l) => {
-    const n = parseInt(l.clasa.split('-')[1]);
-    if (countPerClasa[n] !== undefined) countPerClasa[n]++;
+  currentData.forEach((l) => {
+    const n = parseInt(l.clasa?.split('-')[1]);
+    if (!isNaN(n)) countPerClasa[n]++;
   });
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
-  // Helper Functions
+  // Helper Functions Formular
   const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
@@ -116,6 +121,12 @@ function Dashboard({ username, onLogout }) {
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
       alert("🚀 Lecție publicată cu succes!");
+      
+      // Reset formular
+      setFId(''); setFTitlu(''); setFDescriere(''); setFTeorie(''); setFCod('');
+      setPbRows([{ id: '', titlu: '', url: '' }]); setFAnim('null'); setFAnimCustom('');
+      
+      await refreshData();
       setActiveTab('lectii');
     } catch (e) { alert("Eroare: " + e.message); }
     setLoading(false);
@@ -143,15 +154,15 @@ function Dashboard({ username, onLogout }) {
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
-              <div className="admin-stat-card"><div className="admin-stat-label">Total lecții</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în baza de date</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Cu animație</div><div className="admin-stat-num">{cuAnimatie}</div><div className="admin-stat-sub">lecții interactive</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Clase acoperite</div><div className="admin-stat-num">{claseUnice}/4</div><div className="admin-stat-sub">din 4 posibile</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Probleme pbinfo</div><div className="admin-stat-num">{totalPbinfo}</div><div className="admin-stat-sub">linkuri totale</div></div>
+              <div className="admin-stat-card"><div className="admin-stat-label">Total lecții</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în Cloud</div></div>
+              <div className="admin-stat-card"><div className="admin-stat-label">Cu animație</div><div className="admin-stat-num">{cuAnimatie}</div><div className="admin-stat-sub">active</div></div>
+              <div className="admin-stat-card"><div className="admin-stat-label">Clase acoperite</div><div className="admin-stat-num">{claseUnice}/4</div><div className="admin-stat-sub">clase</div></div>
+              <div className="admin-stat-card"><div className="admin-stat-label">Probleme pbinfo</div><div className="admin-stat-num">{totalPbinfo}</div><div className="admin-stat-sub">linkuri</div></div>
             </div>
 
             <div className="admin-two-col">
               <div className="admin-card">
-                <div className="admin-section-title">Lecții pe clasă</div>
+                <div className="admin-section-title">Distribuție pe clase</div>
                 {[9, 10, 11, 12].map((c) => (
                   <div key={c} className="admin-bar-row">
                     <span className="admin-bar-label">Clasa {c}</span>
@@ -161,10 +172,9 @@ function Dashboard({ username, onLogout }) {
                 ))}
               </div>
               <div className="admin-card">
-                <div className="admin-section-title">Pagini site</div>
-                {[['/', 'Pagina principală'], ['/lectii', 'Lista lecțiilor'], ['/lectie/:id', 'Lecție individuală']].map(([p, n]) => (
-                  <div key={p} className="admin-page-row"><code className="admin-route-code">{p}</code><span className="admin-page-name">{n}</span><span className="admin-badge-active">activ</span></div>
-                ))}
+                <div className="admin-section-title">Acțiuni rapide</div>
+                <button onClick={migrareInMasa} className="admin-btn-secondary" style={{width: '100%', marginBottom: '10px'}}>🚀 Sincronizează Local cu Cloud</button>
+                <p style={{fontSize: '12px', color: '#666'}}>Folosește acest buton dacă ai lecții în lessonsData.js care nu apar în Cloud.</p>
               </div>
             </div>
           </>
@@ -173,74 +183,48 @@ function Dashboard({ username, onLogout }) {
         {activeTab === 'lectii' && (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Animație</th><th>Probleme</th></tr></thead>
+              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Animație</th><th>Acțiuni</th></tr></thead>
               <tbody>
-                {lessonsData.map((l) => (
+                {currentData.map((l) => (
                   <tr key={l.id}>
                     <td><code className="admin-route-code">{l.id}</code></td>
                     <td className="admin-td-titlu">{l.titlu}</td>
-                    <td><span className={`admin-badge admin-badge-${l.clasa.split('-')[1]}`}>{l.clasa.toUpperCase()}</span></td>
+                    <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
                     <td>{l.animatie ? <span className="admin-badge admin-badge-anim">{l.animatie}</span> : '—'}</td>
-                    <td className="admin-td-muted">{(l.problemePbinfo || []).length} probleme</td>
+                    <td><span style={{fontSize: '12px', color: '#28a745'}}>● Online</span></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-  
 
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">Lecție nouă</div>
             <div className="admin-form-grid">
-              <div className="admin-field"><label>ID lecție (slug)</label><input type="text" value={fId} onChange={(e) => setFId(e.target.value)} placeholder="ex: selectie-sort" /></div>
+              <div className="admin-field"><label>ID (fără spații)</label><input type="text" value={fId} onChange={(e) => setFId(e.target.value)} placeholder="ex: grafuri-introducere" /></div>
               <div className="admin-field"><label>Clasă</label><select value={fClasa} onChange={(e) => setFClasa(e.target.value)}><option value="clasa-9">Clasa 9</option><option value="clasa-10">Clasa 10</option><option value="clasa-11">Clasa 11</option><option value="clasa-12">Clasa 12</option></select></div>
-              <div className="admin-field admin-field--full"><label>Titlu lecție</label><input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} /></div>
+              <div className="admin-field admin-field--full"><label>Titlu</label><input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} /></div>
               <div className="admin-field admin-field--full"><label>Descriere scurtă</label><input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} /></div>
-              <div className="admin-field admin-field--full"><label>Teorie</label><textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} /></div>
-              {/* Câmp nou pentru selecție Animație */}
-<div className="admin-field admin-field--full">
-  <label>Alege Animația pentru această lecție</label>
-  <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
-    {[
-      { id: 'null', label: 'Fără Animație' },
-      { id: 'custom', label: 'Animatie Noua' }
-    ].map((opt) => (
-      <button
-        key={opt.id}
-        type="button"
-        className={`admin-anim-opt ${fAnim === opt.id ? 'selected' : ''}`}
-        onClick={() => setFAnim(opt.id)}
-        style={{
-          padding: '8px 15px',
-          borderRadius: '20px',
-          border: '1px solid #ddd',
-          background: fAnim === opt.id ? '#378ADD' : '#fff',
-          color: fAnim === opt.id ? '#fff' : '#333',
-          cursor: 'pointer',
-          transition: 'all 0.2s'
-        }}
-      >
-        {opt.label}
-      </button>
-    ))}
-  </div>
-
-  {/* Dacă alegi "Alta", apare o casetă unde scrii tu numele componentei */}
-  {fAnim === 'custom' && (
-    <input
-      type="text"
-      value={fAnimCustom}
-      onChange={(e) => setFAnimCustom(e.target.value)}
-      placeholder="Ex: QuickSortAnim"
-      style={{ marginTop: '10px', width: '100%' }}
-    />
-  )}
-</div>
-              <div className="admin-field admin-field--full"><label>Cod C++</label><textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} /></div>
+              <div className="admin-field admin-field--full"><label>Teorie (păstrează Enter-urile)</label><textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} /></div>
+              
               <div className="admin-field admin-field--full">
-                <label>Probleme pbinfo</label>
+                <label>Animație Interactivă</label>
+                <div className="admin-anim-options" style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                  {['null', 'BubbleSortAnim', 'CautareBinaraAnim', 'custom'].map(opt => (
+                    <button key={opt} type="button" className={`admin-anim-opt ${fAnim === opt ? 'selected' : ''}`} onClick={() => setFAnim(opt)}>
+                      {opt === 'null' ? 'Fără' : opt === 'custom' ? 'Alt nume' : opt}
+                    </button>
+                  ))}
+                </div>
+                {fAnim === 'custom' && <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă React" style={{marginTop: '10px'}} />}
+              </div>
+
+              <div className="admin-field admin-field--full"><label>Cod C++</label><textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} /></div>
+              
+              <div className="admin-field admin-field--full">
+                <label>Probleme Pbinfo</label>
                 {pbRows.map((row, idx) => (
                   <div key={idx} className="admin-pb-row">
                     <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" className="admin-pb-id" />
@@ -249,19 +233,12 @@ function Dashboard({ username, onLogout }) {
                     <button type="button" onClick={() => removePbRow(idx)}>✕</button>
                   </div>
                 ))}
-                <button type="button" className="admin-add-pb" onClick={addPbRow}>+ adaugă problemă</button>
+                <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
               </div>
             </div>
-            <div className="admin-form-actions">
-              <button className="admin-btn-primary" onClick={handlePublish} disabled={loading} style={{ background: '#28a745' }}>
-                {loading ? 'Se publică...' : '🚀 Publică pe Site'}
-              </button>
-            </div>
+            <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>{loading ? 'Se publică...' : '🚀 Publică pe Site'}</button>
           </div>
         )}
-        {/*<button onClick={migrareInMasa} style={{padding: '10px', background: 'cyan', color: 'white', borderRadius: '5px', cursor: 'pointer', margin: '10px'}}>
-              🚀 Mută TOT în Firebase
-        </button>*/}
       </main>
     </div>
   );

@@ -2,18 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
-import {collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'; 
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'; 
 import { db } from '../firebase'; 
-import { FaFire, FaCheckCircle } from "react-icons/fa"; // Am adăugat FaCheckCircle pentru un look mai profi
+import { FaFire, FaCheckCircle } from "react-icons/fa";
+
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak } = useAuth();
   const { theme } = useTheme(); 
 
-  // State-uri pentru input-uri
   const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
   const [usernameInput, setUsernameInput] = useState(currentUser?.nume || "");
+  const [usernameError, setUsernameError] = useState("");
   
-  // Sincronizăm input-urile când se schimbă userul sau se deschide sidebar-ul
+  // --- STATISTICI DINAMICE ---
+  const [totalLectiiDB, setTotalLectiiDB] = useState(0);
+
+  // 1. Aflăm numărul total de lecții din Firebase
+  useEffect(() => {
+    async function getTotalLectii() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "lectii"));
+        setTotalLectiiDB(querySnapshot.size); // .size ne dă numărul de documente
+      } catch (e) {
+        console.error("Eroare la numărarea lecțiilor:", e);
+      }
+    }
+    if (isOpen) {
+      getTotalLectii();
+      actualizeazaStreak();
+    }
+  }, [isOpen, actualizeazaStreak]);
+
   useEffect(() => {
     if (currentUser) {
       setHandleInput(currentUser.codeforcesHandle || "");
@@ -21,74 +40,47 @@ function SidebarStats({ isOpen, onClose }) {
     }
   }, [currentUser, isOpen]);
 
-  useEffect(() => {
-    if (currentUser && isOpen) {
-      actualizeazaStreak();
-    }
-  }, [currentUser, isOpen]);
+  const handleUpdateProfile = async () => {
+    if (!currentUser) return;
+    setUsernameError("");
+    const hasHandleChanged = handleInput !== currentUser.codeforcesHandle;
+    const hasUsernameChanged = usernameInput !== currentUser.nume;
+    if (!hasHandleChanged && !hasUsernameChanged) return;
 
-  // Funcție universală de salvare
-  const [usernameError, setUsernameError] = useState("");
-
-const handleUpdateProfile = async () => {
-  if (!currentUser) return;
-  setUsernameError("");
-
-  const hasHandleChanged = handleInput !== currentUser.codeforcesHandle;
-  const hasUsernameChanged = usernameInput !== currentUser.nume;
-
-  if (!hasHandleChanged && !hasUsernameChanged) return;
-
-  try {
-    const userRef = doc(db, 'users', currentUser.uid);
-    let dataToUpdate = {};
-
-    // Dacă utilizatorul vrea să schimbe username-ul
-    if (hasUsernameChanged) {
-      if (usernameInput.trim().length < 3) {
-        setUsernameError("Username prea scurt!");
-        return;
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      let dataToUpdate = {};
+      if (hasUsernameChanged) {
+        if (usernameInput.trim().length < 3) { setUsernameError("Username prea scurt!"); return; }
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where("nume", "==", usernameInput.trim()));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          setUsernameError("Acest username este deja folosit!");
+          setUsernameInput(currentUser.nume);
+          return;
+        }
+        dataToUpdate.nume = usernameInput.trim();
       }
-
-      // --- VERIFICARE UNICITATE ---
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where("nume", "==", usernameInput.trim()));
-      const querySnapshot = await getDocs(q);
-
-      // Dacă găsim pe cineva cu acest nume care NU suntem noi
-      if (!querySnapshot.empty) {
-        setUsernameError("Acest username este deja folosit!");
-        setUsernameInput(currentUser.nume); // Resetăm la numele vechi în UI
-        return;
-      }
-      
-      dataToUpdate.nume = usernameInput.trim();
-    }
-
-    if (hasHandleChanged) {
-      dataToUpdate.codeforcesHandle = handleInput;
-    }
-
-    await updateDoc(userRef, dataToUpdate);
-    console.log("Profil actualizat!");
-  } catch (error) {
-    console.error("Eroare:", error);
-    setUsernameError("Eroare la salvare.");
-  }
-};
+      if (hasHandleChanged) dataToUpdate.codeforcesHandle = handleInput;
+      await updateDoc(userRef, dataToUpdate);
+    } catch (error) { setUsernameError("Eroare la salvare."); }
+  };
 
   if (!currentUser) return null;
 
-  const stats = getStatistici();
-  const { progresProcent } = stats;
+  // --- CALCUL PROGRES REAL ---
+  const stats = getStatistici(); 
+  const lectiiTerminate = stats.terminate || 0;
+  // Calculăm procentul folosind totalul din Firebase, nu cel din AuthContext
+  const progresReal = totalLectiiDB > 0 ? (lectiiTerminate / totalLectiiDB) * 100 : 0;
 
   let nivel = "Începător";
-  if (progresProcent >= 80) nivel = "Expert";
-  else if (progresProcent >= 40) nivel = "Intermediar";
+  if (progresReal >= 80) nivel = "Expert";
+  else if (progresReal >= 40) nivel = "Intermediar";
 
   const currentCount = currentUser.streakCount || 0;
-
-  const getStreakColor = (streak) => {
+  const streakColor = (streak) => {
     if (streak >= 90) return "#00ffea"; 
     if (streak >= 50) return "#cc00ff"; 
     if (streak >= 10) return "#ff4500"; 
@@ -96,8 +88,6 @@ const handleUpdateProfile = async () => {
     if (streak >= 1)  return "#ffd700"; 
     return "#cccccc";                   
   };
-
-  const streakColor = getStreakColor(currentCount);
 
   return (
     <>
@@ -117,34 +107,31 @@ const handleUpdateProfile = async () => {
           <div className="stats-grid">
             <div className="stat-box">
               <span className="stat-label">Lecții Terminate</span>
-              <span className="stat-value">{stats.terminate}</span>
+              <span className="stat-value">{lectiiTerminate} / {totalLectiiDB}</span>
             </div>
             <div className="stat-box">
               <span className="stat-label">Puncte XP</span>
-              <span className="stat-value">{stats.terminate * 50}</span>
+              <span className="stat-value">{lectiiTerminate * 50}</span>
             </div>
           </div>
 
           <div className="progress-section">
             <div className="progress-info">
               <span>Progres Curs</span>
-              <span>{Math.round(progresProcent)}%</span>
+              <span>{Math.round(progresReal)}%</span>
             </div>
             <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: `${progresProcent}%` }}></div>
+              <div className="progress-bar-fill" style={{ width: `${progresReal}%` }}></div>
             </div>
           </div>
-
+          
+          {/* Restul codului pentru streak și input-uri rămâne la fel... */}
           <div className="streak-section">
             <span>Streak Curent</span>
             <div className="streak-display">
               <p className="streak-count" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
                 {currentCount} zi{currentCount !== 1 ? "le" : ""} 
-                <FaFire 
-                  color={streakColor} 
-                  size={22}
-                  style={{ filter: `drop-shadow(0px 0px 4px ${streakColor})` }} 
-                />
+                <FaFire color={streakColor(currentCount)} size={22} />
               </p>
             </div>  
           </div>
@@ -163,12 +150,17 @@ const handleUpdateProfile = async () => {
                   className="sidebar-input"
                 />
               </div>
-              {currentUser?.nume === usernameInput && (
-                <small className="save-status"><FaCheckCircle /> Confirmat</small>
+              {/* Afișăm eroarea dacă există, altfel statusul de confirmat */}
+              {usernameError ? (
+                <small className="error-message" style={{color: 'red', marginTop: '5px', display: 'block'}}>{usernameError}</small>
+              ) : (
+                currentUser?.nume === usernameInput && (
+                  <small className="save-status"><FaCheckCircle /> Confirmat</small>
+                )
               )}
             </div>
 
-            {/* 2. EMAIL (Doar afișare) */}
+            {/* 2. EMAIL (Afișare profi) */}
             <div className="info-item">
               <span>Email:</span>
               <strong>{currentUser.email}</strong>
