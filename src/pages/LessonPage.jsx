@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { lessonsData } from '../lessonsData';
 import { useAuth } from '../context/AuthContext'; 
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
+
+// Importă Firebase
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 // Importă componentele tale de animație
 import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
@@ -14,11 +17,35 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 function LessonPage() {
   const { idLectie } = useParams();
   const { currentUser, verificaDacaEGata } = useAuth();
+  
+  const [lectie, setLectie] = useState(null); // Datele vin acum din DB
+  const [loading, setLoading] = useState(true);
   const [esteGata, setEsteGata] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
-  
-  const lectie = lessonsData.find(l => l.id === idLectie);
 
+  // 1. Încărcăm datele lecției din Firestore
+  useEffect(() => {
+    async function fetchLectie() {
+      setLoading(true);
+      try {
+        const docRef = doc(db, "lectii", idLectie);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setLectie(docSnap.data());
+        } else {
+          console.error("Lecția nu a fost găsită în Firebase!");
+        }
+      } catch (error) {
+        console.error("Eroare la preluarea lecției:", error);
+      }
+      setLoading(false);
+    }
+
+    fetchLectie();
+  }, [idLectie]);
+
+  // 2. Verificăm progresul userului
   useEffect(() => {
     async function checkProgres() {
       if (currentUser && idLectie) {
@@ -29,7 +56,8 @@ function LessonPage() {
     checkProgres();
   }, [idLectie, currentUser, verificaDacaEGata]);
 
-  if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită.</h2></div>;
+  if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
+  if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
   const renderAnimation = () => {
     switch (lectie.animatie) {
@@ -47,13 +75,14 @@ function LessonPage() {
         <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
         
         <header className="lesson-header">
-          <div className="lesson-badge">{lectie.clasa.toUpperCase()}</div>
+          <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
           <h1>{lectie.titlu}</h1>
         </header>
 
         <section className="lesson-content">
           <div className="lesson-theory">
             <h2>📖 Teorie</h2>
+            {/* Folosim whiteSpace: pre-wrap ca să păstrăm formatarea din Admin */}
             <p style={{ whiteSpace: "pre-wrap" }}>{lectie.teorie}</p>
           </div>
           
@@ -63,20 +92,21 @@ function LessonPage() {
           </div>
         </section>
 
-        <section className="lesson-code">
-          <h2>💻 Cod C++</h2>
-          <pre><code>{lectie.codCPlusPlus}</code></pre>
-        </section>
+        {lectie.codCPlusPlus && (
+          <section className="lesson-code">
+            <h2>💻 Cod C++</h2>
+            <pre><code>{lectie.codCPlusPlus}</code></pre>
+          </section>
+        )}
 
-        {/* 1. REPARARE PBINFO: Secțiunea pentru problemele de pe Pbinfo */}
         <section className="lesson-problems">
           <h2>📝 Probleme Pbinfo recomandate</h2>
           <div className="problems-grid">
             {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
               lectie.problemePbinfo.map((prob, index) => (
                 <a key={index} href={prob.url} target="_blank" rel="noopener noreferrer" className="problem-card">
-                  <span className="prob-id">{prob.idProblema}</span>
-                  <span className="prob-title">{prob.titluProblema}</span>
+                  <span className="prob-id">{prob.idProblema || prob.id}</span>
+                  <span className="prob-title">{prob.titluProblema || prob.titlu}</span>
                 </a>
               ))
             ) : (
@@ -85,7 +115,6 @@ function LessonPage() {
           </div>
         </section>
 
-        {/* 2 & 3. REPARARE QUIZ & FINALIZEAZĂ: Logica pentru Modal */}
         <section className="lesson-finish-action">
           {esteGata ? (
             <div className="lesson-completed-msg">
@@ -104,7 +133,6 @@ function LessonPage() {
           )}
         </section>
 
-        {/* Modalul care se deschide la click pe buton */}
         <QuizModal 
           isOpen={isQuizOpen} 
           onClose={() => setIsQuizOpen(false)} 
