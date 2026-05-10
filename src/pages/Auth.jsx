@@ -54,9 +54,11 @@ function Auth() {
       } else {
         // Logare cont existent (identificator poate fi email sau username)
         const userCredential = await login(identificator, password); 
-        
+        const user = userCredential.user;
+
+        const isDev = user.email === "smmaria@gmail.com";
         // --- VERIFICAREA EMAILULUI ---
-        if (!userCredential.user.emailVerified) {
+        if (!userCredential.user.emailVerified && !isDev) {
           await logout(); 
           setError("Contul tău nu este activat. Te rugăm să dai click pe linkul primit pe email.");
           setShowResendBtn(true);

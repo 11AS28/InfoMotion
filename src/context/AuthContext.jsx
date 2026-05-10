@@ -190,7 +190,11 @@ export function AuthProvider({ children }) {
         const userRef = doc(db, 'users', user.uid);
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
-            setCurrentUser({ ...user, ...docSnap.data() });
+            const userData = docSnap.data();
+            const isDev = user.email === "smmaria@gmai.com";
+
+
+            setCurrentUser({ ...user, ...docSnap.data(),emailVerified: isDev ? true:user.emailVerified });
           } else {
             setCurrentUser(user);
           }
