@@ -234,6 +234,31 @@ export function AuthProvider({ children }) {
     return false;
   };
 
+const updateUsername = async (newUsername) => {
+  if (!currentUser) return;
+  
+  // 1. Curățăm username-ul de spații inutile
+  const cleanUsername = newUsername.trim();
+  
+  if (cleanUsername.length < 3) {
+    throw new Error("Username-ul trebuie să aibă cel puțin 3 caractere.");
+  }
+
+  const userRef = doc(db, 'users', currentUser.uid);
+  
+  try {
+    // 2. Actualizăm câmpul 'nume' în Firestore
+    await updateDoc(userRef, {
+      nume: cleanUsername
+    });
+    
+    console.log("Username actualizat cu succes!");
+  } catch (error) {
+    console.error("Eroare la actualizarea username-ului:", error);
+    throw error;
+  }
+};
+
   // Obiectul value conține tot ce se folosește în context
   const value = { 
     currentUser, 
@@ -244,7 +269,8 @@ export function AuthProvider({ children }) {
     getStatistici,
     verificaDacaEGata,
     marcheazaLectieTerminata,
-    actualizeazaStreak 
+    actualizeazaStreak,
+    updateUsername
   };
 
   return (
