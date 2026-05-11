@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { lessonsData as localData } from '../lessonsData'; 
 import '../pages_css/admin.css';
-import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'; // Adăugat deleteDoc
 import { db } from '../firebase';
 
 const ADMINS = [
@@ -51,6 +51,9 @@ function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [firebaseLessons, setFirebaseLessons] = useState([]);
+  
+  // Stare pentru a ști dacă edităm o lecție existentă
+  const [isEditing, setIsEditing] = useState(false);
 
   // Form State
   const [fId, setFId] = useState('');
@@ -63,7 +66,6 @@ function Dashboard({ username, onLogout }) {
   const [fAnimCustom, setFAnimCustom] = useState('');
   const [pbRows, setPbRows] = useState([{ id: '', titlu: '', url: '' }]);
 
-  // Functia de refresh date din Firebase
   const refreshData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "lectii"));
@@ -78,19 +80,43 @@ function Dashboard({ username, onLogout }) {
     refreshData();
   }, [activeTab]);
 
-  // Migrare (utila daca vrei sa muti lectiile vechi in Cloud)
-  async function migrareInMasa() {
-    if (!window.confirm("Vrei să urci toate lecțiile locale în Firebase?")) return;
-    for (const lectie of localData) {
-      await setDoc(doc(db, "lectii", lectie.id), lectie);
-    }
-    alert("Migrare terminată!");
-    refreshData();
-  }
+  const resetForm = () => {
+    setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere(''); 
+    setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
+    setPbRows([{ id: '', titlu: '', url: '' }]);
+    setIsEditing(false);
+  };
 
-  // Logica de statistici bazata pe datele din Firebase (sau local daca Firebase e gol)
+  // Funcție pentru ȘTERGERE
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
+    try {
+      await deleteDoc(doc(db, "lectii", id));
+      alert("Lecție ștearsă!");
+      refreshData();
+    } catch (e) { alert("Eroare la ștergere: " + e.message); }
+  };
+
+  // Funcție pentru inițiere EDITARE
+  const startEdit = (lectie) => {
+    setFId(lectie.id);
+    setFClasa(lectie.clasa || 'clasa-9');
+    setFTitlu(lectie.titlu || '');
+    setFDescriere(lectie.descriere || '');
+    setFTeorie(lectie.teorie || '');
+    setFCod(lectie.codCPlusPlus || '');
+    
+    // Logică pentru animație
+    if (!lectie.animatie) setFAnim('null');
+    else if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) setFAnim(lectie.animatie);
+    else { setFAnim('custom'); setFAnimCustom(lectie.animatie); }
+
+    setPbRows(lectie.problemePbinfo?.length > 0 ? lectie.problemePbinfo : [{ id: '', titlu: '', url: '' }]);
+    setIsEditing(true);
+    setActiveTab('adauga'); // Mergem la tab-ul de formular
+  };
+
   const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
-  
   const totalLectii = currentData.length;
   const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
   const claseUnice = [...new Set(currentData.map((l) => l.clasa))].length;
@@ -104,7 +130,6 @@ function Dashboard({ username, onLogout }) {
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
-  // Helper Functions Formular
   const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
@@ -115,17 +140,14 @@ function Dashboard({ username, onLogout }) {
     try {
       const lectieData = {
         id: fId, clasa: fClasa, titlu: fTitlu, descriere: fDescriere, teorie: fTeorie,
-        codCPlusPlus: fCod, dataPublicarii: new Date().toISOString(),
+        codCPlusPlus: fCod, 
+        dataModificarii: new Date().toISOString(),
         animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
         problemePbinfo: pbRows.filter(r => r.id || r.titlu)
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
-      alert("🚀 Lecție publicată cu succes!");
-      
-      // Reset formular
-      setFId(''); setFTitlu(''); setFDescriere(''); setFTeorie(''); setFCod('');
-      setPbRows([{ id: '', titlu: '', url: '' }]); setFAnim('null'); setFAnimCustom('');
-      
+      alert(isEditing ? "✅ Modificări salvate!" : "🚀 Lecție publicată!");
+      resetForm();
       await refreshData();
       setActiveTab('lectii');
     } catch (e) { alert("Eroare: " + e.message); }
@@ -144,8 +166,15 @@ function Dashboard({ username, onLogout }) {
 
       <div className="admin-tabs-bar">
         {['overview', 'lectii', 'adauga'].map((t) => (
-          <button key={t} className={`admin-tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
-            {t === 'overview' ? 'Prezentare generală' : t === 'lectii' ? 'Lecțiile mele' : 'Adaugă lecție'}
+          <button 
+            key={t} 
+            className={`admin-tab ${activeTab === t ? 'active' : ''}`} 
+            onClick={() => {
+              setActiveTab(t);
+              if (t !== 'adauga') resetForm(); // Resetăm dacă ieșim din formular
+            }}
+          >
+            {t === 'overview' ? 'Prezentare generală' : t === 'lectii' ? 'Lecțiile mele' : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
           </button>
         ))}
       </div>
@@ -171,11 +200,6 @@ function Dashboard({ username, onLogout }) {
                   </div>
                 ))}
               </div>
-              <div className="admin-card">
-                <div className="admin-section-title">Acțiuni rapide</div>
-                <button onClick={migrareInMasa} className="admin-btn-secondary" style={{width: '100%', marginBottom: '10px'}}>🚀 Sincronizează Local cu Cloud</button>
-                <p style={{fontSize: '12px', color: '#666'}}>Folosește acest buton dacă ai lecții în lessonsData.js care nu apar în Cloud.</p>
-              </div>
             </div>
           </>
         )}
@@ -183,15 +207,17 @@ function Dashboard({ username, onLogout }) {
         {activeTab === 'lectii' && (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Animație</th><th>Acțiuni</th></tr></thead>
+              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
               <tbody>
-                {currentData.map((l) => (
+                {firebaseLessons.map((l) => (
                   <tr key={l.id}>
                     <td><code className="admin-route-code">{l.id}</code></td>
                     <td className="admin-td-titlu">{l.titlu}</td>
                     <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
-                    <td>{l.animatie ? <span className="admin-badge admin-badge-anim">{l.animatie}</span> : '—'}</td>
-                    <td><span style={{fontSize: '12px', color: '#28a745'}}>● Online</span></td>
+                    <td className="admin-actions-cell">
+                      <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
+                      <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -201,13 +227,17 @@ function Dashboard({ username, onLogout }) {
 
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
-            <div className="admin-form-title">Lecție nouă</div>
+            <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
             <div className="admin-form-grid">
-              <div className="admin-field"><label>ID (fără spații)</label><input type="text" value={fId} onChange={(e) => setFId(e.target.value)} placeholder="ex: grafuri-introducere" /></div>
+              <div className="admin-field">
+                <label>ID (Slug)</label>
+                <input type="text" value={fId} onChange={(e) => setFId(e.target.value)} disabled={isEditing} placeholder="ex: grafuri-introducere" />
+                {isEditing && <small>ID-ul nu poate fi schimbat după publicare.</small>}
+              </div>
               <div className="admin-field"><label>Clasă</label><select value={fClasa} onChange={(e) => setFClasa(e.target.value)}><option value="clasa-9">Clasa 9</option><option value="clasa-10">Clasa 10</option><option value="clasa-11">Clasa 11</option><option value="clasa-12">Clasa 12</option></select></div>
               <div className="admin-field admin-field--full"><label>Titlu</label><input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} /></div>
               <div className="admin-field admin-field--full"><label>Descriere scurtă</label><input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} /></div>
-              <div className="admin-field admin-field--full"><label>Teorie (păstrează Enter-urile)</label><textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} /></div>
+              <div className="admin-field admin-field--full"><label>Teorie</label><textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} /></div>
               
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>
@@ -236,7 +266,12 @@ function Dashboard({ username, onLogout }) {
                 <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
               </div>
             </div>
-            <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>{loading ? 'Se publică...' : '🚀 Publică pe Site'}</button>
+            <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
+               <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>
+                {loading ? 'Se procesează...' : isEditing ? '💾 Salvează modificările' : '🚀 Publică pe Site'}
+              </button>
+              {isEditing && <button className="admin-btn-secondary" onClick={resetForm}>Anulează</button>}
+            </div>
           </div>
         )}
       </main>
