@@ -6,9 +6,11 @@
   padding: 20px 5%;
   background-color: var(--nav-bg); /* Modificat din bg-nav */
   border-bottom: 1px solid var(--border); /* Reparat bordura, inainte aveai doar border: var(--bg-nav) */
-  position: sticky;
+  position: fixed; 
   top: 0; 
   z-index: 9999;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .nav-logo a {

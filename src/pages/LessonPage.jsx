@@ -13,6 +13,8 @@ import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
 import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
 import DivideAnim from '../components/animatii/DivideAnim';
 import GreedyAnim from '../components/animatii/greedyAnim';
+import InterclasareAnim from '../components/animatii/InterclasareAnim';
+
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -75,6 +77,7 @@ function LessonPage() {
       case "CautareBinaraAnim": return <CautareBinaraAnim />;
       case "DivideAnim": return <DivideAnim />;
       case "GreedyAnim": return <GreedyAnim />;
+      case "InterclasareAnim": return <InterclasareAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
