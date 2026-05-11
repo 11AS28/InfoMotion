@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
-import QuizSection from '../components/QuizSection';
+import QuizModal from '../components/QuizModal';
 
 // Importă Firebase
 import { doc, getDoc } from 'firebase/firestore';
@@ -16,44 +16,56 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 
 function LessonPage() {
   const { idLectie } = useParams();
-  const { currentUser, verificaDacaEGata } = useAuth();
+  const { currentUser } = useAuth();
 
-  const [lectie, setLectie] = useState(null); // Datele vin acum din DB
+  const [lectie, setLectie] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [esteGata, setEsteGata] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
 
-  // 1. Încărcăm datele lecției din Firestore
   useEffect(() => {
-    async function fetchLectie() {
+    async function incarcaDatePagina() {
+      // De fiecare dată când intrăm pe o lecție nouă, resetăm loader-ul și starea
       setLoading(true);
+      setEsteGata(false);
+
       try {
+        // 1. Luăm datele teoriei din Firestore
         const docRef = doc(db, "lectii", idLectie);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setLectie(docSnap.data());
+
+          // 2. Verificăm progresul DIRECT în documentul utilizatorului
+          if (currentUser) {
+            const userRef = doc(db, 'users', currentUser.uid);
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              const terminate = userData.lectiiTerminate || [];
+              
+              // Verificăm dacă ID-ul lecției curente se află în lista de terminate
+              const gasit = terminate.some(id => String(id) === String(idLectie));
+              setEsteGata(gasit);
+            }
+          }
         } else {
-          console.error("Lecția nu a fost găsită în Firebase!");
+          console.error("Lecția nu a fost găsită!");
         }
       } catch (error) {
-        console.error("Eroare la preluarea lecției:", error);
+        console.error("Eroare la încărcarea datelor:", error);
+      } finally {
+        // Indiferent dacă am reușit sau am dat eroare, oprim loader-ul
+        setLoading(false);
       }
-      setLoading(false);
     }
 
-    fetchLectie();
-  }, [idLectie]);
+    incarcaDatePagina();
+  }, [idLectie, currentUser]); // Se reîmprospătează la schimbarea lecției sau a userului
 
-  // 2. Verificăm progresul userului
-  useEffect(() => {
-    if (currentUser && idLectie) {
-      // verificaDacaEGata întoarce true/false direct din currentUser.progres
-      const status = verificaDacaEGata(idLectie);
-      setEsteGata(status);
-    }
-  }, [idLectie, currentUser, verificaDacaEGata]);
-
+  // Verificări de siguranță pentru afișare
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
@@ -80,7 +92,6 @@ function LessonPage() {
         <section className="lesson-content">
           <div className="lesson-theory">
             <h2>📖 Teorie</h2>
-            {/* Folosim whiteSpace: pre-wrap ca să păstrăm formatarea din Admin */}
             <p style={{ whiteSpace: "pre-wrap" }}>{lectie.teorie}</p>
           </div>
 
@@ -103,7 +114,7 @@ function LessonPage() {
             {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
               lectie.problemePbinfo.map((prob, index) => (
                 <a key={index} href={prob.url} target="_blank" rel="noopener noreferrer" className="problem-card">
-                  <span className="prob-id"> {prob.idProblema || prob.id}</span>
+                  <span className="prob-id">{prob.idProblema || prob.id}</span>
                   <span className="prob-title">{prob.titluProblema || prob.titlu}</span>
                 </a>
               ))
@@ -115,30 +126,33 @@ function LessonPage() {
 
         <section className="lesson-finish-action">
           {esteGata ? (
-            <div className="lesson-completed-msg">
-              <span className="check-icon">✔</span> Lecție finalizată! Ai stăpânit acest concept.
+            /* Badge-ul verde */
+            <div className="lesson-completed-success-msg">
+               <span className="check-icon">✔</span> Lecție finalizată! Ai stăpânit acest concept.
             </div>
           ) : (
+            /* Butonul de start */
             <div className="finish-container">
               <p>Ești gata să testezi ce ai învățat?</p>
-              <button
-                className="finish-btn"
-                onClick={() => {
-                  console.log("Datele lecției sunt:", lectie);
-                  setIsQuizOpen(true);
-                }}
-              >
+              <button className="finish-btn" onClick={() => setIsQuizOpen(true)}>
                 Finalizează Lecția (Quiz + Codeforces)
               </button>
             </div>
           )}
         </section>
 
-        <QuizSection
-          lessonId={lectie.id}
-          quizData={lectie.quiz}
-          cfData={lectie.codeforces}
-        />
+        {isQuizOpen && (
+          <QuizModal 
+            lessonId={idLectie}
+            quizData={lectie.quiz}
+            cfData={lectie.codeforces}
+            onClose={() => setIsQuizOpen(false)}
+            onFinished={() => {
+              setIsQuizOpen(false);
+              setEsteGata(true); // Actualizăm UI-ul instant fără refresh
+            }}
+          />
+        )}
       </main>
     </div>
   );

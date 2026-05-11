@@ -1,0 +1,192 @@
+/* --- MODAL WRAPPER --- */
+.modal-overlay {
+  /* Nu mai e fix, ci ocupă locul lui în pagină sub buton */
+  position: relative; 
+  width: 100%;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  margin-top: 30px; /* Distanță față de butonul de sus */
+  padding-bottom: 50px;
+  z-index: 1;
+}
+
+
+.modal-content {
+  background: #ffffff;
+  width: 95%;
+  max-width: 700px;
+  max-height: 80vh;
+  border-radius: 28px;
+  position: relative;
+  padding: 40px;
+  overflow-y: auto;
+  pointer-events: auto; /* Reactivăm click-urile pe formular */
+  
+  /* Umbră mult mai pronunțată ca să se vadă bine pe fundal alb */
+  box-shadow: 0 10px 100px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  
+  /* Animație care vine de jos în sus */
+  animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalAppear {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.close-x {
+  background: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.close-x:hover { background: #e9ecef; }
+
+/* --- TITLURI ȘI PASI --- */
+.modal-content h3 {
+  font-size: 1.5rem;
+  color: #1a1b1e;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- QUIZ DESIGN --- */
+.q-block {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.q-block p {
+  font-weight: 600;
+  color: #2c2e33;
+  margin-bottom: 15px;
+}
+
+.v-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.v-btn {
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  background: white;
+  color: #495057;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+
+.modal-content h3 {
+  margin-top: 10px;
+  border-bottom: 2px solid #f1f3f5;
+  padding-bottom: 15px;
+}
+.v-btn:hover:not(:disabled) {
+  border-color: #378ADD;
+  background: #f1f7ff;
+}
+
+.v-btn.sel {
+  border-color: #378ADD;
+  background: #e7f3ff;
+  color: #378ADD;
+}
+
+/* Status culori după verificare */
+.v-btn.correct {
+  background: #ebfbee !important;
+  border-color: #40c057 !important;
+  color: #2b8a3e !important;
+}
+
+.v-btn.wrong {
+  background: #fff5f5 !important;
+  border-color: #fa5252 !important;
+  color: #c92a2a !important;
+}
+
+/* --- CODEFORCES STEP --- */
+.cf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cf-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f1f3f5;
+  border-radius: 12px;
+  border-left: 5px solid #378ADD;
+}
+
+.cf-card span { font-weight: 600; }
+
+.cf-card a {
+  color: #378ADD;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+/* --- BUTOANE PRINCIPALE --- */
+.main-action-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  background: #378ADD;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 25px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.main-action-btn:hover {
+  background: #2c6eaf;
+  transform: translateY(-2px);
+}
+
+.main-action-btn:disabled {
+  background: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.main-action-btn.retry {
+  background: #fa5252;
+}
+
+.main-action-btn.retry:hover { background: #e03131; }
+
+.main-action-btn.next {
+  background: #40c057;
+}
+
+.main-action-btn.next:hover { background: #37b24d; }
+
+/* Responsive */
+@media (max-width: 500px) {
+  .v-grid { grid-template-columns: 1fr; }
+  .modal-content { padding: 20px; }
+}
