@@ -209,7 +209,7 @@ function Dashboard({ username, onLogout }) {
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
-              <div className="admin-stat-card"><div className="admin-stat-label">Total lecții</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în Cloud</div></div>
+              <div className="admin-stat-card"><div className="admin-stat-label">Total lecțiile</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în Cloud</div></div>
               <div className="admin-stat-card"><div className="admin-stat-label">Cu animație</div><div className="admin-stat-num">{cuAnimatie}</div><div className="admin-stat-sub">active</div></div>
               <div className="admin-stat-card"><div className="admin-stat-label">Clase acoperite</div><div className="admin-stat-num">{claseUnice}/4</div><div className="admin-stat-sub">clase</div></div>
               <div className="admin-stat-card"><div className="admin-stat-label">Probleme pbinfo</div><div className="admin-stat-num">{totalPbinfo}</div><div className="admin-stat-sub">linkuri</div></div>

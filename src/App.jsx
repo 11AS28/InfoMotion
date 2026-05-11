@@ -33,7 +33,7 @@ function App() {
         {/* Nav-ul apare DOAR dacă NU suntem pe admin */}
         {!isAdminPage && <Nav />}
     
-        <main style={{ minHeight: '80vh' }}>
+        <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
           <Routes>
             {/* ─── RUTE PUBLICE ─── */}
             <Route path="/" element={<MainPage />} />
