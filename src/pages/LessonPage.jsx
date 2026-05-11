@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
-import QuizModal from '../components/QuizModal';
+import QuizSection from '../components/QuizSection';
 
 // Importă Firebase
 import { doc, getDoc } from 'firebase/firestore';
@@ -17,7 +17,7 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 function LessonPage() {
   const { idLectie } = useParams();
   const { currentUser, verificaDacaEGata } = useAuth();
-  
+
   const [lectie, setLectie] = useState(null); // Datele vin acum din DB
   const [loading, setLoading] = useState(true);
   const [esteGata, setEsteGata] = useState(false);
@@ -46,10 +46,10 @@ function LessonPage() {
   }, [idLectie]);
 
   // 2. Verificăm progresul userului
- useEffect(() => {
+  useEffect(() => {
     if (currentUser && idLectie) {
       // verificaDacaEGata întoarce true/false direct din currentUser.progres
-      const status = verificaDacaEGata(idLectie); 
+      const status = verificaDacaEGata(idLectie);
       setEsteGata(status);
     }
   }, [idLectie, currentUser, verificaDacaEGata]);
@@ -71,7 +71,7 @@ function LessonPage() {
     <div className="page-wrapper">
       <main className="lesson-container">
         <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
-        
+
         <header className="lesson-header">
           <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
           <h1>{lectie.titlu}</h1>
@@ -83,7 +83,7 @@ function LessonPage() {
             {/* Folosim whiteSpace: pre-wrap ca să păstrăm formatarea din Admin */}
             <p style={{ whiteSpace: "pre-wrap" }}>{lectie.teorie}</p>
           </div>
-          
+
           <div className="lesson-animation">
             <h2>🎮 Animație Interactivă</h2>
             {renderAnimation()}
@@ -121,28 +121,24 @@ function LessonPage() {
           ) : (
             <div className="finish-container">
               <p>Ești gata să testezi ce ai învățat?</p>
-                 <button 
-    className="finish-btn" 
-    onClick={() => {
-      console.log("Datele lecției sunt:", lectie);
-      setIsQuizOpen(true);
-    }}
-  >
-    Finalizează Lecția (Quiz + Codeforces)
-  </button>
+              <button
+                className="finish-btn"
+                onClick={() => {
+                  console.log("Datele lecției sunt:", lectie);
+                  setIsQuizOpen(true);
+                }}
+              >
+                Finalizează Lecția (Quiz + Codeforces)
+              </button>
             </div>
           )}
         </section>
 
-          <QuizModal 
-    isOpen={isQuizOpen} 
-    onClose={() => setIsQuizOpen(false)} 
-    lectie={lectie} 
-    onSucces={() => {
-      setIsQuizOpen(false);
-      setEsteGata(true);
-    }}
-  />
+        <QuizSection
+          lessonId={lectie.id}
+          quizData={lectie.quiz}
+          cfData={lectie.codeforces}
+        />
       </main>
     </div>
   );

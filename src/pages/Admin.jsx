@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { lessonsData as localData } from '../lessonsData'; 
 import '../pages_css/admin.css';
-import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'; // Adăugat deleteDoc
+import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ADMINS = [
@@ -51,11 +51,9 @@ function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [firebaseLessons, setFirebaseLessons] = useState([]);
-  
-  // Stare pentru a ști dacă edităm o lecție existentă
   const [isEditing, setIsEditing] = useState(false);
 
-  // Form State
+  // --- STATE FORMULAR ---
   const [fId, setFId] = useState('');
   const [fClasa, setFClasa] = useState('clasa-9');
   const [fTitlu, setFTitlu] = useState('');
@@ -64,7 +62,17 @@ function Dashboard({ username, onLogout }) {
   const [fCod, setFCod] = useState('');
   const [fAnim, setFAnim] = useState('null');
   const [fAnimCustom, setFAnimCustom] = useState('');
+
+  // 1. Probleme PBINFO (Dinamice)
   const [pbRows, setPbRows] = useState([{ id: '', titlu: '', url: '' }]);
+
+  // 2. Quiz (5 întrebări)
+  const [quiz, setQuiz] = useState(
+    Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 }))
+  );
+
+  // 3. Codeforces (2 probleme)
+  const [cfProblems, setCfProblems] = useState(['', '']);
 
   const refreshData = async () => {
     try {
@@ -80,10 +88,25 @@ function Dashboard({ username, onLogout }) {
     refreshData();
   }, [activeTab]);
 
+  // Helpers PBINFO
+  const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
+  const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
+  const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
+
+  // Helpers QUIZ
+  const updateQuiz = (qIdx, field, val, vIdx = null) => {
+    const newQuiz = [...quiz];
+    if (field === 'varianta') newQuiz[qIdx].variante[vIdx] = val;
+    else newQuiz[qIdx][field] = val;
+    setQuiz(newQuiz);
+  };
+
   const resetForm = () => {
-    setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere(''); 
+    setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere('');
     setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
     setPbRows([{ id: '', titlu: '', url: '' }]);
+    setQuiz(Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
+    setCfProblems(['', '']);
     setIsEditing(false);
   };
 
@@ -105,17 +128,20 @@ function Dashboard({ username, onLogout }) {
     setFDescriere(lectie.descriere || '');
     setFTeorie(lectie.teorie || '');
     setFCod(lectie.codCPlusPlus || '');
-    
+
     // Logică pentru animație
     if (!lectie.animatie) setFAnim('null');
     else if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) setFAnim(lectie.animatie);
     else { setFAnim('custom'); setFAnimCustom(lectie.animatie); }
 
     setPbRows(lectie.problemePbinfo?.length > 0 ? lectie.problemePbinfo : [{ id: '', titlu: '', url: '' }]);
+    setQuiz(lectie.quiz || Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
+    setCfProblems(lectie.codeforces || ['', '']);
     setIsEditing(true);
-    setActiveTab('adauga'); // Mergem la tab-ul de formular
+    setActiveTab('adauga');
   };
 
+  // Stats pentru Overview
   const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
   const totalLectii = currentData.length;
   const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
@@ -130,20 +156,18 @@ function Dashboard({ username, onLogout }) {
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
-  const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
-  const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
-  const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
-
   async function handlePublish() {
     if (!fId || !fTitlu) return alert("Completează ID și Titlu!");
     setLoading(true);
     try {
       const lectieData = {
         id: fId, clasa: fClasa, titlu: fTitlu, descriere: fDescriere, teorie: fTeorie,
-        codCPlusPlus: fCod, 
-        dataModificarii: new Date().toISOString(),
+        codCPlusPlus: fCod,
         animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
-        problemePbinfo: pbRows.filter(r => r.id || r.titlu)
+        problemePbinfo: pbRows.filter(r => r.id || r.titlu),
+        quiz: quiz,
+        codeforces: cfProblems,
+        dataModificarii: new Date().toISOString()
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
       alert(isEditing ? "✅ Modificări salvate!" : "🚀 Lecție publicată!");
@@ -166,12 +190,12 @@ function Dashboard({ username, onLogout }) {
 
       <div className="admin-tabs-bar">
         {['overview', 'lectii', 'adauga'].map((t) => (
-          <button 
-            key={t} 
-            className={`admin-tab ${activeTab === t ? 'active' : ''}`} 
+          <button
+            key={t}
+            className={`admin-tab ${activeTab === t ? 'active' : ''}`}
             onClick={() => {
               setActiveTab(t);
-              if (t !== 'adauga') resetForm(); // Resetăm dacă ieșim din formular
+              if (t !== 'adauga') resetForm();
             }}
           >
             {t === 'overview' ? 'Prezentare generală' : t === 'lectii' ? 'Lecțiile mele' : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
@@ -180,6 +204,8 @@ function Dashboard({ username, onLogout }) {
       </div>
 
       <main className="admin-main">
+
+        {/* ===== OVERVIEW ===== */}
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
@@ -195,7 +221,9 @@ function Dashboard({ username, onLogout }) {
                 {[9, 10, 11, 12].map((c) => (
                   <div key={c} className="admin-bar-row">
                     <span className="admin-bar-label">Clasa {c}</span>
-                    <div className="admin-bar-track"><div className="admin-bar-fill" style={{ width: `${(countPerClasa[c]/maxCount)*100}%`, background: barColors[c] }} /></div>
+                    <div className="admin-bar-track">
+                      <div className="admin-bar-fill" style={{ width: `${(countPerClasa[c] / maxCount) * 100}%`, background: barColors[c] }} />
+                    </div>
                     <span className="admin-bar-count">{countPerClasa[c]}</span>
                   </div>
                 ))}
@@ -204,6 +232,7 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
+        {/* ===== LECȚII ===== */}
         {activeTab === 'lectii' && (
           <div className="admin-table-wrap">
             <table className="admin-table">
@@ -225,36 +254,64 @@ function Dashboard({ username, onLogout }) {
           </div>
         )}
 
+        {/* ===== ADAUGĂ / EDITEAZĂ ===== */}
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
             <div className="admin-form-grid">
+
+              {/* Câmpuri de bază */}
               <div className="admin-field">
                 <label>ID (Slug)</label>
                 <input type="text" value={fId} onChange={(e) => setFId(e.target.value)} disabled={isEditing} placeholder="ex: grafuri-introducere" />
                 {isEditing && <small>ID-ul nu poate fi schimbat după publicare.</small>}
               </div>
-              <div className="admin-field"><label>Clasă</label><select value={fClasa} onChange={(e) => setFClasa(e.target.value)}><option value="clasa-9">Clasa 9</option><option value="clasa-10">Clasa 10</option><option value="clasa-11">Clasa 11</option><option value="clasa-12">Clasa 12</option></select></div>
-              <div className="admin-field admin-field--full"><label>Titlu</label><input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} /></div>
-              <div className="admin-field admin-field--full"><label>Descriere scurtă</label><input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} /></div>
-              <div className="admin-field admin-field--full"><label>Teorie</label><textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} /></div>
-              
+              <div className="admin-field">
+                <label>Clasă</label>
+                <select value={fClasa} onChange={(e) => setFClasa(e.target.value)}>
+                  <option value="clasa-9">Clasa 9</option>
+                  <option value="clasa-10">Clasa 10</option>
+                  <option value="clasa-11">Clasa 11</option>
+                  <option value="clasa-12">Clasa 12</option>
+                </select>
+              </div>
+              <div className="admin-field admin-field--full">
+                <label>Titlu</label>
+                <input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} />
+              </div>
+              <div className="admin-field admin-field--full">
+                <label>Descriere scurtă</label>
+                <input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} />
+              </div>
+              <div className="admin-field admin-field--full">
+                <label>Teorie</label>
+                <textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} />
+              </div>
+
+              {/* Animație */}
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>
-                <div className="admin-anim-options" style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   {['null', 'BubbleSortAnim', 'CautareBinaraAnim', 'custom'].map(opt => (
                     <button key={opt} type="button" className={`admin-anim-opt ${fAnim === opt ? 'selected' : ''}`} onClick={() => setFAnim(opt)}>
                       {opt === 'null' ? 'Fără' : opt === 'custom' ? 'Alt nume' : opt}
                     </button>
                   ))}
                 </div>
-                {fAnim === 'custom' && <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă React" style={{marginTop: '10px'}} />}
+                {fAnim === 'custom' && (
+                  <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă React" style={{ marginTop: '10px' }} />
+                )}
               </div>
 
-              <div className="admin-field admin-field--full"><label>Cod C++</label><textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} /></div>
-              
+              {/* Cod C++ */}
               <div className="admin-field admin-field--full">
-                <label>Probleme Pbinfo</label>
+                <label>Cod C++</label>
+                <textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} />
+              </div>
+
+              {/* Probleme Pbinfo */}
+              <div className="admin-field admin-field--full">
+                <div className="admin-section-divider">Probleme Pbinfo</div>
                 {pbRows.map((row, idx) => (
                   <div key={idx} className="admin-pb-row">
                     <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" className="admin-pb-id" />
@@ -265,15 +322,63 @@ function Dashboard({ username, onLogout }) {
                 ))}
                 <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
               </div>
+
+              {/* Quiz */}
+              <div className="admin-field admin-field--full">
+                <div className="admin-section-divider">Quiz (5 Întrebări)</div>
+                {quiz.map((q, qIdx) => (
+                  <div key={qIdx} className="admin-quiz-setup-card" style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
+                    <input
+                      type="text"
+                      placeholder={`Întrebarea ${qIdx + 1}`}
+                      value={q.intrebare}
+                      onChange={(e) => updateQuiz(qIdx, 'intrebare', e.target.value)}
+                      style={{ width: '100%', fontWeight: 'bold', marginBottom: '10px' }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {q.variante.map((v, vIdx) => (
+                        <div key={vIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                          <input
+                            type="radio"
+                            name={`correct-${qIdx}`}
+                            checked={q.corect === vIdx}
+                            onChange={() => updateQuiz(qIdx, 'corect', vIdx)}
+                            style={{ flexShrink: 0, width: '16px', height: '16px', cursor: 'pointer' }}
+                          />
+                          <input
+                            type="text"
+                            placeholder={`Varianta ${vIdx + 1}`}
+                            value={v}
+                            onChange={(e) => updateQuiz(qIdx, 'varianta', e.target.value, vIdx)}
+                            style={{ flex: 1, minWidth: 0, width: '100%' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Codeforces */}
+              <div className="admin-field admin-field--full">
+                <div className="admin-section-divider">Codeforces (2 Probleme)</div>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                  <input type="text" placeholder="Problem 1 (ex: 158/A)" value={cfProblems[0]} onChange={(e) => setCfProblems([e.target.value, cfProblems[1]])} style={{ flex: 1 }} />
+                  <input type="text" placeholder="Problem 2 (ex: 71/A)" value={cfProblems[1]} onChange={(e) => setCfProblems([cfProblems[0], e.target.value])} style={{ flex: 1 }} />
+                </div>
+              </div>
+
             </div>
-            <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
-               <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>
                 {loading ? 'Se procesează...' : isEditing ? '💾 Salvează modificările' : '🚀 Publică pe Site'}
               </button>
               {isEditing && <button className="admin-btn-secondary" onClick={resetForm}>Anulează</button>}
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
