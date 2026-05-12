@@ -3,15 +3,24 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('light');
+  // 1. Verificăm la început dacă avem ceva salvat. 
+  // Dacă nu avem nimic, punem 'light' ca default.
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('info-motion-theme');
+    return savedTheme ? savedTheme : 'light';
+  });
 
-  // Funcția care schimbă tema
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+    setTheme((prevTheme) => {
+      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+      
+      // 2. SALVĂM noua temă în LocalStorage
+      localStorage.setItem('info-motion-theme', newTheme);
+      
+      return newTheme;
+    });
   };
 
-  // ACEST useEffect ESTE OBLIGATORIU:
-  // El "lipește" clasa de CSS 'dark' pe tot site-ul când apeși pe buton
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');

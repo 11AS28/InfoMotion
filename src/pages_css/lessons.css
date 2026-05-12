@@ -430,3 +430,126 @@ body {
     font-size: 1rem;
   }
 }
+
+/* Containerul părinte care forțează așezarea orizontală */
+.lesson-page-main-layout {
+    display: flex;
+    flex-direction: row; /* Sidebar la stânga, Main la dreapta */
+    align-items: flex-start;
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px; /* Spațiu sus și pe margini */
+    gap: 30px; /* Spațiu între sidebar și teorie */
+    background-color: #0b111a; /* Ajustează la culoarea ta de fundal */
+}
+
+/* Sidebar-ul fixat în stânga */
+.lessons-sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: #151c27; /* Culoarea cardului din imaginea ta */
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Îl facem să stea fix când dai scroll pe teorie */
+    position: sticky;
+    top: 20px; 
+}
+
+.sidebar-header h3 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-item {
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #a0aec0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* Stilul pentru lecția selectată (ca în imaginea ta) */
+.sidebar-item.active {
+    background-color: #00d1b2; /* Culoarea turcoaz din screenshot */
+    color: #000;
+    font-weight: 600;
+}
+
+/* Conținutul lecției (Teoria) */
+.lesson-container {
+    flex: 1; /* Ocupă restul spațiului din dreapta */
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    max-width: 900px; /* Limitează lățimea textului pentru citire ușoară */
+}
+
+/* Ajustări pentru responsivitate (Mobile) */
+@media (max-width: 1024px) {
+    .lesson-page-main-layout {
+        flex-direction: column; /* Pe ecrane mici le punem unul sub altul */
+    }
+    .lessons-sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+    }
+}
+
+/* Containerul nou pentru a le pune pe orizontală */
+.lesson-main-content-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 100px;
+    width: 100%;
+    max-width: 1700px; /* Sau cât e containerul tău la nav */
+    margin: 0 auto;
+}
+
+.lessons-sidebar {
+    width: 280px;
+    min-width: 280px;
+    padding: 20px;
+    border-radius: 16px;
+    position: sticky;
+    top: 100px;
+    
+    /* FOLOSIM VARIABILE PENTRU DARK MODE */
+    background-color: var(--bg-card, #ffffff); 
+    border: 1px solid var(--border-color, #eee);
+    color: var(--text-primary, #000);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-item {
+    color: var(--text-secondary, #555);
+    /* ... restul stilurilor ... */
+}
+
+.sidebar-item.active {
+    background-color: #00d1b2; /* Asta rămâne verde mereu */
+    color: #fff;
+}
+
+/* Dacă e nevoie să ajustăm containerul de teorie să nu mai fie centrat forțat */
+.lesson-container {
+    flex: 1;
+    margin: 0 !important; 
+    text-align: left;
+}
