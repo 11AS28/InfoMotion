@@ -6,12 +6,11 @@ import '../components_css/QuizModal.css';
 
 
 function QuizModal({ lessonId, quizData, cfData, onClose, onFinished }) {
-  const { currentUser } = useAuth();
   const [step, setStep] = useState(1); 
   const [answers, setAnswers] = useState(Array(5).fill(null));
   const [isQuizChecked, setIsQuizChecked] = useState(false);
   const [cfLoading, setCfLoading] = useState(false);
-
+  const { currentUser, acordaPuncte } = useAuth();
   // Calculăm scorul
 
 
@@ -60,6 +59,16 @@ const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
       }
     } catch (e) { alert("Eroare la verificarea Codeforces."); }
     setCfLoading(false);
+    if (cfData.every(id => solved.includes(id))) {
+    const userRef = doc(db, 'users', currentUser.uid);
+    await updateDoc(userRef, { lectiiTerminate: arrayUnion(lessonId) });
+    
+    // ACORDĂM PUNCTELE AICI
+    await acordaPuncte('quiz'); 
+    
+    onFinished(); 
+  }
+
   };
 
   return (

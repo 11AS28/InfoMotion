@@ -285,6 +285,33 @@ const updateUsername = async (newUsername) => {
   }
 }
 
+const acordaPuncte = async (tip) => {
+  if (!currentUser) return;
+  const userRef = doc(db, 'users', currentUser.uid);
+  
+  let puncteDeAdaugat = 0;
+  let updateData = {};
+
+  if (tip === 'quiz') {
+    puncteDeAdaugat = 10; // Punctajul tău pentru Quiz
+  } else if (tip === 'daily_normal') {
+    puncteDeAdaugat = 30; // Punctaj normal Problema Zilei
+    updateData.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+  } else if (tip === 'daily_sprinter') {
+    puncteDeAdaugat = 50; // Punctaj Sprinter (primii 3)
+    updateData.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+  }
+
+  try {
+    await updateDoc(userRef, {
+      ...updateData,
+      puncteTotale: (currentUser.puncteTotale || 0) + puncteDeAdaugat
+    });
+  } catch (error) {
+    console.error("Eroare la acordarea punctelor:", error);
+  }
+};
+
   // Obiectul value conține tot ce se folosește în context
  const value = { 
     currentUser, 
@@ -294,6 +321,7 @@ const updateUsername = async (newUsername) => {
     loginWithGoogle, 
     getStatistici,
     verificaDacaEGata,
+    acordaPuncte,
     marcheazaLectieTerminata,
     actualizeazaStreak,
     verificaProblemaCodeforces,

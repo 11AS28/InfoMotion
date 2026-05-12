@@ -1,0 +1,46 @@
+.clasament-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.topuri-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.top-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.leaderboard-card {
+    background: var(--bg-card, #151c27);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: 0.3s;
+}
+
+.user-row:last-child { border-bottom: none; }
+
+.user-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.rank { width: 30px; color: var(--accent-color, #00d1b2); }
+.username { flex: 1; text-align: left; padding-left: 10px; }
+.value { font-weight: bold; }

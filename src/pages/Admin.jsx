@@ -62,7 +62,6 @@ function Dashboard({ username, onLogout }) {
   const [fCod, setFCod] = useState('');
   const [fAnim, setFAnim] = useState('null');
   const [fAnimCustom, setFAnimCustom] = useState('');
-
   // 1. Probleme PBINFO (Dinamice)
   const [pbRows, setPbRows] = useState([{ id: '', titlu: '', url: '' }]);
 
