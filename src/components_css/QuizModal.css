@@ -13,7 +13,13 @@
 
 
 .modal-content {
-  background: #ffffff;
+  /* From https://css.glass */
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5.1px);
+  -webkit-backdrop-filter: blur(5.1px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   width: 95%;
   max-width: 700px;
   max-height: 80vh;
@@ -25,7 +31,7 @@
   
   /* Umbră mult mai pronunțată ca să se vadă bine pe fundal alb */
   box-shadow: 0 10px 100px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0,0,0,0.05);
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
   
   /* Animație care vine de jos în sus */
   animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -37,15 +43,24 @@
 }
 
 .close-x {
-  background: #f8f9fa;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  color: #e03131;
+  background: none;
+  font-size: 30px;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
-.close-x:hover { background: #e9ecef; }
+
+.close-x:hover {
+  color: #c92a2a;
+  cursor: pointer;
+}
+
 
 /* --- TITLURI ȘI PASI --- */
 .modal-content h3 {
   font-size: 1.5rem;
-  color: #1a1b1e;
+  color: var(--text-primary);
   margin-bottom: 25px;
   display: flex;
   align-items: center;
@@ -54,16 +69,16 @@
 
 /* --- QUIZ DESIGN --- */
 .q-block {
-  background: #f8f9fa;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 20px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-color);
 }
 
 .q-block p {
   font-weight: 600;
-  color: #2c2e33;
+  color: var(--text-primary);
   margin-bottom: 15px;
 }
 
@@ -81,9 +96,9 @@
 .v-btn {
   padding: 12px 15px;
   border-radius: 10px;
-  border: 2px solid #dee2e6;
-  background: white;
-  color: #495057;
+  border: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-primary);
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -93,31 +108,31 @@
 
 .modal-content h3 {
   margin-top: 10px;
-  border-bottom: 2px solid #f1f3f5;
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 15px;
 }
 .v-btn:hover:not(:disabled) {
-  border-color: #378ADD;
-  background: #f1f7ff;
+  border-color: var(--accent-color);
+  background: #7572726b;
 }
 
 .v-btn.sel {
-  border-color: #378ADD;
-  background: #e7f3ff;
-  color: #378ADD;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-color);
 }
 
 /* Status culori după verificare */
 .v-btn.correct {
-  background: #ebfbee !important;
-  border-color: #40c057 !important;
-  color: #2b8a3e !important;
+  background: #40c057 !important;
+  border-color: var(--border-correct) !important;
+  color: var(--text-correct) !important;
 }
 
 .v-btn.wrong {
-  background: #fff5f5 !important;
-  border-color: #fa5252 !important;
-  color: #c92a2a !important;
+  background: #fa5252 !important;
+  border-color: var(--border-wrong) !important;
+  color: var(--text-wrong) !important;
 }
 
 /* --- CODEFORCES STEP --- */
@@ -133,15 +148,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: #f1f3f5;
+  background: var(--bg-color);
   border-radius: 12px;
-  border-left: 5px solid #378ADD;
+  border-left: 5px solid var(--accent-color);
 }
 
 .cf-card span { font-weight: 600; }
 
 .cf-card a {
-  color: #378ADD;
+  color: var(--accent-color);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: bold;
@@ -152,8 +167,8 @@
   width: 100%;
   padding: 16px;
   border-radius: 14px;
-  background: #378ADD;
-  color: white;
+  background-color: var(--accent);
+  color: #ffffff;
   border: none;
   font-size: 1rem;
   font-weight: 700;
@@ -163,12 +178,12 @@
 }
 
 .main-action-btn:hover {
-  background: #2c6eaf;
+  background: var(--accent-hover);
   transform: translateY(-2px);
 }
 
 .main-action-btn:disabled {
-  background: #adb5bd;
+  background: var(--bg-disabled);
   cursor: not-allowed;
   transform: none;
 }

@@ -13,7 +13,14 @@ function QuizModal({ lessonId, quizData, cfData, onClose, onFinished }) {
   const [cfLoading, setCfLoading] = useState(false);
 
   // Calculăm scorul
-  const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
+
+
+// Câte răspunsuri au fost selectate (indiferent dacă-s corecte sau nu)
+const answeredCount = answers.filter(ans => ans !== null).length;
+
+// Calculăm și scorul corect pentru validarea de la final
+const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
+
   const isPerfect = score === quizData.length;
 
   const handleSelect = (qIdx, vIdx) => {
@@ -22,6 +29,7 @@ function QuizModal({ lessonId, quizData, cfData, onClose, onFinished }) {
     newAns[qIdx] = vIdx;
     setAnswers(newAns);
   };
+   
 
   const handleCheckQuiz = () => {
     if (answers.includes(null)) return alert("Răspunde la toate întrebările!");
@@ -61,7 +69,7 @@ function QuizModal({ lessonId, quizData, cfData, onClose, onFinished }) {
         
         {step === 1 ? (
           <div className="quiz-step">
-            <h3>🧠 Pasul 1: Quiz ({score}/{quizData.length})</h3>
+            <h3>🧠 Pasul 1: Quiz ({answeredCount}/{quizData.length})</h3>
             {quizData.map((q, qIdx) => (
               <div key={qIdx} className="q-block">
                 <p><strong>{qIdx + 1}. {q.intrebare}</strong></p>

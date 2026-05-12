@@ -175,6 +175,25 @@
   text-decoration: underline;
 }
 
+
+/* =========================================
+   BUTONUL DE RESETARE PAROLĂ
+   ========================================= */
+
+#reset-password-btn {
+  background-color: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+#reset-password-btn:hover {
+  background-color: var(--accent-color);
+  cursor: pointer;
+ 
+}
+
 /* =========================================
    RESPONSIVE DESIGN (Telefoane)
    ========================================= */

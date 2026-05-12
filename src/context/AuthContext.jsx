@@ -6,7 +6,8 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-  sendEmailVerification 
+  sendEmailVerification ,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
@@ -36,9 +37,16 @@ export function AuthProvider({ children }) {
     }
   };
 
+
+
+
   const getStatistici = () => {
-    if (!currentUser || !currentUser.progres) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
-    const terminate = Object.keys(currentUser.progres).length;
+    // Dacă nu e logat, dăm 0
+    if (!currentUser) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
+    
+    // 1. AICI E REPARAȚIA: Numărăm din vectorul 'lectiiTerminate', exact unde salvează QuizModal-ul!
+    const terminate = currentUser.lectiiTerminate ? currentUser.lectiiTerminate.length : 0;
+    
     const totalLectiiReale = lessonsData.length; 
     return {
       terminate,
@@ -47,9 +55,17 @@ export function AuthProvider({ children }) {
     };
   };
 
-  const verificaDacaEGata = (idLectie) => {
-    if (!currentUser || !currentUser.progres) return false;
-    return !!currentUser.progres[idLectie];
+ const verificaDacaEGata = (idLectie) => {
+    if (!currentUser) return false;
+    // 2. Verificăm progresul tot în noul vector
+    if (currentUser.lectiiTerminate) {
+      return currentUser.lectiiTerminate.includes(idLectie);
+    }
+    // Fallback pentru utilizatorii vechi care aveau datele în "progres" (opțional)
+    if (currentUser.progres) {
+      return !!currentUser.progres[idLectie];
+    }
+    return false;
   };
 
   const marcheazaLectieTerminata = async (idLectie) => {
@@ -259,6 +275,16 @@ const updateUsername = async (newUsername) => {
   }
 };
 
+  async function resetPassword(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+   
+  } catch (error) {
+    alert("Eroare la trimiterea email-ului de resetare: " + error.message);
+    throw error;
+  }
+}
+
   // Obiectul value conține tot ce se folosește în context
  const value = { 
     currentUser, 
@@ -270,8 +296,13 @@ const updateUsername = async (newUsername) => {
     verificaDacaEGata,
     marcheazaLectieTerminata,
     actualizeazaStreak,
-    verificaProblemaCodeforces // <--- ADAUGĂ LINIA ASTA AICI
+    verificaProblemaCodeforces,
+    resetPassword
   };
+
+
+
+
 
   return (
     <AuthContext.Provider value={value}>

@@ -278,6 +278,14 @@ body {
   margin: 0;
 }
 
+.check-icon{
+  align-items: center;
+  justify-content: center;
+  padding: auto;
+  margin: auto;
+
+}
+
 /* Butonul de Quiz */
 .finish-btn {
   background-color: var(--accent-color);

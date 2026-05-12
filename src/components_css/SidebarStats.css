@@ -203,10 +203,73 @@
 }
 
 /* Responsive Media Queries */
+/* Responsive Media Queries */
 @media screen and (max-width: 768px) {
   .sidebar-container {
     z-index: 3000 !important;
-    width: 100%; 
-    max-width: 350px;
+    width: 85%; 
+    max-width: 320px;
+    height: 100dvh; /* Ocupă exact ecranul, fără să taie elemente */
+    top: 0;
+    padding: 15px 15px; /* Am micșorat padding-ul extrem de la 30px */
+    gap: 10px; /* Am tăiat distanța mare dintre secțiuni */
+  }
+
+  /* 1. Micșorăm poza de profil și spațiile din Header */
+  .sidebar-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  .user-avatar-placeholder {
+    width: 50px;  /* De la 70px */
+    height: 50px;
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  .sidebar-header h3 {
+    font-size: 1.1rem;
+  }
+
+  /* 2. Micșorăm cutiile de XP și Lecții */
+  .stats-grid {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  
+  .stat-box {
+    padding: 8px;
+  }
+  
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  /* 3. Comprimăm zonele cu input-uri (Email, Codeforces etc) */
+  .progress-section {
+    margin-bottom: 10px;
+  }
+
+  .info-list {
+    gap: 5px; /* Spațiu mai mic între liniile cu detalii */
+  }
+
+  .info-item {
+    padding-bottom: 4px;
+    font-size: 0.8rem;
+  }
+
+  .handle-input-group input {
+    padding: 4px 8px; /* Căsuțe de text mai scunde */
+    font-size: 0.85rem;
+  }
+
+  /* 4. Asigurăm că butonul de Deconectare încape la fix jos */
+  .logout-btn-sidebar {
+    margin-top: auto; /* Împinge butonul forțat jos de tot */
+    padding: 10px;
+    font-size: 0.9rem;
   }
 }

@@ -5,9 +5,10 @@ import '../pages_css/auth.css';
 import { FaGoogle } from "react-icons/fa";
 import { sendEmailVerification } from "firebase/auth";
 
+
 function Auth() {
   const navigate = useNavigate();
-  const { loginWithGoogle, login, signup, logout } = useAuth();
+  const { loginWithGoogle, login, signup, logout, resetPassword } = useAuth();
   
   const [isRegistering, setIsRegistering] = useState(false); 
   const [identificator, setIdentificator] = useState(''); // Poate fi email sau username
@@ -97,6 +98,29 @@ function Auth() {
     }
   };
 
+
+    const handleResetPassword = async () => {
+    // Verificăm dacă a introdus ceva în câmpul de email
+    if (!identificator) {
+      setError("Te rog să introduci adresa de email în câmpul de mai sus pentru a reseta parola!");
+      return;
+    }
+    
+    // Verificăm dacă seamănă a email (conține @)
+    if (!identificator.includes('@')) {
+      setError("Te rog să introduci un email valid pentru resetare, nu un username!");
+      return;
+    }
+
+    try {
+      await resetPassword(identificator);
+      setSuccessMsg("Dacă emailul există în baza noastră de date, vei primi un link de resetare.");
+      setError("");
+    } catch (err) {
+      setError("Eroare la resetarea parolei: " + err.message);
+    }
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -177,11 +201,17 @@ function Auth() {
               placeholder="••••••••"
               required 
             />
+
+          
           </div>
+
+          
           
           <button type="submit" className="admin-btn-login" style={{ width: '100%' }}>
             {isRegistering ? "Creează contul" : "Intră în cont"}
           </button>
+
+          
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '25px', fontSize: '14px', color: 'var(--text-secondary)' }}>
@@ -200,6 +230,9 @@ function Auth() {
             {isRegistering ? "Loghează-te aici" : "Înregistrează-te"}
           </span>
         </p>
+        <button type="button" id="reset-password-btn" onClick={handleResetPassword} style={{ width: '100%', marginTop: '10px' }}>
+            Ai uitat parola? Resetează aici
+          </button>
 
       </div>
     </div>

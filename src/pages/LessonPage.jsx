@@ -131,7 +131,7 @@ function LessonPage() {
           {esteGata ? (
             /* Badge-ul verde */
             <div className="lesson-completed-success-msg">
-               <span className="check-icon">✔</span> Lecție finalizată! Ai stăpânit acest concept.
+               <span className="check-icon">✔</span>  <br />Lecție finalizată! Ai stăpânit acest concept.
             </div>
           ) : (
             /* Butonul de start */
