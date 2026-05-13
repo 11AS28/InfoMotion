@@ -7,7 +7,6 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import Nav from './components/nav';
 import Footer from './components/footer';
 import PrivateRoute from './components/PrivateRoute';
-import Clasament from './components/Clasament';
 import Arena from './components/Arena';
 
 
@@ -18,6 +17,7 @@ import LessonPage from './pages/LessonPage';
 import Intro from './pages/introlectii';
 import Admin from './pages/Admin';
 import Auth from './pages/Auth';
+import Clasament from './pages/Clasament';
 
 
 import './theme.css';

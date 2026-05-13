@@ -44,3 +44,11 @@
 .rank { width: 30px; color: var(--accent-color, #00d1b2); }
 .username { flex: 1; text-align: left; padding-left: 10px; }
 .value { font-weight: bold; }
+
+
+#arena-badge {
+    width: 40px;
+    height: 40px;
+    vertical-align: middle;
+    margin-right: 10px;
+}

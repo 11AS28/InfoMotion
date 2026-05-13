@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useTheme } from '../context/ThemeContext';
-import '../components_css/clasament.css';
+import '../pages_css/clasament.css';
+import Arena from '../components/Arena';
+
 
 function Clasament() {
   const { theme } = useTheme();
@@ -46,13 +48,19 @@ function Clasament() {
 
   return (
     <div className="clasament-page" data-theme={theme}>
-      <h1>🏆 Arena Info-Motion</h1>
       
+      <h1>  <img src="/logo-infomotion.svg" alt="logo" id='arena-badge' />Arena Info-Motion <img src="/logo-infomotion.svg" alt="logo" id='arena-badge' /></h1>
+      <br />
+      <br />      
+      <Arena />
+
       <div className="topuri-container">
         {/* SECȚIUNEA TOP GENERAL */}
         <section className="top-section">
-          <h2>🌟 Top General (XP)</h2>
+         
           <div className="leaderboard-card">
+            <h2>🌟 Top General (XP)</h2>
+            <br />
             {topGeneral.map((user, index) => (
               <div key={user.id} className={`user-row ${index === 0 ? 'rank-1' : ''}`}>
                 <span className="rank">#{index + 1}</span>
@@ -65,8 +73,10 @@ function Clasament() {
 
         {/* SECȚIUNEA THE GRINDERS */}
         <section className="top-section">
-          <h2>🛠️ The Grinders (Probleme)</h2>
+          
           <div className="leaderboard-card">
+            <h2>🛠️ The Grinders (Probleme)</h2>
+            <br />
             {topGrinders.map((user, index) => (
               <div key={user.id} className="user-row">
                 <span className="rank">#{index + 1}</span>
@@ -77,6 +87,9 @@ function Clasament() {
           </div>
         </section>
       </div>
+
+
+
     </div>
   );
 }

@@ -350,86 +350,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   RESPONSIVITATE (TELEFOANE ȘI TABLETE)
-   ========================================= */
-@media (max-width: 768px) {
-  .lesson-container {
-    padding: 80px 15px 40px; /* Am micșorat padding-ul lateral */
-    width: 100%;             /* Mă asigur că nu depășește ecranul */
-    box-sizing: border-box;  /* Esențial ca să nu apară scroll orizontal */
-  }
 
-  /* Tăiem drastic din mărimea titlului pe telefon */
-  .lesson-header h1 {
-    font-size: 1.8rem; 
-    word-wrap: break-word; /* Obligă cuvintele lungi să se spargă pe alt rând dacă e nevoie */
-  }
-
-  .lesson-theory p {
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-
-  .lesson-finish-action {
-    padding: 20px 15px;
-    margin: 30px 0;
-  }
-
-  .btn-finish-lesson {
-    width: 100%; 
-    justify-content: center;
-    padding: 14px 15px;
-    font-size: 1rem;
-  }
-
-  .lesson-completed-msg {
-    width: 100%;
-    justify-content: center;
-    font-size: 1rem; /* Mai mic ca să încapă textul verde */
-    padding: 15px 10px;
-    text-align: center;
-  }
-
-  .lesson-code pre {
-    padding: 15px;
-    border-radius: 8px;
-  }
-
-  .lesson-code code {
-    font-size: 0.85rem;
-  }
-
-  .lesson-practice {
-    padding: 20px 15px;
-  }
-
-  /* Reparăm cardul de PbInfo care "sărea" în afară */
-    /* Reparație Card PbInfo pentru Telefon */
-  .problem-card {
-    flex-direction: column; /* Pe telefon punem ID-ul și titlul unul sub altul */
-    align-items: flex-start;
-    gap: 10px;
-    padding: 15px;
-  }
-
-  .prob-id {
-    margin-right: 0;
-    font-size: 0.9rem;
-  }
-
-  .prob-title {
-    font-size: 1rem;
-    width: 100%;
-  }
-
-  /* Butonul de Quiz se face mare pe mobil */
-  .finish-btn {
-    width: 100%;
-    padding: 14px 15px;
-    font-size: 1rem;
-  }
-}
 
 /* Containerul părinte care forțează așezarea orizontală */
 .lesson-page-main-layout {
@@ -441,6 +362,7 @@ body {
     padding: 40px 20px; /* Spațiu sus și pe margini */
     gap: 30px; /* Spațiu între sidebar și teorie */
     background-color: #0b111a; /* Ajustează la culoarea ta de fundal */
+    
 }
 
 /* Sidebar-ul fixat în stânga */
@@ -450,14 +372,14 @@ body {
     background: #151c27; /* Culoarea cardului din imaginea ta */
     border-radius: 15px;
     padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 5px solid var(--border-color);
     /* Îl facem să stea fix când dai scroll pe teorie */
-    position: sticky;
+    position: sticky ;
     top: 20px; 
 }
 
 .sidebar-header h3 {
-    color: #ffffff;
+    color: var(--accent-color);
     font-size: 1rem;
     margin-bottom: 20px;
     opacity: 0.8;
@@ -499,23 +421,13 @@ body {
     max-width: 900px; /* Limitează lățimea textului pentru citire ușoară */
 }
 
-/* Ajustări pentru responsivitate (Mobile) */
-@media (max-width: 1024px) {
-    .lesson-page-main-layout {
-        flex-direction: column; /* Pe ecrane mici le punem unul sub altul */
-    }
-    .lessons-sidebar {
-        width: 100%;
-        position: relative;
-        top: 0;
-    }
-}
+
 
 /* Containerul nou pentru a le pune pe orizontală */
 .lesson-main-content-flex {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: flex-start !important;
     gap: 100px;
     width: 100%;
     max-width: 1700px; /* Sau cât e containerul tău la nav */
@@ -529,7 +441,7 @@ body {
     border-radius: 16px;
     position: sticky;
     top: 100px;
-    
+    height: max-content;
     /* FOLOSIM VARIABILE PENTRU DARK MODE */
     background-color: var(--bg-card, #ffffff); 
     border: 1px solid var(--border-color, #eee);
@@ -552,4 +464,118 @@ body {
     flex: 1;
     margin: 0 !important; 
     text-align: left;
+    min-width: 0;
+    box-sizing: border-box;
+    max-width: 1000px;
+    margin:  0 auto;
+    
+}
+
+
+
+
+
+/* =========================================
+   RESPONSIVITATE (TELEFOANE ȘI TABLETE)
+   ========================================= */
+
+/* Pentru laptopuri cu ecran mediu/mic */
+@media (max-width: 1400px) {
+    .lesson-main-content-flex {
+        gap: 30px; 
+        padding: 40px 30px; 
+    }
+}
+
+
+
+@media (max-width: 1024px) {
+  .lesson-page-main-layout, 
+  .lesson-main-content-flex {
+      flex-direction: column; 
+      gap: 20px;
+  }
+  
+  .lessons-sidebar {
+      width: fit-content;
+      top: 0;
+      display: none;
+      
+     
+  }
+}
+
+@media (max-width: 768px) {
+  .lesson-container {
+  
+    padding: 30px 15px 40px !important; 
+    width: 100%; 
+    box-sizing: border-box; 
+  }
+
+  .lesson-header h1 {
+    font-size: 1.8rem; 
+    word-wrap: break-word; 
+  }
+
+  .lesson-theory p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .lesson-finish-action {
+    padding: 20px 15px;
+    margin: 30px 0;
+  }
+
+  .btn-finish-lesson {
+    width: 100%; 
+    justify-content: center;
+    padding: 14px 15px;
+    font-size: 1rem;
+  }
+
+  .lesson-completed-msg {
+    width: 100%;
+    justify-content: center;
+    font-size: 1rem; 
+    padding: 15px 10px;
+    text-align: center;
+  }
+
+  .lesson-code pre {
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .lesson-code code {
+    font-size: 0.85rem;
+  }
+
+  .lesson-practice {
+    padding: 20px 15px;
+  }
+
+  .problem-card {
+    flex-direction: column; 
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .prob-id {
+    margin-right: 0;
+    font-size: 0.9rem;
+  }
+
+  .prob-title {
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .finish-btn {
+    width: 100%;
+    padding: 14px 15px;
+    font-size: 1rem;
+  }
 }

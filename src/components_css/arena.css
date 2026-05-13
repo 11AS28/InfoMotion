@@ -1,0 +1,130 @@
+/* =========================================
+   CONTAINER PRINCIPAL ARENA
+   ========================================= */
+.arena-container {
+    background: var(--bg-card, #151c27);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 800px; /* Mai lat pentru a se alinia frumos cu restul paginii */
+    margin: 0 auto 40px auto;
+    text-align: center;
+    color: var(--accent-color)
+}
+
+.arena-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* Link-ul către Codeforces */
+.arena-container a {
+    display: inline-block;
+    color: var(--accent-color, #00d1b2);
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 25px;
+    padding: 10px 20px;
+    background: rgba(0, 209, 178, 0.1);
+    border-radius: 8px;
+    transition: 0.3s;
+    border: 1px solid rgba(0, 209, 178, 0.2);
+}
+
+.arena-container a:hover {
+    background: rgba(0, 209, 178, 0.2);
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   BUTON VERIFICARE SUBMISIE
+   ========================================= */
+.arena-container button {
+    background-color: var(--accent-color, #00d1b2);
+    color: var(--text-color, #f8fafc);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 30px;
+}
+
+.arena-container button:hover:not(:disabled) {
+    background-color: #00e6c3;
+    transform: translateY(-2px);
+}
+
+.arena-container button:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =========================================
+   LISTA TOP SOLVERI
+   ========================================= */
+.solvers-list {
+    background: var(--bg-card, #151c27);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.05));
+    /* Setăm aliniere la stânga pt interiorul cardului pentru a arăta ca clasamentul */
+}
+
+.solvers-list h3 {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.empty-solvers {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 10px 0;
+}
+
+/* Rândurile de utilizatori din Arena moștenesc stilul curat */
+.user-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: 0.3s;
+}
+
+.user-row:last-child {
+    border-bottom: none;
+}
+
+.user-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.rank { width: 30px; color: var(--accent-color, #00d1b2); }
+.username { flex: 1; text-align: left; padding-left: 10px; }
+.value { font-weight: bold; }
+
+/* =========================================
+   RESPONSIVITATE TELEFOANE
+   ========================================= */
+@media (max-width: 768px) {
+    .arena-container {
+        padding: 20px;
+        margin: 20px 10px;
+        border-radius: 12px;
+    }
+    
+    .arena-container h2 {
+        font-size: 1.4rem;
+    }
+}

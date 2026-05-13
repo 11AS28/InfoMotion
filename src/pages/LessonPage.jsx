@@ -95,6 +95,7 @@ function LessonPage() {
 
   return (
     <div className="page-wrapper">
+      <br />
       <div className="lesson-main-content-flex">
 
 
