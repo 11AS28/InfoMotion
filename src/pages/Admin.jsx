@@ -199,7 +199,7 @@ function Dashboard({ username, onLogout }) {
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
   // ===== TABS =====
-  const tabs = ['overview', 'lectii', 'adauga', 'arena'];
+  const tabs = ['overview', 'lectii', 'adauga'];
 
   return (
     <div className="admin-wrapper">
@@ -223,7 +223,6 @@ function Dashboard({ username, onLogout }) {
           >
             {t === 'overview' ? 'Prezentare generală'
               : t === 'lectii' ? 'Lecțiile mele'
-              : t === 'arena' ? '🏆 Arena'
               : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
           </button>
         ))}
@@ -427,34 +426,6 @@ function Dashboard({ username, onLogout }) {
               </button>
               {isEditing && <button className="admin-btn-secondary" onClick={resetForm}>Anulează</button>}
             </div>
-          </div>
-        )}
-
-        {/* ===== TAB ARENA ===== */}
-        {activeTab === 'arena' && (
-          <div className="admin-card">
-            <div className="admin-form-title">Programează Problema Zilei</div>
-            <div className="admin-form-grid">
-              <div className="admin-field">
-                <label>Data</label>
-                <input type="date" value={arenaDate} onChange={(e) => setArenaDate(e.target.value)} />
-              </div>
-              <div className="admin-field">
-                <label>ID Codeforces (ex: 158/A)</label>
-                <input type="text" value={arenaCF} onChange={(e) => setArenaCF(e.target.value)} />
-              </div>
-              <div className="admin-field admin-field--full">
-                <label>Titlu</label>
-                <input type="text" value={arenaTitle} onChange={(e) => setArenaTitle(e.target.value)} />
-              </div>
-              <div className="admin-field admin-field--full">
-                <label>Link</label>
-                <input type="text" value={arenaLink} onChange={(e) => setArenaLink(e.target.value)} />
-              </div>
-            </div>
-            <button className="admin-btn-primary" onClick={handleSaveArena} disabled={loading}>
-              {loading ? 'Se procesează...' : 'Salvează în Arena'}
-            </button>
           </div>
         )}
 

@@ -31,8 +31,7 @@ function Nav() {
         <li><Link to="/" onClick={() => setIsOpen(false)}>Acasă</Link></li>
         <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
         <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
-        <li><Link to="/clasament">Clasament</Link></li>
-        <li><Link to="/arena">Arena</Link></li>
+        <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
         {/* --- BUTON DARK MODE --- */}
         <li>
           <button

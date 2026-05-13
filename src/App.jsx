@@ -56,20 +56,13 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/clasament"
-              element={
-                <PrivateRoute>
-                  <Clasament />
-                </PrivateRoute>
-              }
-            />
+           
 
             <Route
               path="/arena"
               element={
                 <PrivateRoute>
-                  <Arena />
+                  <Clasament />
                 </PrivateRoute>
               }
             />

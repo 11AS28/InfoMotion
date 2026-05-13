@@ -65,13 +65,14 @@ function Clasament() {
 
         {/* SECȚIUNEA THE GRINDERS */}
         <section className="top-section">
-          <h2>🛠️ The Grinders (Probleme)</h2>
+          
           <div className="leaderboard-card">
+            <h2>🛠️ The Grinders (Probleme)</h2>
             {topGrinders.map((user, index) => (
-              <div key={user.id} className={`custom-row ${index < 3 ? 'highlight-grinder' : ''}`}>
-                <span className="c-rank">#{index + 1}</span>
-                <span className="c-user">{user.nume}</span>
-                <span className="c-val">{user.problemeRezolvateCount || 0} Soluții</span>
+              <div key={user.id} className={`user-row ${index < 3 ? 'highlight-grinder' : ''}`}>
+                <span className="rank">#{index + 1}</span>
+                <span className="username">{user.nume}</span>
+                <span className="value">{user.problemeRezolvateCount || 0} Soluții</span>
               </div>
             ))}
           </div>

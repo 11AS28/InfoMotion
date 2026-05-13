@@ -8,9 +8,12 @@ function Arena() {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const [dailyProblem, setDailyProblem] = useState(null);
   const [solvers, setSolvers] = useState([]);
-  const [isChecking, setIsChecking] = useState(false); // Pentru a bloca butonul pe durata verificării
+  const [isChecking, setIsChecking] = useState(false); 
 
-  // Funcție sigură pentru a genera data (ex: 13_5_2026)
+  // --- STAT PENTRU PAGINARE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const solversPerPage = 5;
+
   const getSafeDateString = () => {
     const today = new Date();
     return `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
@@ -24,11 +27,9 @@ function Arena() {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
-          // Problema a fost deja aleasă astăzi de un alt utilizator
           setDailyProblem(docSnap.data());
           setSolvers(docSnap.data().solvers || []);
         } else {
-          // Nimeni nu a intrat azi. Alegem o problemă random de pe Codeforces!
           console.log("Generăm problema zilei din Codeforces...");
           
           const response = await fetch('https://codeforces.com/api/problemset.problems');
@@ -36,16 +37,11 @@ function Arena() {
           
           if (data.status === 'OK') {
             const allProblems = data.result.problems;
-            
-            // Filtrăm problemele să nu fie nici prea grele, nici extrem de ciudate (rating între 800 și 1200)
             const easyProblems = allProblems.filter(p => p.rating >= 800 && p.rating <= 1200);
-            
-            // Alegem una la întâmplare
             const randomIndex = Math.floor(Math.random() * easyProblems.length);
             const chosenProblem = easyProblems[randomIndex];
             
-            // Construim noul obiect pentru baza de date
-            const idProblema = `${chosenProblem.contestId}${chosenProblem.index}`; // ex: 158A, 71A
+            const idProblema = `${chosenProblem.contestId}${chosenProblem.index}`; 
             const newDailyProblem = {
               titlu: `${chosenProblem.name} (Rating: ${chosenProblem.rating})`,
               link: `https://codeforces.com/problemset/problem/${chosenProblem.contestId}/${chosenProblem.index}`,
@@ -54,10 +50,7 @@ function Arena() {
               data: dataAzi
             };
             
-            // Salvăm în Firebase pentru toți ceilalți utilizatori de azi
             await setDoc(docRef, newDailyProblem);
-            
-            // Setăm în state-ul curent
             setDailyProblem(newDailyProblem);
             setSolvers([]);
           }
@@ -71,10 +64,8 @@ function Arena() {
   }, []);
 
   const handleSolve = async () => {
-    // 1. Verificăm dacă există o problemă azi
     if (!dailyProblem) return;
 
-    // 2. Verificăm dacă userul a luat deja punctele ca să nu facă exploit
     const hasAlreadySolved = solvers.some(s => s.uid === currentUser.uid);
     if (hasAlreadySolved) {
       alert("Ai primit deja punctele pentru problema de azi!");
@@ -87,7 +78,6 @@ function Arena() {
       
       if (isGata) {
         const tipPunctaj = solvers.length < 3 ? 'daily_sprinter' : 'daily_normal';
-        
         await acordaPuncte(tipPunctaj);
         
         const nouSolver = { 
@@ -101,7 +91,6 @@ function Arena() {
           solvers: arrayUnion(nouSolver)
         });
 
-        // Actualizăm starea locală ca să apară instant în listă fără refresh
         setSolvers(prev => [...prev, nouSolver]);
         alert("Felicitări! Punctele au fost adăugate.");
       } else {
@@ -113,51 +102,85 @@ function Arena() {
     } finally {
       setIsChecking(false);
     }
-    setLoading(false);
   };
 
+  // --- LOGICA DE PAGINARE ---
   const idxLast = currentPage * solversPerPage;
   const idxFirst = idxLast - solversPerPage;
   const currentSolvers = solvers.slice(idxFirst, idxLast);
   const totalPages = Math.ceil(solvers.length / solversPerPage);
 
-    return (
-      <div>
-    <div className="arena-container">
-      {dailyProblem ? (
-        <>
-          <h2>🚀 Problema Zilei: {dailyProblem.titlu}</h2>
-          <a href={dailyProblem.link} target="_blank" rel="noopener noreferrer">
-            Rezolvă pe Codeforces
-          </a>
-          <br />
-          <button 
-            onClick={handleSolve} 
-            disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid)}
-          >
-            {isChecking ? "Se verifică..." : "Verifică Submisia"}
-          </button>
-        </>
-      ) : (
-        <h2>Nu a fost setată nicio problemă pentru astăzi! 😴</h2>
-      )}
-
-      <div className="solvers-list">
-        <h3>Top 5 Solveri (Azi)</h3>
-        {solvers.length > 0 ? (
-          solvers.slice(0, 5).map((s, idx) => (
-            /* Refolosim exact structura clasamentului */
-            <div key={idx} className={`user-row ${idx === 0 ? 'rank-1' : ''}`}>
-              <span className="rank">#{idx + 1}</span>
-              <span className="username">{s.nume}</span>
-              <span className="value">{s.ora}</span>
-            </div>
-          ))
+  return (
+    <div>
+      <div className="arena-container">
+        {dailyProblem ? (
+          <>
+            <h2>🚀 Problema Zilei: {dailyProblem.titlu}</h2>
+            <a href={dailyProblem.link} target="_blank" rel="noopener noreferrer">
+              Rezolvă pe Codeforces
+            </a>
+            <br />
+            <button 
+              onClick={handleSolve} 
+              disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid)}
+            >
+              {isChecking ? "Se verifică..." : "Verifică Submisia"}
+            </button>
+          </>
         ) : (
-          <p className="empty-solvers">Fii primul care rezolvă problema de azi!</p>
+          <h2>Nu a fost setată nicio problemă pentru astăzi! 😴</h2>
         )}
+
+        <div className="solvers-list">
+          <h3>Top Solveri (Azi)</h3>
+          
+          {solvers.length > 0 ? (
+            <>
+              {currentSolvers.map((s, idx) => {
+                // Calculăm rangul real (ex: pe pagina 2 primul are rangul 6)
+                const realRank = idxFirst + idx + 1;
+                
+                // Atribuim clasa în funcție de loc
+                let rankClass = '';
+                if (realRank === 1) rankClass = 'rank-1';
+                else if (realRank === 2) rankClass = 'rank-2';
+                else if (realRank === 3) rankClass = 'rank-3';
+
+                return (
+                  <div key={idx} className={`user-row ${rankClass}`}>
+                    <span className="rank">#{realRank}</span>
+                    <span className="username">{s.nume}</span>
+                    <span className="value">{s.ora}</span>
+                  </div>
+                );
+              })}
+
+              {/* CONTROALE PAGINARE */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button 
+                    className="page-btn"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    &laquo; Înapoi
+                  </button>
+                  <span className="page-info">{currentPage} / {totalPages}</span>
+                  <button 
+                    className="page-btn"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Înainte &raquo;
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="empty-solvers">Fii primul care rezolvă problema de azi!</p>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 }
