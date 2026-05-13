@@ -225,30 +225,39 @@ export function AuthProvider({ children }) {
     return unsubscribeAuth;
   }, []);
 
-  const verificaProblemaCodeforces = async (problemId) => {
-    if (!currentUser?.codeforcesHandle) {
-      alert("Te rugăm să îți setezi Codeforces Handle-ul în profil mai întâi!");
-      return false;
-    }
-
-    try {
-      const response = await fetch(`https://codeforces.com/api/user.status?handle=${currentUser.codeforcesHandle}&from=1&count=50`);
-      const data = await response.json();
-
-      if (data.status === "OK") {
-        // Căutăm în ultimele 50 de trimiteri
-        const rezolvata = data.result.some(submission => {
-          const p = submission.problem;
-          const currentId = `${p.contestId}${p.index}`; // ex: "158A"
-          return currentId === problemId && submission.verdict === "OK";
-        });
-        return rezolvata;
-      }
-    } catch (error) {
-      console.error("Eroare la API-ul Codeforces:", error);
-    }
+ const verificaProblemaCodeforces = async (problemId) => {
+  if (!currentUser?.codeforcesHandle) {
+    alert("Te rugăm să îți setezi Codeforces Handle-ul în profil mai întâi!");
     return false;
-  };
+  }
+
+  // REPARAȚIE 1: Curățăm problemId-ul primit (ex: din "158/A" facem "158A")
+  const targetId = problemId.replace('/', '').trim().toUpperCase();
+
+  try {
+    // REPARAȚIE 2: Creștem count la 1000 ca să găsim și probleme mai vechi
+    const response = await fetch(`https://codeforces.com/api/user.status?handle=${currentUser.codeforcesHandle}&from=1&count=1000`);
+    const data = await response.json();
+
+    if (data.status === "OK") {
+      const rezolvata = data.result.some(submission => {
+        const p = submission.problem;
+        if (!p.contestId || !p.index) return false;
+
+        // Construim ID-ul din submisie (ex: 158 + A = "158A")
+        const currentId = `${p.contestId}${p.index}`.toUpperCase();
+        
+        // Verificăm potrivirea și verdictul (OK înseamnă Accepted)
+        return currentId === targetId && submission.verdict === "OK";
+      });
+
+      return rezolvata;
+    }
+  } catch (error) {
+    console.error("Eroare la API-ul Codeforces:", error);
+  }
+  return false;
+};
 
 const updateUsername = async (newUsername) => {
   if (!currentUser) return;

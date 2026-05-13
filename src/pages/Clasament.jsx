@@ -16,35 +16,27 @@ function Clasament() {
     async function fetchTopuri() {
       setLoading(true);
       try {
-        // 1. Top General (după Puncte XP)
-        const qGeneral = query(
-          collection(db, "users"),
-          orderBy("puncteTotale", "desc"),
-          limit(10)
-        );
+        const qGeneral = query(collection(db, "users"), orderBy("puncteTotale", "desc"), limit(10));
         const snapGeneral = await getDocs(qGeneral);
         setTopGeneral(snapGeneral.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-        // 2. Top Grinders (după numărul de probleme rezolvate)
-        const qGrinders = query(
-          collection(db, "users"),
-          orderBy("problemeRezolvateCount", "desc"),
-          limit(10)
-        );
+        const qGrinders = query(collection(db, "users"), orderBy("problemeRezolvateCount", "desc"), limit(10));
         const snapGrinders = await getDocs(qGrinders);
         setTopGrinders(snapGrinders.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
       } catch (error) {
         console.error("Eroare la încărcarea clasamentului:", error);
       } finally {
         setLoading(false);
       }
     }
-
     fetchTopuri();
   }, []);
 
-  if (loading) return <div className="loader">Se încarcă clasamentul...</div>;
+  if (loading) return <div className="loader">Se încarcă Arena...</div>;
+
+  // Extragem primii 3 pentru podiumul de XP
+  const podium = topGeneral.slice(0, 3);
+  const restGeneral = topGeneral.slice(3);
 
   return (
     <div className="clasament-page" data-theme={theme}>
@@ -73,15 +65,13 @@ function Clasament() {
 
         {/* SECȚIUNEA THE GRINDERS */}
         <section className="top-section">
-          
+          <h2>🛠️ The Grinders (Probleme)</h2>
           <div className="leaderboard-card">
-            <h2>🛠️ The Grinders (Probleme)</h2>
-            <br />
             {topGrinders.map((user, index) => (
-              <div key={user.id} className="user-row">
-                <span className="rank">#{index + 1}</span>
-                <span className="username">{user.nume || "Anonim"}</span>
-                <span className="value">{user.problemeRezolvateCount || 0} Rezolvate</span>
+              <div key={user.id} className={`custom-row ${index < 3 ? 'highlight-grinder' : ''}`}>
+                <span className="c-rank">#{index + 1}</span>
+                <span className="c-user">{user.nume}</span>
+                <span className="c-val">{user.problemeRezolvateCount || 0} Soluții</span>
               </div>
             ))}
           </div>

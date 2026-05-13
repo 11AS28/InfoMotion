@@ -1,4 +1,3 @@
-// Arena.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
@@ -114,7 +113,13 @@ function Arena() {
     } finally {
       setIsChecking(false);
     }
+    setLoading(false);
   };
+
+  const idxLast = currentPage * solversPerPage;
+  const idxFirst = idxLast - solversPerPage;
+  const currentSolvers = solvers.slice(idxFirst, idxLast);
+  const totalPages = Math.ceil(solvers.length / solversPerPage);
 
     return (
       <div>

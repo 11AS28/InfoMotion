@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { lessonsData as localData } from '../lessonsData'; 
+import { lessonsData as localData } from '../lessonsData';
 import '../pages_css/admin.css';
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,6 +9,7 @@ const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_2_USER, password: import.meta.env.VITE_ADMIN_2_PASS },
 ];
 
+// ===== LOGIN SCREEN =====
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +37,9 @@ function LoginScreen({ onLogin }) {
             <label>Parolă</label>
             <div className="admin-pass-wrap">
               <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••" required />
-              <button type="button" className="admin-show-pass" onClick={() => setShowPass((v) => !v)}>{showPass ? '🙈' : '👁️'}</button>
+              <button type="button" className="admin-show-pass" onClick={() => setShowPass((v) => !v)}>
+                {showPass ? '🙈' : '👁️'}
+              </button>
             </div>
           </div>
           {error && <p className="admin-error">{error}</p>}
@@ -47,13 +50,14 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+// ===== DASHBOARD =====
 function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [firebaseLessons, setFirebaseLessons] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- STATE FORMULAR ---
+  // --- STATE LECȚIE ---
   const [fId, setFId] = useState('');
   const [fClasa, setFClasa] = useState('clasa-9');
   const [fTitlu, setFTitlu] = useState('');
@@ -62,37 +66,37 @@ function Dashboard({ username, onLogout }) {
   const [fCod, setFCod] = useState('');
   const [fAnim, setFAnim] = useState('null');
   const [fAnimCustom, setFAnimCustom] = useState('');
-  // 1. Probleme PBINFO (Dinamice)
   const [pbRows, setPbRows] = useState([{ id: '', titlu: '', url: '' }]);
-
-  // 2. Quiz (5 întrebări)
   const [quiz, setQuiz] = useState(
     Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 }))
   );
-
-  // 3. Codeforces (2 probleme)
   const [cfProblems, setCfProblems] = useState(['', '']);
 
+  // --- STATE ARENA ---
+  const [arenaDate, setArenaDate] = useState(new Date().toISOString().split('T')[0]);
+  const [arenaTitle, setArenaTitle] = useState('');
+  const [arenaLink, setArenaLink] = useState('');
+  const [arenaCF, setArenaCF] = useState('');
+
+  // ===== DATA =====
   const refreshData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "lectii"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setFirebaseLessons(data);
+      setFirebaseLessons(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
       console.error("Eroare la preluare date:", e);
     }
   };
 
-  useEffect(() => {
-    refreshData();
-  }, [activeTab]);
+  useEffect(() => { refreshData(); }, [activeTab]);
 
-  // Helpers PBINFO
-  const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
+  // ===== HELPERS PBINFO =====
+  const updatePb = (idx, field, val) =>
+    setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
 
-  // Helpers QUIZ
+  // ===== HELPERS QUIZ =====
   const updateQuiz = (qIdx, field, val, vIdx = null) => {
     const newQuiz = [...quiz];
     if (field === 'varianta') newQuiz[qIdx].variante[vIdx] = val;
@@ -100,6 +104,7 @@ function Dashboard({ username, onLogout }) {
     setQuiz(newQuiz);
   };
 
+  // ===== RESET =====
   const resetForm = () => {
     setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere('');
     setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
@@ -109,7 +114,7 @@ function Dashboard({ username, onLogout }) {
     setIsEditing(false);
   };
 
-  // Funcție pentru ȘTERGERE
+  // ===== ȘTERGERE =====
   const handleDelete = async (id) => {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
@@ -119,7 +124,7 @@ function Dashboard({ username, onLogout }) {
     } catch (e) { alert("Eroare la ștergere: " + e.message); }
   };
 
-  // Funcție pentru inițiere EDITARE
+  // ===== EDITARE =====
   const startEdit = (lectie) => {
     setFId(lectie.id);
     setFClasa(lectie.clasa || 'clasa-9');
@@ -128,7 +133,6 @@ function Dashboard({ username, onLogout }) {
     setFTeorie(lectie.teorie || '');
     setFCod(lectie.codCPlusPlus || '');
 
-    // Logică pentru animație
     if (!lectie.animatie) setFAnim('null');
     else if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) setFAnim(lectie.animatie);
     else { setFAnim('custom'); setFAnimCustom(lectie.animatie); }
@@ -140,22 +144,8 @@ function Dashboard({ username, onLogout }) {
     setActiveTab('adauga');
   };
 
-  // Stats pentru Overview
-  const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
-  const totalLectii = currentData.length;
-  const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
-  const claseUnice = [...new Set(currentData.map((l) => l.clasa))].length;
-  const totalPbinfo = currentData.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
-
-  const countPerClasa = { 9: 0, 10: 0, 11: 0, 12: 0 };
-  currentData.forEach((l) => {
-    const n = parseInt(l.clasa?.split('-')[1]);
-    if (!isNaN(n)) countPerClasa[n]++;
-  });
-  const maxCount = Math.max(...Object.values(countPerClasa), 1);
-  const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
-
-  async function handlePublish() {
+  // ===== PUBLICARE LECȚIE =====
+  const handlePublish = async () => {
     if (!fId || !fTitlu) return alert("Completează ID și Titlu!");
     setLoading(true);
     try {
@@ -175,7 +165,41 @@ function Dashboard({ username, onLogout }) {
       setActiveTab('lectii');
     } catch (e) { alert("Eroare: " + e.message); }
     setLoading(false);
-  }
+  };
+
+  // ===== SALVARE ARENA =====
+  const handleSaveArena = async () => {
+    if (!arenaTitle || !arenaCF) return alert("Titlu și ID CF obligatorii!");
+    setLoading(true);
+    try {
+      const [y, m, d] = arenaDate.split('-');
+      const docId = `${d}_${m}_${y}`;
+      await setDoc(doc(db, "dailyChallenges", docId), {
+        titlu: arenaTitle, link: arenaLink, idCF: arenaCF, solvers: []
+      });
+      alert("Problema zilei programată!");
+      setArenaTitle(''); setArenaCF(''); setArenaLink('');
+    } catch (e) { alert("Eroare Arena: " + e.message); }
+    setLoading(false);
+  };
+
+  // ===== STATS OVERVIEW =====
+  const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
+  const totalLectii = currentData.length;
+  const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
+  const claseUnice = [...new Set(currentData.map((l) => l.clasa))].length;
+  const totalPbinfo = currentData.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
+
+  const countPerClasa = { 9: 0, 10: 0, 11: 0, 12: 0 };
+  currentData.forEach((l) => {
+    const n = parseInt(l.clasa?.split('-')[1]);
+    if (!isNaN(n)) countPerClasa[n]++;
+  });
+  const maxCount = Math.max(...Object.values(countPerClasa), 1);
+  const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
+
+  // ===== TABS =====
+  const tabs = ['overview', 'lectii', 'adauga', 'arena'];
 
   return (
     <div className="admin-wrapper">
@@ -188,7 +212,7 @@ function Dashboard({ username, onLogout }) {
       </header>
 
       <div className="admin-tabs-bar">
-        {['overview', 'lectii', 'adauga'].map((t) => (
+        {tabs.map((t) => (
           <button
             key={t}
             className={`admin-tab ${activeTab === t ? 'active' : ''}`}
@@ -197,21 +221,40 @@ function Dashboard({ username, onLogout }) {
               if (t !== 'adauga') resetForm();
             }}
           >
-            {t === 'overview' ? 'Prezentare generală' : t === 'lectii' ? 'Lecțiile mele' : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
+            {t === 'overview' ? 'Prezentare generală'
+              : t === 'lectii' ? 'Lecțiile mele'
+              : t === 'arena' ? '🏆 Arena'
+              : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
           </button>
         ))}
       </div>
 
       <main className="admin-main">
 
-        {/* ===== OVERVIEW ===== */}
+        {/* ===== TAB OVERVIEW ===== */}
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
-              <div className="admin-stat-card"><div className="admin-stat-label">Total lecțiile</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în Cloud</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Cu animație</div><div className="admin-stat-num">{cuAnimatie}</div><div className="admin-stat-sub">active</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Clase acoperite</div><div className="admin-stat-num">{claseUnice}/4</div><div className="admin-stat-sub">clase</div></div>
-              <div className="admin-stat-card"><div className="admin-stat-label">Probleme pbinfo</div><div className="admin-stat-num">{totalPbinfo}</div><div className="admin-stat-sub">linkuri</div></div>
+              <div className="admin-stat-card">
+                <div className="admin-stat-label">Total lecțiile</div>
+                <div className="admin-stat-num">{totalLectii}</div>
+                <div className="admin-stat-sub">în Cloud</div>
+              </div>
+              <div className="admin-stat-card">
+                <div className="admin-stat-label">Cu animație</div>
+                <div className="admin-stat-num">{cuAnimatie}</div>
+                <div className="admin-stat-sub">active</div>
+              </div>
+              <div className="admin-stat-card">
+                <div className="admin-stat-label">Clase acoperite</div>
+                <div className="admin-stat-num">{claseUnice}/4</div>
+                <div className="admin-stat-sub">clase</div>
+              </div>
+              <div className="admin-stat-card">
+                <div className="admin-stat-label">Probleme pbinfo</div>
+                <div className="admin-stat-num">{totalPbinfo}</div>
+                <div className="admin-stat-sub">linkuri</div>
+              </div>
             </div>
 
             <div className="admin-two-col">
@@ -221,7 +264,10 @@ function Dashboard({ username, onLogout }) {
                   <div key={c} className="admin-bar-row">
                     <span className="admin-bar-label">Clasa {c}</span>
                     <div className="admin-bar-track">
-                      <div className="admin-bar-fill" style={{ width: `${(countPerClasa[c] / maxCount) * 100}%`, background: barColors[c] }} />
+                      <div
+                        className="admin-bar-fill"
+                        style={{ width: `${(countPerClasa[c] / maxCount) * 100}%`, background: barColors[c] }}
+                      />
                     </div>
                     <span className="admin-bar-count">{countPerClasa[c]}</span>
                   </div>
@@ -231,17 +277,23 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        {/* ===== LECȚII ===== */}
+        {/* ===== TAB LECȚII ===== */}
         {activeTab === 'lectii' && (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
+              <thead>
+                <tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr>
+              </thead>
               <tbody>
                 {firebaseLessons.map((l) => (
                   <tr key={l.id}>
                     <td><code className="admin-route-code">{l.id}</code></td>
                     <td className="admin-td-titlu">{l.titlu}</td>
-                    <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
+                    <td>
+                      <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>
+                        {l.clasa?.toUpperCase()}
+                      </span>
+                    </td>
                     <td className="admin-actions-cell">
                       <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
                       <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
@@ -253,7 +305,7 @@ function Dashboard({ username, onLogout }) {
           </div>
         )}
 
-        {/* ===== ADAUGĂ / EDITEAZĂ ===== */}
+        {/* ===== TAB ADAUGĂ / EDITEAZĂ ===== */}
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
@@ -378,12 +430,43 @@ function Dashboard({ username, onLogout }) {
           </div>
         )}
 
+        {/* ===== TAB ARENA ===== */}
+        {activeTab === 'arena' && (
+          <div className="admin-card">
+            <div className="admin-form-title">Programează Problema Zilei</div>
+            <div className="admin-form-grid">
+              <div className="admin-field">
+                <label>Data</label>
+                <input type="date" value={arenaDate} onChange={(e) => setArenaDate(e.target.value)} />
+              </div>
+              <div className="admin-field">
+                <label>ID Codeforces (ex: 158/A)</label>
+                <input type="text" value={arenaCF} onChange={(e) => setArenaCF(e.target.value)} />
+              </div>
+              <div className="admin-field admin-field--full">
+                <label>Titlu</label>
+                <input type="text" value={arenaTitle} onChange={(e) => setArenaTitle(e.target.value)} />
+              </div>
+              <div className="admin-field admin-field--full">
+                <label>Link</label>
+                <input type="text" value={arenaLink} onChange={(e) => setArenaLink(e.target.value)} />
+              </div>
+            </div>
+            <button className="admin-btn-primary" onClick={handleSaveArena} disabled={loading}>
+              {loading ? 'Se procesează...' : 'Salvează în Arena'}
+            </button>
+          </div>
+        )}
+
       </main>
     </div>
   );
 }
 
+// ===== EXPORT =====
 export default function Admin() {
   const [loggedUser, setLoggedUser] = useState(null);
-  return !loggedUser ? <LoginScreen onLogin={setLoggedUser} /> : <Dashboard username={loggedUser} onLogout={() => setLoggedUser(null)} />;
+  return !loggedUser
+    ? <LoginScreen onLogin={setLoggedUser} />
+    : <Dashboard username={loggedUser} onLogout={() => setLoggedUser(null)} />;
 }
