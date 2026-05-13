@@ -65,6 +65,14 @@ function App() {
               }
             />
 
+            <Route
+              path="/arena"
+              element={
+                <PrivateRoute>
+                  <Arena />
+                </PrivateRoute>
+              }
+            />
 
             <Route
               path="/lectie/:idLectie"

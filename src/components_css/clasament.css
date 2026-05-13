@@ -44,3 +44,153 @@
 .rank { width: 30px; color: var(--accent-color, #00d1b2); }
 .username { flex: 1; text-align: left; padding-left: 10px; }
 .value { font-weight: bold; }
+
+
+
+/* --- FUNDAL ȘI CONTAINERE --- */
+.clasament-page {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.clasament-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.clasament-header h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(90deg, #378ADD, #639922); /* Culorile tale pe clase */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+
+/* --- PODIUM STYLING --- */
+.podium-section {
+  margin-bottom: 60px;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+[data-theme='dark'] .section-title { color: #ccc; }
+
+.podium-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  height: 350px;
+}
+
+.podium-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  border-radius: 15px 15px 0 0;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.podium-box:hover { transform: translateY(-5px); }
+
+/* Înălțimi diferite pentru podium */
+.rank-1 { height: 100%; background: linear-gradient(180deg, rgba(255, 215, 0, 0.2), transparent); border-top: 4px solid #ffd700; z-index: 3; }
+.rank-2 { height: 80%; background: linear-gradient(180deg, rgba(192, 192, 192, 0.2), transparent); border-top: 4px solid #c0c0c0; z-index: 2; }
+.rank-3 { height: 65%; background: linear-gradient(180deg, rgba(205, 127, 50, 0.2), transparent); border-top: 4px solid #cd7f32; z-index: 1; }
+
+.crown { font-size: 2.5rem; margin-top: -30px; margin-bottom: 10px; }
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #378ADD;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.name { font-weight: 600; margin-bottom: 5px; text-align: center; }
+.xp-badge {
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  background: #222;
+  color: #fff;
+  border-radius: 20px;
+  margin-bottom: auto;
+}
+
+.step {
+  font-size: 3rem;
+  font-weight: 900;
+  opacity: 0.3;
+  margin-top: 10px;
+}
+
+/* --- TABELE ȘI GRID --- */
+.topuri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+.list-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.custom-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.custom-row:hover { background: rgba(55, 138, 221, 0.1); }
+
+.c-rank { width: 50px; font-weight: bold; color: #888; }
+.c-user { flex: 1; font-weight: 500; }
+.c-val { font-weight: bold; color: #378ADD; }
+
+/* Highlight pentru Grinders (locurile 1-3) */
+.highlight-grinder {
+  border-left: 3px solid #639922;
+  background: rgba(99, 153, 34, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .podium-wrapper { height: auto; flex-direction: column; align-items: center; gap: 40px; }
+  .podium-box { height: 200px !important; width: 100%; border-radius: 15px; }
+  .rank-1 { order: 1; }
+  .rank-2 { order: 2; }
+  .rank-3 { order: 3; }
+}
