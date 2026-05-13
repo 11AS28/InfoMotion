@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import '../components_css/arena.css';
 
 function Arena() {
-  // Extragem funcția de verificare și cea de punctaj din AuthContext
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const [dailyProblem, setDailyProblem] = useState(null);
   const [solvers, setSolvers] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const solversPerPage = 8;
 
   useEffect(() => {
-    // Formatăm data curentă pentru a găsi documentul corect (ex: 13_05_2026)
     const dataAzi = new Date().toLocaleDateString('ro-RO').replaceAll('.', '_');
     const docRef = doc(db, 'dailyChallenges', dataAzi);
 
@@ -22,109 +23,84 @@ function Arena() {
         setSolvers(docSnap.data().solvers || []);
       }
     });
-
     return () => unsub();
   }, []);
 
   const handleSolve = async () => {
     if (!dailyProblem) return;
-    
     setLoading(true);
-    try {
-      // Pasul 1: Verificăm efectiv pe Codeforces folosind ID-ul problemei (ex: 158/A)
-      const isGata = await verificaProblemaCodeforces(dailyProblem.idCF);
-      
-      if (isGata) {
-        // Pasul 2: Verificăm dacă userul nu a mai luat deja punctele azi
-        if (solvers.some(s => s.uid === currentUser.uid)) {
-          alert("Ai validat deja această problemă!");
-          setLoading(false);
-          return;
-        }
-
-        // Pasul 3: Determinăm tipul de punctaj (Sprinter pentru primii 3)
-        const tipPunctaj = solvers.length < 3 ? 'daily_sprinter' : 'daily_normal';
-        await acordaPuncte(tipPunctaj);
-        
-        // Pasul 4: Actualizăm lista de solveri în Firestore
-        const dataAzi = new Date().toLocaleDateString('ro-RO').replaceAll('.', '_');
-        await updateDoc(doc(db, 'dailyChallenges', dataAzi), {
-          solvers: arrayUnion({ 
-            nume: currentUser.nume, 
-            uid: currentUser.uid, 
-            ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) 
-          })
-        });
-        
-        alert("Sistemul a confirmat submisia! Punctele au fost adăugate.");
-      } else {
-        alert("Nu am găsit nicio submisie 'Accepted' pentru această problemă pe contul tău de Codeforces.");
+    
+    // Verificarea folosind ID-ul curățat din AuthContext
+    const isGata = await verificaProblemaCodeforces(dailyProblem.idCF);
+    
+    if (isGata) {
+      if (solvers.some(s => s.uid === currentUser.uid)) {
+        alert("Ai validat deja această problemă!");
+        setLoading(false); return;
       }
-    } catch (error) {
-      console.error("Eroare la verificare:", error);
-      alert("A apărut o eroare la comunicarea cu Codeforces.");
+
+      // Calcul punctaj: Sprinter pentru primii 3
+      const tipPunctaj = solvers.length < 3 ? 'daily_sprinter' : 'daily_normal';
+      await acordaPuncte(tipPunctaj);
+      alert("Felicitări! Punctele au fost adăugate.");
+    } else {
+      alert("Nu am găsit nicio submisie 'Accepted' pe Codeforces.");
     }
     setLoading(false);
   };
 
-  const podium = solvers.slice(0, 3);
-  const restOfSolvers = solvers.slice(3);
+  const idxLast = currentPage * solversPerPage;
+  const idxFirst = idxLast - solversPerPage;
+  const currentSolvers = solvers.slice(idxFirst, idxLast);
+  const totalPages = Math.ceil(solvers.length / solversPerPage);
 
   return (
-    <div className="arena-wrapper">
-      <div className="arena-card">
-        <div className="arena-badge">PROVOCAREA ZILEI</div>
-        <h2>{dailyProblem?.titlu || "Se încarcă provocarea..."}</h2>
-        <div className="arena-actions">
-          <a href={dailyProblem?.link} target="_blank" rel="noreferrer" className="btn-cf">
-            Vezi Problema ↗
-          </a>
-          <button 
-            onClick={handleSolve} 
-            disabled={loading || !dailyProblem} 
-            className="btn-verify"
-          >
-            {loading ? "Se verifică..." : "Verifică Submisia"}
-          </button>
-        </div>
-      </div>
-
-      <div className="arena-leaderboard">
-        <h3 className="section-title">🏆 Top Rezolvări</h3>
-        
-        <div className="podium-container">
-          {/* Locul 2 */}
-          <div className="podium-item rank-2">
-            <div className="podium-avatar">{podium[1]?.nume?.[0] || "?"}</div>
-            <div className="podium-name">{podium[1]?.nume || "---"}</div>
-            <div className="podium-step">2</div>
-          </div>
-
-          {/* Locul 1 */}
-          <div className="podium-item rank-1">
-            <div className="podium-crown">👑</div>
-            <div className="podium-avatar">{podium[0]?.nume?.[0] || "?"}</div>
-            <div className="podium-name">{podium[0]?.nume || "---"}</div>
-            <div className="podium-step">1</div>
-          </div>
-
-          {/* Locul 3 */}
-          <div className="podium-item rank-3">
-            <div className="podium-avatar">{podium[2]?.nume?.[0] || "?"}</div>
-            <div className="podium-name">{podium[2]?.nume || "---"}</div>
-            <div className="podium-step">3</div>
+    <div className="arena-container">
+      {/* SECȚIUNEA PRINCIPALĂ: PROBLEMA ZILEI */}
+      <section className="hero-challenge">
+        <div className="challenge-card">
+          <div className="challenge-tag">🔥 CHALLENGE OF THE DAY</div>
+          <h1>{dailyProblem?.titlu || "Se încarcă provocarea..."}</h1>
+          <p className="challenge-meta">ID Codeforces: <span>{dailyProblem?.idCF}</span></p>
+          
+          <div className="challenge-actions">
+            <a href={dailyProblem?.link} target="_blank" rel="noreferrer" className="btn-primary-arena">
+              Rezolvă pe Codeforces ↗
+            </a>
+            <button onClick={handleSolve} disabled={loading} className="btn-secondary-arena">
+              {loading ? "Se verifică..." : "Verifică Submisia"}
+            </button>
           </div>
         </div>
+      </section>
 
-        <div className="solvers-list-simple">
-          {restOfSolvers.map((s, idx) => (
-            <div key={idx} className="solver-row-simple">
-              <span><span className="rank-num">#{idx + 4}</span> {s.nume}</span>
-              <span>{s.ora}</span>
+      {/* SECȚIUNEA SECUNDARĂ: CLASAMENT */}
+      <section className="ranking-section">
+        <h2 className="ranking-title">🏆 Hall of Fame (Azi)</h2>
+        <div className="custom-table">
+          <div className="table-header">
+            <span>Poz.</span>
+            <span>Programator</span>
+            <span>Timp</span>
+          </div>
+          {currentSolvers.map((s, i) => (
+            <div key={i} className={`table-row ${idxFirst + i < 3 ? `top-${idxFirst + i + 1}` : ''}`}>
+              <span className="rank-cell">#{idxFirst + i + 1}</span>
+              <span className="name-cell">{s.nume} {idxFirst + i === 0 && '👑'}</span>
+              <span className="time-cell">{s.ora}</span>
             </div>
           ))}
+          {solvers.length === 0 && <p className="no-data">Fii primul programator de azi!</p>}
         </div>
-      </div>
+
+        {totalPages > 1 && (
+          <div className="arena-nav">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Anterior</button>
+            <span className="page-info">{currentPage} / {totalPages}</span>
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Următor</button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
