@@ -38,6 +38,41 @@ export function AuthProvider({ children }) {
   };
 
 
+const generateVerificationCode = () => {
+  if (!currentUser) return "";
+  // Generăm un cod scurt și unic: ex INFOMOTION-A1B2C
+  return `INFOMOTION-${currentUser.uid.substring(0, 5).toUpperCase()}`;
+};
+
+const verifyHandleOwnership = async (handle) => {
+  const secret = generateVerificationCode();
+  try {
+    // Interogăm API-ul public Codeforces
+    const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+    const data = await response.json();
+
+    if (data.status === "OK") {
+      const user = data.result[0];
+      
+      // VERIFICARE CRITICĂ: Căutăm codul nostru în câmpul 'organization'
+      const isMatch = user.organization && user.organization.includes(secret);
+
+      if (isMatch) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          codeforcesHandle: handle,
+          cfValidat: true // Deblochează Arena
+        });
+        return { success: true };
+      }
+      return { success: false, error: "Codul nu a fost găsit în câmpul 'Organization'. Ai apăsat 'Save' pe Codeforces?" };
+    }
+    return { success: false, error: "Handle-ul nu există pe Codeforces." };
+  } catch (err) {
+    return { success: false, error: "Conexiune eșuată cu API-ul Codeforces." };
+  }
+};
+
 
 
   const getStatistici = () => {
@@ -331,10 +366,12 @@ const acordaPuncte = async (tip) => {
     getStatistici,
     verificaDacaEGata,
     acordaPuncte,
+    verifyHandleOwnership,
+    generateVerificationCode,
     marcheazaLectieTerminata,
     actualizeazaStreak,
     verificaProblemaCodeforces,
-    resetPassword
+    resetPassword,
   };
 
 

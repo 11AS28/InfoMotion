@@ -7,7 +7,7 @@ import { db } from '../firebase';
 import { FaFire, FaCheckCircle } from "react-icons/fa";
 
 function SidebarStats({ isOpen, onClose }) {
-  const { currentUser, getStatistici, logout, actualizeazaStreak } = useAuth();
+  const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
   const { theme } = useTheme();
 
   const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
@@ -168,24 +168,49 @@ function SidebarStats({ isOpen, onClose }) {
               <strong>{currentUser.email}</strong>
             </div>
 
-            {/* 3. CODEFORCES HANDLE */}
             <div className="info-item-input">
-              <span>Codeforces Handle:</span>
-              <div className="handle-input-group">
-                <input
-                  type="text"
-                  placeholder="ex: tourist"
-                  value={handleInput}
-                  onChange={(e) => setHandleInput(e.target.value)}
-                  onBlur={handleUpdateProfile}
-                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateProfile()}
-                  className="sidebar-input"
-                />
-              </div>
-              {currentUser?.codeforcesHandle === handleInput && handleInput !== "" && (
-                <small className="save-status"><FaCheckCircle /> Salvat</small>
-              )}
-            </div>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <span>Codeforces Handle:</span>
+    {currentUser?.cfValidat ? (
+      <small className="save-status" style={{ color: '#639922' }}>
+        <FaCheckCircle /> VERIFICAT
+      </small>
+    ) : (
+      handleInput !== "" && <small style={{ color: '#ff4500', fontSize: '0.7rem' }}>NEVERIFICAT</small>
+    )}
+  </div>
+  
+  <div className="handle-input-group">
+    <input
+      type="text"
+      placeholder="ex: tourist"
+      value={handleInput}
+      onChange={(e) => setHandleInput(e.target.value)}
+      className="sidebar-input"
+      disabled={currentUser?.cfValidat}
+    />
+  </div>
+
+  {!currentUser?.cfValidat && handleInput !== "" && (
+    <div className="verification-container">
+      <span className="verification-text">Pune la <b>Organization</b> pe CF:</span>
+      <div className="verification-code-display">
+        {generateVerificationCode()}
+      </div>
+      <button 
+        className="verify-btn-outline"
+        onClick={async () => {
+          const res = await verifyHandleOwnership(handleInput);
+          if(res.success) alert("✅ Cont verificat!");
+          else alert("❌ " + res.error);
+        }}
+      >
+        Confirmă
+      </button>
+    </div>
+  )}
+</div>
+
             <br />
             <div className="info-item">
               <span>Status Cont:</span>

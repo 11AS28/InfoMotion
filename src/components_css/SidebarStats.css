@@ -273,3 +273,57 @@
     font-size: 0.9rem;
   }
 }
+
+/* Stil pentru secțiunea de verificare Codeforces */
+.verification-container {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid #378add;
+  border-radius: 4px;
+}
+
+.verification-text {
+  font-size: 0.7rem;
+  color: #888;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.verification-code-display {
+  font-size: 0.85rem;
+  color: #ffd700;
+  font-family: 'Courier New', Courier, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  letter-spacing: 1px;
+}
+
+.verify-btn-outline {
+  width: 100%;
+  padding: 6px;
+  background: transparent;
+  border: 1px solid #378add;
+  color: #378add;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.verify-btn-outline:hover {
+  background: rgba(55, 138, 221, 0.1);
+  box-shadow: 0 0 8px rgba(55, 138, 221, 0.2);
+}
+
+/* Ajustare pentru input-ul dezactivat să nu fie prea șters */
+.sidebar-input:disabled {
+  cursor: not-allowed;
+  border-color: #639922;
+  color: #aaa;
+}
