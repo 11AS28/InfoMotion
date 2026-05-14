@@ -18,6 +18,8 @@ import Intro from './pages/introlectii';
 import Admin from './pages/Admin';
 import Auth from './pages/Auth';
 import Clasament from './pages/Clasament';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 
 import './theme.css';
@@ -43,6 +45,8 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/despre" element={<Intro />} />
+            <Route path="/termeni" element={<TermsOfService />} />
+            <Route path="/confidentialitate" element={<PrivacyPolicy />} />
 
             {/* Administrare - fără PrivateRoute (se ocupă Admin.jsx de login) */}
             <Route path="/admin" element={<Admin />} />

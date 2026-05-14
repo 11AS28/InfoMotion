@@ -16,6 +16,28 @@ body {
   min-height: 100vh;
 }
 
+
+/* pt tos etc */
+p{
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+li {
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+h2 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
 /* --- STRUCTURA PRINCIPALĂ (HERO) --- */
 .hero-section {
   display: flex;

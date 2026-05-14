@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Am adăugat Link aici
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/auth.css';
 import { FaGoogle } from "react-icons/fa";
 import { sendEmailVerification } from "firebase/auth";
-
 
 function Auth() {
   const navigate = useNavigate();
   const { loginWithGoogle, login, signup, logout, resetPassword } = useAuth();
   
   const [isRegistering, setIsRegistering] = useState(false); 
-  const [identificator, setIdentificator] = useState(''); // Poate fi email sau username
-  const [username, setUsername] = useState(''); // Folosit doar la înregistrare
+  const [identificator, setIdentificator] = useState(''); 
+  const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
+  
+  // --- STATE NOU PENTRU TERMENI ȘI CONDIȚII ---
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [showResendBtn, setShowResendBtn] = useState(false);
 
   const handleGoogleLogin = async () => {
+    // La Google Login, de obicei Google gestionează ToS-ul lor, dar dacă vrei 
+    // să îl forțezi să accepte ToS-ul TĂU înainte de click pe Google la înregistrare:
+    if (isRegistering && !agreedToTerms) {
+      setError("Te rugăm să fii de acord cu Termenii, Condițiile și Politica de Confidențialitate înainte de a continua.");
+      return;
+    }
+    
     try {
       await loginWithGoogle();
       navigate('/lectii'); 
@@ -34,31 +44,33 @@ function Auth() {
 
     try {
       if (isRegistering) {
-        // Verificăm dacă a introdus un username
+        // --- VALIDARE NOUĂ PENTRU CHECKBOX ---
+        if (!agreedToTerms) {
+          setError("Trebuie să accepți Termenii și Condițiile și Politica de Confidențialitate pentru a crea un cont.");
+          return;
+        }
+
         if (!username.trim()) {
           setError("Te rugăm să introduci un Username.");
           return;
         }
-        // La înregistrare, identificatorul TREBUIE să fie un email valid
         if (!identificator.includes('@')) {
           setError("Te rugăm să folosești o adresă de email validă pentru înregistrare.");
           return;
         }
 
-        // Trimitem emailul, parola și username-ul către funcția de signup
         await signup(identificator, password, username); 
         
         setSuccessMsg("Cont creat cu succes! Te rugăm să îți verifici emailul (inclusiv folderul Spam) pentru a activa contul.");
         setIsRegistering(false);
         setPassword(""); 
         setUsername("");
+        setAgreedToTerms(false); // Resetăm checkbox-ul după succes
       } else {
-        // Logare cont existent (identificator poate fi email sau username)
         const userCredential = await login(identificator, password); 
         const user = userCredential.user;
-
         const isDev = user.email === "smmaria@gmail.com";
-        // --- VERIFICAREA EMAILULUI ---
+
         if (!userCredential.user.emailVerified && !isDev) {
           await logout(); 
           setError("Contul tău nu este activat. Te rugăm să dai click pe linkul primit pe email.");
@@ -79,7 +91,6 @@ function Auth() {
 
   const handleResendEmail = async () => {
     try {
-      // Trebuie să ne asigurăm că retrimiterea se face cu un email
       const emailPentruRetrimitere = identificator.includes('@') ? identificator : null;
       if(!emailPentruRetrimitere) {
           setError("Pentru a retrimite emailul, te rugăm să te loghezi folosind adresa de email, nu username-ul.");
@@ -98,15 +109,12 @@ function Auth() {
     }
   };
 
-
-    const handleResetPassword = async () => {
-    // Verificăm dacă a introdus ceva în câmpul de email
+  const handleResetPassword = async () => {
     if (!identificator) {
       setError("Te rog să introduci adresa de email în câmpul de mai sus pentru a reseta parola!");
       return;
     }
     
-    // Verificăm dacă seamănă a email (conține @)
     if (!identificator.includes('@')) {
       setError("Te rog să introduci un email valid pentru resetare, nu un username!");
       return;
@@ -167,7 +175,6 @@ function Auth() {
 
         <form onSubmit={handleSubmit} className="auth-form-classic">
           
-          {/* Câmpul de Username (vizibil doar la înregistrare) */}
           {isRegistering && (
             <div className="admin-field" style={{ marginBottom: '15px' }}>
               <label>Username</label>
@@ -184,7 +191,7 @@ function Auth() {
           <div className="admin-field" style={{ marginBottom: '15px' }}>
             <label>{isRegistering ? "Email" : "Email"}</label>
             <input 
-              type={isRegistering ? "email" : "email"} // La login permitem text normal pt username
+              type={isRegistering ? "email" : "email"} 
               value={identificator} 
               onChange={(e) => setIdentificator(e.target.value)} 
               placeholder={isRegistering ? "elev@exemplu.com" : "Email-ul tău"}
@@ -201,16 +208,27 @@ function Auth() {
               placeholder="••••••••"
               required 
             />
-
-          
           </div>
 
-          
-          
+          {/* --- CHECKBOX-UL PENTRU TERMENI ȘI CONDIȚII (Apare doar la Register) --- */}
+          {isRegistering && (
+            <div className="terms-checkbox-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+              <input 
+                type="checkbox" 
+                id="termsCheck"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                style={{ marginTop: '3px', cursor: 'pointer' }}
+              />
+              <label htmlFor="termsCheck" style={{ cursor: 'pointer', lineHeight: '1.4' }}>
+                Sunt de acord cu <Link to="/termeni" target="_blank" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Termenii și Condițiile</Link> și cu <Link to="/confidentialitate" target="_blank" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Politica de Confidențialitate</Link>.
+              </label>
+            </div>
+          )}
+
           <button type="submit" className="admin-btn-login" style={{ width: '100%' }}>
             {isRegistering ? "Creează contul" : "Intră în cont"}
           </button>
-
           
         </form>
 
@@ -222,17 +240,22 @@ function Auth() {
               setError(""); 
               setSuccessMsg(""); 
               setPassword(""); 
-              setIdentificator(""); // Golim și emailul când schimbăm tab-ul
+              setIdentificator(""); 
               setUsername("");
+              setAgreedToTerms(false); // Resetăm starea checkbox-ului când se schimbă tab-ul
             }} 
             style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
           >
             {isRegistering ? "Loghează-te aici" : "Înregistrează-te"}
           </span>
         </p>
-        <button type="button" id="reset-password-btn" onClick={handleResetPassword} style={{ width: '100%', marginTop: '10px' }}>
+
+        {/* Butonul de Resetare Parolă (îl afișăm logic doar la Login) */}
+        {!isRegistering && (
+          <button type="button" id="reset-password-btn" onClick={handleResetPassword} style={{ width: '100%', marginTop: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', textDecoration: 'underline', cursor: 'pointer' }}>
             Ai uitat parola? Resetează aici
           </button>
+        )}
 
       </div>
     </div>

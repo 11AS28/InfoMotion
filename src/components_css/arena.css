@@ -87,7 +87,7 @@
 
 .empty-solvers {
     text-align: center;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.5));
     padding: 10px 0;
 }
 
@@ -113,6 +113,9 @@
 .rank { width: 30px; color: var(--accent-color, #00d1b2); }
 .username { flex: 1; text-align: left; padding-left: 10px; }
 .value { font-weight: bold; }
+
+
+
 
 /* =========================================
    RESPONSIVITATE TELEFOANE
