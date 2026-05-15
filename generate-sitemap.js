@@ -1,5 +1,4 @@
 import fs from 'fs';
-// Importă datele din fișierul tău (verifică să pui calea corectă din proiectul tău)
 import { lessonsData } from './src/lessonsData.js'; 
 
 // 1. Rutele tale statice pe care le dorești indexate

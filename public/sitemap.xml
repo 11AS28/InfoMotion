@@ -41,4 +41,35 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/metoda-greedy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/interclasare-vectori</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/matrici</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/vectori-introducere</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>  
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/siruri-de-caractere</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/structuri-de-date-neomogene</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
 </urlset>
