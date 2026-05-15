@@ -64,7 +64,7 @@ function Lectii() {
           </div>
           
           <div className="class-filters">
-            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'clasa-12'].map((f) => (
+            {['toate', 'clasa-9', 'clasa-10', 'clasa-11'].map((f) => (
               <button 
                 key={f}
                 className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 

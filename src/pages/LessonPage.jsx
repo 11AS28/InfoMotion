@@ -14,6 +14,8 @@ import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
 import DivideAnim from '../components/animatii/DivideAnim';
 import GreedyAnim from '../components/animatii/greedyAnim';
 import InterclasareAnim from '../components/animatii/InterclasareAnim';
+import AflareMaximAnim from '../components/animatii/AflareMaximAnim';
+import VariabileAnim from '../components/animatii/VariabileAnim';
 
 
 function LessonPage() {
@@ -89,6 +91,8 @@ function LessonPage() {
       case "DivideAnim": return <DivideAnim />;
       case "GreedyAnim": return <GreedyAnim />;
       case "InterclasareAnim": return <InterclasareAnim />;
+      case "AflareMaximAnim": return <AflareMaximAnim />;
+      case "VariabileAnim": return <VariabileAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };

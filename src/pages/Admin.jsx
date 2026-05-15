@@ -7,6 +7,8 @@ import { db } from '../firebase';
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
   { username: import.meta.env.VITE_ADMIN_2_USER, password: import.meta.env.VITE_ADMIN_2_PASS },
+  { username: import.meta.env.VITE_ADMIN_3_USER, password: import.meta.env.VITE_ADMIN_3_PASS },
+  { username: import.meta.env.VITE_ADMIN_4_USER, password: import.meta.env.VITE_ADMIN_4_PASS }
 ];
 
 // ===== LOGIN SCREEN =====
@@ -55,6 +57,7 @@ function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [firebaseLessons, setFirebaseLessons] = useState([]);
+  const [firebaseUsers, setFirebaseUsers] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
 
   // --- STATE LECȚIE ---
@@ -72,17 +75,16 @@ function Dashboard({ username, onLogout }) {
   );
   const [cfProblems, setCfProblems] = useState(['', '']);
 
-  // --- STATE ARENA ---
-  const [arenaDate, setArenaDate] = useState(new Date().toISOString().split('T')[0]);
-  const [arenaTitle, setArenaTitle] = useState('');
-  const [arenaLink, setArenaLink] = useState('');
-  const [arenaCF, setArenaCF] = useState('');
-
   // ===== DATA =====
   const refreshData = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "lectii"));
-      setFirebaseLessons(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // Preluăm Lecțiile
+      const querySnapshotLectii = await getDocs(collection(db, "lectii"));
+      setFirebaseLessons(querySnapshotLectii.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      // Preluăm Userii
+      const querySnapshotUsers = await getDocs(collection(db, "users"));
+      setFirebaseUsers(querySnapshotUsers.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
       console.error("Eroare la preluare date:", e);
     }
@@ -90,13 +92,11 @@ function Dashboard({ username, onLogout }) {
 
   useEffect(() => { refreshData(); }, [activeTab]);
 
-  // ===== HELPERS PBINFO =====
-  const updatePb = (idx, field, val) =>
-    setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
+  // ===== HELPERS PBINFO & QUIZ & RESET & ȘTERGERE & EDITARE =====
+  const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
 
-  // ===== HELPERS QUIZ =====
   const updateQuiz = (qIdx, field, val, vIdx = null) => {
     const newQuiz = [...quiz];
     if (field === 'varianta') newQuiz[qIdx].variante[vIdx] = val;
@@ -104,7 +104,6 @@ function Dashboard({ username, onLogout }) {
     setQuiz(newQuiz);
   };
 
-  // ===== RESET =====
   const resetForm = () => {
     setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere('');
     setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
@@ -114,7 +113,6 @@ function Dashboard({ username, onLogout }) {
     setIsEditing(false);
   };
 
-  // ===== ȘTERGERE =====
   const handleDelete = async (id) => {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
@@ -124,19 +122,12 @@ function Dashboard({ username, onLogout }) {
     } catch (e) { alert("Eroare la ștergere: " + e.message); }
   };
 
-  // ===== EDITARE =====
   const startEdit = (lectie) => {
-    setFId(lectie.id);
-    setFClasa(lectie.clasa || 'clasa-9');
-    setFTitlu(lectie.titlu || '');
-    setFDescriere(lectie.descriere || '');
-    setFTeorie(lectie.teorie || '');
-    setFCod(lectie.codCPlusPlus || '');
-
+    setFId(lectie.id); setFClasa(lectie.clasa || 'clasa-9'); setFTitlu(lectie.titlu || '');
+    setFDescriere(lectie.descriere || ''); setFTeorie(lectie.teorie || ''); setFCod(lectie.codCPlusPlus || '');
     if (!lectie.animatie) setFAnim('null');
     else if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) setFAnim(lectie.animatie);
     else { setFAnim('custom'); setFAnimCustom(lectie.animatie); }
-
     setPbRows(lectie.problemePbinfo?.length > 0 ? lectie.problemePbinfo : [{ id: '', titlu: '', url: '' }]);
     setQuiz(lectie.quiz || Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
     setCfProblems(lectie.codeforces || ['', '']);
@@ -144,46 +135,24 @@ function Dashboard({ username, onLogout }) {
     setActiveTab('adauga');
   };
 
-  // ===== PUBLICARE LECȚIE =====
   const handlePublish = async () => {
     if (!fId || !fTitlu) return alert("Completează ID și Titlu!");
     setLoading(true);
     try {
       const lectieData = {
         id: fId, clasa: fClasa, titlu: fTitlu, descriere: fDescriere, teorie: fTeorie,
-        codCPlusPlus: fCod,
-        animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
-        problemePbinfo: pbRows.filter(r => r.id || r.titlu),
-        quiz: quiz,
-        codeforces: cfProblems,
+        codCPlusPlus: fCod, animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
+        problemePbinfo: pbRows.filter(r => r.id || r.titlu), quiz: quiz, codeforces: cfProblems,
         dataModificarii: new Date().toISOString()
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
       alert(isEditing ? "✅ Modificări salvate!" : "🚀 Lecție publicată!");
-      resetForm();
-      await refreshData();
-      setActiveTab('lectii');
+      resetForm(); await refreshData(); setActiveTab('lectii');
     } catch (e) { alert("Eroare: " + e.message); }
     setLoading(false);
   };
 
-  // ===== SALVARE ARENA =====
-  const handleSaveArena = async () => {
-    if (!arenaTitle || !arenaCF) return alert("Titlu și ID CF obligatorii!");
-    setLoading(true);
-    try {
-      const [y, m, d] = arenaDate.split('-');
-      const docId = `${d}_${m}_${y}`;
-      await setDoc(doc(db, "dailyChallenges", docId), {
-        titlu: arenaTitle, link: arenaLink, idCF: arenaCF, solvers: []
-      });
-      alert("Problema zilei programată!");
-      setArenaTitle(''); setArenaCF(''); setArenaLink('');
-    } catch (e) { alert("Eroare Arena: " + e.message); }
-    setLoading(false);
-  };
-
-  // ===== STATS OVERVIEW =====
+  // ===== STATS OVERVIEW LECȚII =====
   const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
   const totalLectii = currentData.length;
   const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
@@ -198,8 +167,22 @@ function Dashboard({ username, onLogout }) {
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
+  // ===== STATS UTILIZATORI =====
+  const totalUsers = firebaseUsers.length;
+  const verifiedCFUsers = firebaseUsers.filter(u => u.cfValidat).length;
+  const totalPlatformXP = firebaseUsers.reduce((sum, u) => sum + (u.puncteTotale || 0), 0);
+  const avgStreak = totalUsers > 0 ? (firebaseUsers.reduce((sum, u) => sum + (u.streakCount || 0), 0) / totalUsers).toFixed(1) : 0;
+  
+  // --- Sortare pentru TOP XP ---
+  const topUsers = [...firebaseUsers].sort((a, b) => (b.puncteTotale || 0) - (a.puncteTotale || 0)).slice(0, 5);
+  const maxUserXP = topUsers.length > 0 ? Math.max(topUsers[0].puncteTotale || 1, 1) : 1;
+
+  // --- Sortare pentru TOP STREAK ---
+  const topStreakUsers = [...firebaseUsers].sort((a, b) => (b.streakCount || 0) - (a.streakCount || 0)).slice(0, 5);
+  const maxUserStreak = topStreakUsers.length > 0 ? Math.max(topStreakUsers[0].streakCount || 1, 1) : 1;
+
   // ===== TABS =====
-  const tabs = ['overview', 'lectii', 'adauga'];
+  const tabs = ['overview','utilizatori' ,'lectii', 'adauga'];
 
   return (
     <div className="admin-wrapper">
@@ -222,6 +205,7 @@ function Dashboard({ username, onLogout }) {
             }}
           >
             {t === 'overview' ? 'Prezentare generală'
+              : t === 'utilizatori' ? '👥 Utilizatori'
               : t === 'lectii' ? 'Lecțiile mele'
               : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
           </button>
@@ -230,30 +214,14 @@ function Dashboard({ username, onLogout }) {
 
       <main className="admin-main">
 
-        {/* ===== TAB OVERVIEW ===== */}
+        {/* ===== TAB OVERVIEW (Lecții) ===== */}
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Total lecțiile</div>
-                <div className="admin-stat-num">{totalLectii}</div>
-                <div className="admin-stat-sub">în Cloud</div>
-              </div>
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Cu animație</div>
-                <div className="admin-stat-num">{cuAnimatie}</div>
-                <div className="admin-stat-sub">active</div>
-              </div>
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Clase acoperite</div>
-                <div className="admin-stat-num">{claseUnice}/4</div>
-                <div className="admin-stat-sub">clase</div>
-              </div>
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Probleme pbinfo</div>
-                <div className="admin-stat-num">{totalPbinfo}</div>
-                <div className="admin-stat-sub">linkuri</div>
-              </div>
+              <div className="admin-stat-card" style={{borderColor: '#378ADD'}}><div className="admin-stat-label">Total lecțiile</div><div className="admin-stat-num">{totalLectii}</div><div className="admin-stat-sub">în Cloud</div></div>
+              <div className="admin-stat-card" style={{borderColor: '#639922'}}><div className="admin-stat-label">Cu animație</div><div className="admin-stat-num">{cuAnimatie}</div><div className="admin-stat-sub">active</div></div>
+              <div className="admin-stat-card" style={{borderColor: '#BA7517'}}><div className="admin-stat-label">Clase acoperite</div><div className="admin-stat-num">{claseUnice}/3</div><div className="admin-stat-sub">clase</div></div>
+              <div className="admin-stat-card" style={{borderColor: '#D4537E'}}><div className="admin-stat-label">Probleme pbinfo</div><div className="admin-stat-num">{totalPbinfo}</div><div className="admin-stat-sub">linkuri</div></div>
             </div>
 
             <div className="admin-two-col">
@@ -263,10 +231,7 @@ function Dashboard({ username, onLogout }) {
                   <div key={c} className="admin-bar-row">
                     <span className="admin-bar-label">Clasa {c}</span>
                     <div className="admin-bar-track">
-                      <div
-                        className="admin-bar-fill"
-                        style={{ width: `${(countPerClasa[c] / maxCount) * 100}%`, background: barColors[c] }}
-                      />
+                      <div className="admin-bar-fill" style={{ width: `${(countPerClasa[c] / maxCount) * 100}%`, background: barColors[c] }} />
                     </div>
                     <span className="admin-bar-count">{countPerClasa[c]}</span>
                   </div>
@@ -276,23 +241,101 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
+        {/* ===== TAB UTILIZATORI (NOU) ===== */}
+        {activeTab === 'utilizatori' && (
+          <>
+            <div className="admin-stat-grid" style={{ marginBottom: '20px' }}>
+              <div className="admin-stat-card" style={{ borderColor: '#378ADD' }}>
+                <div className="admin-stat-label">Total Conturi</div>
+                <div className="admin-stat-num">{totalUsers}</div>
+                <div className="admin-stat-sub">Elevi înregistrați</div>
+              </div>
+              <div className="admin-stat-card" style={{ borderColor: '#639922' }}>
+                <div className="admin-stat-label">Verificați Codeforces</div>
+                <div className="admin-stat-num">{verifiedCFUsers}</div>
+                <div className="admin-stat-sub">{totalUsers > 0 ? Math.round((verifiedCFUsers/totalUsers)*100) : 0}% din total</div>
+              </div>
+              <div className="admin-stat-card" style={{ borderColor: '#BA7517' }}>
+                <div className="admin-stat-label">XP Total Generat</div>
+                <div className="admin-stat-num">{totalPlatformXP}</div>
+                <div className="admin-stat-sub">puncte pe platformă</div>
+              </div>
+              <div className="admin-stat-card" style={{ borderColor: '#D4537E' }}>
+                <div className="admin-stat-label">Streak Mediu</div>
+                <div className="admin-stat-num">{avgStreak}</div>
+                <div className="admin-stat-sub">zile consecutive</div>
+              </div>
+            </div>
+
+            <div className='admin-two-col'>
+              {/* Card 1: Top XP */}
+              <div className='admin-card' style={{flex: 1}}>
+                <div className='admin-section-title'>🏆 Top Elevi (După XP)</div>
+                {topUsers.length === 0 ? (
+                  <p style={{color: 'var(--text-muted)'}}>Niciun utilizator înregistrat.</p>
+                ) : (
+                  topUsers.map((user, index) => (
+                    <div key={index} className="admin-bar-row" style={{ marginBottom: '15px' }}>
+                      <span className="admin-bar-label" style={{ minWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {/* AICI ESTE PROTECȚIA PENTRU EMAIL (.split nu va mai pica) */}
+                        #{index + 1} {user.nume || (user.email ? user.email.split('@')[0] : "User_Fara_Nume")}
+                      </span>
+                      <div className="admin-bar-track">
+                        <div
+                          className="admin-bar-fill"
+                          style={{ 
+                            width: `${((user.puncteTotale || 0) / maxUserXP) * 100}%`, 
+                            background: index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#378ADD' 
+                          }}
+                        />
+                      </div>
+                      <span className="admin-bar-count" style={{ minWidth: '50px' }}>{user.puncteTotale || 0} XP</span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Card 2: Top STREAK */}
+              <div className='admin-card' style={{flex: 1}}>
+                <div className='admin-section-title'>🔥 Top Elevi (După Streak)</div>
+                {topStreakUsers.length === 0 ? (
+                  <p style={{color: 'var(--text-muted)'}}>Niciun utilizator înregistrat.</p>
+                ) : (
+                  topStreakUsers.map((user, index) => (
+                    <div key={index} className="admin-bar-row" style={{ marginBottom: '15px' }}>
+                      <span className="admin-bar-label" style={{ minWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {/* AICI ESTE PROTECȚIA PENTRU EMAIL */}
+                        #{index + 1} {user.nume || (user.email ? user.email.split('@')[0] : "User_Fara_Nume")}
+                      </span>
+                      <div className="admin-bar-track">
+                        <div
+                          className="admin-bar-fill"
+                          style={{ 
+                            width: `${((user.streakCount || 0) / maxUserStreak) * 100}%`, 
+                            background: index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#ff4500'
+                          }}
+                        />
+                      </div>
+                      <span className="admin-bar-count" style={{ minWidth: '50px' }}>{user.streakCount || 0} zile</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         {/* ===== TAB LECȚII ===== */}
         {activeTab === 'lectii' && (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead>
-                <tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr>
-              </thead>
+              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
               <tbody>
                 {firebaseLessons.map((l) => (
                   <tr key={l.id}>
                     <td><code className="admin-route-code">{l.id}</code></td>
                     <td className="admin-td-titlu">{l.titlu}</td>
-                    <td>
-                      <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>
-                        {l.clasa?.toUpperCase()}
-                      </span>
-                    </td>
+                    <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
                     <td className="admin-actions-cell">
                       <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
                       <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
@@ -322,7 +365,7 @@ function Dashboard({ username, onLogout }) {
                   <option value="clasa-9">Clasa 9</option>
                   <option value="clasa-10">Clasa 10</option>
                   <option value="clasa-11">Clasa 11</option>
-                  <option value="clasa-12">Clasa 12</option>
+               
                 </select>
               </div>
               <div className="admin-field admin-field--full">
