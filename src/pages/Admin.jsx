@@ -326,26 +326,51 @@ function Dashboard({ username, onLogout }) {
         )}
 
         {/* ===== TAB LECȚII ===== */}
-        {activeTab === 'lectii' && (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
-              <tbody>
-                {firebaseLessons.map((l) => (
-                  <tr key={l.id}>
-                    <td><code className="admin-route-code">{l.id}</code></td>
-                    <td className="admin-td-titlu">{l.titlu}</td>
-                    <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
-                    <td className="admin-actions-cell">
-                      <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
-                      <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* ===== TAB LECȚII ===== */}
+{activeTab === 'lectii' && (
+  <>
+    {/* Interfața pentru PC (Tabel) */}
+    <div className="admin-table-wrap desktop-only">
+      <table className="admin-table">
+        <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
+        <tbody>
+          {firebaseLessons.map((l) => (
+            <tr key={l.id}>
+              <td><code className="admin-route-code">{l.id}</code></td>
+              <td className="admin-td-titlu">{l.titlu}</td>
+              <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
+              <td className="admin-actions-cell">
+                <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
+                <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Interfața pentru Mobil (Carduri) */}
+    <div className="admin-lessons-mobile-list mobile-only">
+      {firebaseLessons.length === 0 ? (
+        <p style={{ color: '#64748b', textAlign: 'center' }}>Nu există lecții publicate.</p>
+      ) : (
+        firebaseLessons.map((l) => (
+          <div key={l.id} className="admin-lesson-mobile-card">
+            <div className="mobile-card-header">
+              <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span>
+              <code className="admin-route-code">{l.id.substring(0, 15)}{l.id.length > 15 ? '...' : ''}</code>
+            </div>
+            <div className="mobile-card-title">{l.titlu}</div>
+            <div className="mobile-card-actions">
+              <button className="admin-btn-edit mobile-action-btn" onClick={() => startEdit(l)}>📝 Editează</button>
+              <button className="admin-btn-delete mobile-action-btn" onClick={() => handleDelete(l.id)}>🗑️ Șterge</button>
+            </div>
           </div>
-        )}
+        ))
+      )}
+    </div>
+  </>
+)}
 
         {/* ===== TAB ADAUGĂ / EDITEAZĂ ===== */}
         {activeTab === 'adauga' && (

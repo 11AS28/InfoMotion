@@ -690,3 +690,80 @@ body {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ── RESPONSIVE PENTRU FILTRARE APARIȚIE ────────────────────── */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Reducem padding-ul la ecranul principal pentru mai mult spațiu */
+  .admin-main {
+    padding: 16px 12px 60px !important;
+  }
+
+  .admin-tabs-bar {
+    padding: 0 12px !important;
+    overflow-x: auto; /* Permite scroll la taburi dacă nu încap pe ecran */
+    white-space: nowrap;
+  }
+  
+  .admin-tab {
+    padding: 12px 14px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ── ELEMENTE CARD MOBIL ───────────────────────────────────── */
+.admin-lessons-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.admin-lesson-mobile-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.mobile-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mobile-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.mobile-card-actions {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+.mobile-action-btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px !important;
+  font-size: 0.9rem !important;
+  display: inline-block;
+}
