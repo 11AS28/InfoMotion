@@ -20,7 +20,7 @@ import Auth from './pages/Auth';
 import Clasament from './pages/Clasament';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-
+import AdminUsers from './pages/AdminUsers';
 
 import './theme.css';
 
@@ -76,6 +76,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <LessonPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/adminusers/"
+              element={
+                <PrivateRoute>
+                  <AdminUsers />
                 </PrivateRoute>
               }
             />
