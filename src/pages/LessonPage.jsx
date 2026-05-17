@@ -16,7 +16,7 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 import InterclasareAnim from '../components/animatii/InterclasareAnim';
 import AflareMaximAnim from '../components/animatii/AflareMaximAnim';
 import VariabileAnim from '../components/animatii/VariabileAnim';
-
+import SirurideCaractere from '../components/animatii/SirurideCaractere'
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -93,6 +93,7 @@ function LessonPage() {
       case "InterclasareAnim": return <InterclasareAnim />;
       case "AflareMaximAnim": return <AflareMaximAnim />;
       case "VariabileAnim": return <VariabileAnim />;
+      case "SirurideCaractere": return <SirurideCaractere/>
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
