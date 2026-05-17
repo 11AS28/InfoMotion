@@ -98,13 +98,13 @@ body {
   font-size: 1.5rem;
 }
 
-/* Efect la Hover pentru Discord (Culoarea specifică de blurple) */
-.social-card.discord:hover {
-  background-color: #5865F2;
+/* Efect la Hover pentru Instagram (Culoarea specifică de blurple) */
+.social-card.instagram:hover {
+  background-color: #ca2b88;
   color: #ffffff;
-  border-color: #5865F2;
+  border-color: #ca2b88;
   transform: translateY(-3px); /* Se ridică puțin */
-  box-shadow: 0 10px 20px rgba(88, 101, 242, 0.2);
+  box-shadow: 0 10px 20px rgba(202, 43, 136, 0.2);
 }
 
 /* Efect la Hover pentru Github (Negru/Gri închis) */

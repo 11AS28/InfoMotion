@@ -27,12 +27,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/variabile-cpp</loc>
+    <loc>https://info-motion.vercel.app/lectie/cautare-binara</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/cautare-binara</loc>
+    <loc>https://info-motion.vercel.app/lectie/descompunere-factori-primi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -42,7 +42,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/metoda-greedy</loc>
+    <loc>https://info-motion.vercel.app/lectie/generarea-sirului-fibonacci</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -57,10 +57,15 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/vectori-introducere</loc>
+    <loc>https://info-motion.vercel.app/lectie/metoda-greedy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>  
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/procesarea-cifrelor-unui-numar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://info-motion.vercel.app/lectie/siruri-de-caractere</loc>
     <changefreq>weekly</changefreq>
@@ -71,5 +76,19 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/variabile-cpp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/vectori-introducere</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/verificare-numar-prim</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

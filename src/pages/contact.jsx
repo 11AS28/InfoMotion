@@ -1,7 +1,7 @@
 import Nav from "../components/nav";
 import Footer from "../components/footer";
 import '../pages_css/contact.css';
-import { FaDiscord, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaGithub, FaInstagram} from "react-icons/fa";
 import { CgMail } from "react-icons/cg";
 
 function Contact() {
@@ -33,9 +33,9 @@ function Contact() {
                             </a>
                         </li>
                         <li>
-                            <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="social-card discord">
-                                <FaDiscord className="icon" /> 
-                                <span>@fanec0x</span>
+                            <a href="https://www.instagram.com/info.motion2026/?hl=en" target="_blank" rel="noopener noreferrer" className="social-card instagram">
+                                <FaInstagram className="icon" /> 
+                                <span>@info.motion2026</span>
                             </a>
                         </li>
                         <li>

@@ -1,24 +1,61 @@
 import fs from 'fs';
-import { lessonsData } from './src/lessonsData.js'; 
+import dotenv from 'dotenv';
 
-// 1. Rutele tale statice pe care le dorești indexate
+// Încărcăm variabilele din fișierul .env
+dotenv.config();
+
+// Luăm ID-ul proiectului Firebase din .env (ai definit VITE_FIREBASE_PROJECT_ID)
+const FIREBASE_PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID;
+
+if (!FIREBASE_PROJECT_ID) {
+  console.error("❌ Eroare: Nu a fost găsit VITE_FIREBASE_PROJECT_ID în fișierul .env!");
+  process.exit(1);
+}
+
+// 1. Rutele tale statice
 const staticRoutes = [
   '/',
   '/despre',
   '/contact',
   '/lectii',
-
-  // Nu adăugăm rute gen '/auth' sau '/admin' pentru a nu fi indexate de Google
 ];
 
-// 2. Extragem rutele dinamice din proprietatea "id" a fiecărei lecții
-const dynamicRoutes = lessonsData.map(lectie => `/lectie/${lectie.id}`);
+async function generateSitemap() {
+  let dynamicRoutes = [];
 
-// 3. Combinăm toate rutele
-const allRoutes = [...staticRoutes, ...dynamicRoutes];
+  try {
+    console.log(`⏳ Se preiau lecțiile din baza de date Firebase (${FIREBASE_PROJECT_ID})...`);
+    
+    // Facem request HTTP către Firebase REST API pentru a lua documentele din colecția "lectii"
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/lectii`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
 
-// 4. Construim structura XML pentru Sitemap
-const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+    const data = await response.json();
+    
+    if (data.documents) {
+      dynamicRoutes = data.documents.map(doc => {
+        // doc.name are formatul "projects/infomotion-fb819/databases/(default)/documents/lectii/NUME_LECTIE"
+        const pathParts = doc.name.split('/');
+        const lectieId = pathParts[pathParts.length - 1];
+        return `/lectie/${lectieId}`;
+      });
+    }
+
+    console.log(`✅ Am găsit ${dynamicRoutes.length} lecții în baza de date!`);
+
+  } catch (error) {
+    console.error("❌ Eroare la preluarea datelor din Firebase:", error.message);
+    console.log("⚠️ Se va genera sitemap doar cu paginile statice.");
+  }
+
+  // 3. Combinăm toate rutele
+  const allRoutes = [...staticRoutes, ...dynamicRoutes];
+
+  // 4. Construim structura XML pentru Sitemap
+  const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${allRoutes.map(url => `
   <url>
@@ -28,11 +65,15 @@ const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
   </url>`).join('')}
 </urlset>`;
 
-// 5. Salvăm fișierul generat direct în folderul public (de unde Vercel îl va prelua)
-try {
-  fs.writeFileSync('./public/sitemap.xml', sitemapContent);
-  console.log(`✅ Sitemap generat cu succes! Au fost adăugate ${allRoutes.length} pagini (inclusiv ${dynamicRoutes.length} lecții).`);
-} catch (error) {
-  console.error("❌ A apărut o eroare la salvarea sitemap-ului:", error);
-  process.exit(1);
+  // 5. Salvăm fișierul generat direct în folderul public (de unde Vercel îl va prelua)
+  try {
+    fs.writeFileSync('./public/sitemap.xml', sitemapContent);
+    console.log(`✅ Sitemap generat cu succes! Au fost adăugate ${allRoutes.length} pagini.`);
+  } catch (error) {
+    console.error("❌ A apărut o eroare la salvarea sitemap-ului:", error);
+    process.exit(1);
+  }
 }
+
+// Rulăm scriptul
+generateSitemap();
