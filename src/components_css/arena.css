@@ -6,7 +6,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 15px;
     padding: 30px;
-    max-width: 800px; /* Mai lat pentru a se alinia frumos cu restul paginii */
+    max-width: 800px;
     margin: 0 auto 40px auto;
     text-align: center;
     color: var(--accent-color)
@@ -19,7 +19,6 @@
     font-weight: bold;
 }
 
-/* Link-ul către Codeforces */
 .arena-container a {
     display: inline-block;
     color: var(--accent-color, #00d1b2);
@@ -90,7 +89,6 @@
     padding: 10px 0;
 }
 
-/* Rândurile de utilizatori din Arena moștenesc stilul curat */
 .user-row {
     display: flex;
     justify-content: space-between;
@@ -129,7 +127,7 @@
 }
 
 /* =========================================
-   SISTEM REZOLVARE GRID + REZERVĂ RECONSTRUCȚIE
+   SISTEM REZOLVARE GRID
    ========================================= */
 .arena-wrapper {
     padding: 0 15px;
@@ -139,7 +137,6 @@
     max-width: 1200px !important; 
 }
 
-/* Containerul de 3 coloane */
 .arena-grid-layout {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -147,7 +144,6 @@
     margin-bottom: 30px;
 }
 
-/* Stilul fiecărei cărți/casete de problemă */
 .arena-custom-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -179,7 +175,6 @@
     font-size: 1rem;
 }
 
-/* Titluri și taguri specifice */
 .arena-custom-card h3 {
     font-size: 1.25rem;
     color: #f8fafc;
@@ -197,9 +192,9 @@
     margin-bottom: 10px;
 }
 
-.tag-easy { background: rgba(55, 138, 221, 0.15); color: #378ADD; border: 1px solid rgba(55, 138, 221, 0.3); }
-.tag-medium { background: rgba(99, 153, 34, 0.15); color: #639922; border: 1px solid rgba(99, 153, 34, 0.3); }
-.tag-hard { background: rgba(186, 117, 23, 0.15); color: #BA7517; border: 1px solid rgba(186, 117, 23, 0.3); }
+.tag-easy   { background: rgba(55, 138, 221, 0.15); color: #378ADD; border: 1px solid rgba(55, 138, 221, 0.3); }
+.tag-medium { background: rgba(99, 153, 34, 0.15);  color: #639922; border: 1px solid rgba(99, 153, 34, 0.3); }
+.tag-hard   { background: rgba(186, 117, 23, 0.15); color: #BA7517; border: 1px solid rgba(186, 117, 23, 0.3); }
 
 .card-xp {
     font-size: 0.8rem;
@@ -207,7 +202,6 @@
     margin: 5px 0;
 }
 
-/* Notificare text avertisment */
 .arena-warning-text {
     color: #BA7517;
     font-size: 0.85rem;
@@ -218,7 +212,6 @@
     margin-bottom: 30px;
 }
 
-/* Selector clasament pentru desktop */
 .solvers-list-header {
     display: flex;
     justify-content: space-between;
@@ -253,13 +246,12 @@
     font-weight: bold;
 }
 
-/* Ascundem tab-urile mobile când suntem pe PC */
 .arena-mobile-tabs {
     display: none;
 }
 
 /* =========================================
-   MEDIA QUERY: CORECTARE MOBIL
+   MEDIA QUERY: MOBIL
    ========================================= */
 @media (max-width: 900px) {
     .arena-grid-layout {
@@ -303,58 +295,106 @@
     }
 }
 
-
 /* =========================================
-   ADAPTARE SPECIALĂ PENTRU LIGHT MODE
+   LIGHT MODE — selectorul corect este :not(.dark) pe html
+   Tema ta adaugă clasa 'dark' pe <html> pentru dark mode,
+   deci light mode = html fără clasa 'dark'
    ========================================= */
-/* Notă: Înlocuiește `.light-mode` de mai jos cu selectorul tău global dacă folosești [data-theme='light'] */
-
-.light-mode .arena-custom-card h3 {
-    color: #0f172a !important; /* Face titlul problemei gri închis/negru în loc de alb */
+html:not(.dark) .arena-container {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #0f172a;
 }
 
-.light-mode .arena-custom-card {
+html:not(.dark) .arena-container h2 {
+    color: #0f172a;
+}
+
+html:not(.dark) .arena-custom-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
 }
 
-.light-mode .arena-custom-card:hover {
+html:not(.dark) .arena-custom-card:hover {
     border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.light-mode .card-xp {
-    color: #64748b; /* Face textul cu subpuncte XP lizibil pe alb */
+/* FIX PRINCIPAL: titlurile erau albe pe alb */
+html:not(.dark) .arena-custom-card h3 {
+    color: #0f172a;
 }
 
-.light-mode .user-row {
+html:not(.dark) .card-xp {
+    color: #64748b;
+}
+
+html:not(.dark) .arena-container button:disabled {
+    background-color: #e2e8f0;
+    color: #94a3b8;
+}
+
+html:not(.dark) .solvers-list {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+html:not(.dark) .solvers-list h3 {
+    color: #0f172a;
+}
+
+html:not(.dark) .user-row {
     border-bottom-color: #e2e8f0;
     color: #334155;
 }
 
-.light-mode .desktop-rank-switch button {
+html:not(.dark) .user-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), transparent);
+}
+
+html:not(.dark) .empty-solvers {
+    color: #64748b;
+}
+
+html:not(.dark) .solvers-list-header {
+    border-bottom-color: #e2e8f0;
+}
+
+html:not(.dark) .desktop-rank-switch button {
     border-color: #cbd5e1;
     color: #64748b;
 }
 
-.light-mode .desktop-rank-switch button.active-mini {
+html:not(.dark) .desktop-rank-switch button.active-mini {
     background: var(--accent-color, #00d1b2);
     color: #ffffff;
 }
 
-.light-mode .arena-mobile-tabs button {
+html:not(.dark) .arena-mobile-tabs button {
     background: #f1f5f9;
     border-color: #e2e8f0;
     color: #475569;
 }
 
-.light-mode .arena-mobile-tabs button.active {
+html:not(.dark) .arena-mobile-tabs button.active {
     background: var(--accent-color, #00d1b2);
     color: #ffffff;
     border-color: var(--accent-color);
 }
 
-.light-mode .arena-container button:disabled {
-    background-color: #e2e8f0;
-    color: #94a3b8;
+html:not(.dark) .arena-warning-text {
+    color: #92400e;
+    background: rgba(186, 117, 23, 0.08);
+    border-color: rgba(186, 117, 23, 0.3);
 }
 
+/* Paginare */
+html:not(.dark) .page-btn {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+html:not(.dark) .page-info {
+    color: #475569;
+}
