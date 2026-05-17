@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
@@ -8,19 +8,19 @@ import QuizModal from '../components/QuizModal';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Importă componentele de animație
-import BubbleSortAnim from '../components/animatii/BubbleSortAnim';
-import CautareBinaraAnim from '../components/animatii/CautareBinaraAnim';
-import DivideAnim from '../components/animatii/DivideAnim';
-import GreedyAnim from '../components/animatii/greedyAnim';
-import InterclasareAnim from '../components/animatii/InterclasareAnim';
-import AflareMaximAnim from '../components/animatii/AflareMaximAnim';
-import VariabileAnim from '../components/animatii/VariabileAnim';
-import SirurideCaractere from '../components/animatii/SirurideCaractere';
-import Prim from '../components/animatii/Prim';
-import DescomPrim from '../components/animatii/DescomPrim';
-import CifreNr from '../components/animatii/CifreNr';
-import Siruri from '../components/animatii/Siruri';
+// Importăm leneș (Lazy) animațiile
+const BubbleSortAnim = React.lazy(() => import('../components/animatii/BubbleSortAnim'));
+const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
+const DivideAnim = React.lazy(() => import('../components/animatii/DivideAnim'));
+const GreedyAnim = React.lazy(() => import('../components/animatii/greedyAnim'));
+const InterclasareAnim = React.lazy(() => import('../components/animatii/InterclasareAnim'));
+const AflareMaximAnim = React.lazy(() => import('../components/animatii/AflareMaximAnim'));
+const VariabileAnim = React.lazy(() => import('../components/animatii/VariabileAnim'));
+const SirurideCaractere = React.lazy(() => import('../components/animatii/SirurideCaractere'));
+const Prim = React.lazy(() => import('../components/animatii/Prim'));
+const DescomPrim = React.lazy(() => import('../components/animatii/DescomPrim'));
+const CifreNr = React.lazy(() => import('../components/animatii/CifreNr'));
+const Siruri = React.lazy(() => import('../components/animatii/Siruri'));
 
 
 function LessonPage() {
@@ -89,7 +89,7 @@ function LessonPage() {
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
-  const renderAnimation = () => {
+    const ComponentaAnimatie = () => {
     switch (lectie.animatie) {
       case "BubbleSortAnim": return <BubbleSortAnim />;
       case "CautareBinaraAnim": return <CautareBinaraAnim />;
@@ -98,11 +98,11 @@ function LessonPage() {
       case "InterclasareAnim": return <InterclasareAnim />;
       case "AflareMaximAnim": return <AflareMaximAnim />;
       case "VariabileAnim": return <VariabileAnim />;
-      case "SirurideCaractere": return <SirurideCaractere/>
-      case "Prim": return <Prim/>
-      case "DescomPrim": return <DescomPrim/>
-      case "CifreNr": return <CifreNr/>
-      case "Siruri": return <Siruri/>
+      case "SirurideCaractere": return <SirurideCaractere/>;
+      case "Prim": return <Prim/>;
+      case "DescomPrim": return <DescomPrim/>;
+      case "CifreNr": return <CifreNr/>;
+      case "Siruri": return <Siruri/>;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
@@ -146,8 +146,11 @@ function LessonPage() {
 
             <div className="lesson-animation">
               <h2>🎮 Animație Interactivă</h2>
-              {renderAnimation()}
-            </div>
+              {/* Aici folosim Suspense ca aplicația să nu "crape" cât timp descarcă codul */}
+              <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
+                {lectie.animatie ? <ComponentaAnimatie /> : <div className="animation-placeholder">Animația va fi disponibilă curând.</div>}
+              </Suspense>
+          </div>
           </section>
 
           {lectie.codCPlusPlus && (
