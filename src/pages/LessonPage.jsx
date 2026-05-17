@@ -21,7 +21,9 @@ const Prim = React.lazy(() => import('../components/animatii/Prim'));
 const DescomPrim = React.lazy(() => import('../components/animatii/DescomPrim'));
 const CifreNr = React.lazy(() => import('../components/animatii/CifreNr'));
 const Siruri = React.lazy(() => import('../components/animatii/Siruri'));
-
+const SumePartiale1D = React.lazy(() => import('../components/animatii/SumePartiale1D'));
+const SumePartiale2D = React.lazy(() => import('../components/animatii/SumePartiale2D'));
+const SmenulMars = React.lazy(() => import('../components/animatii/SmenulMars'));
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -103,6 +105,9 @@ function LessonPage() {
       case "DescomPrim": return <DescomPrim/>;
       case "CifreNr": return <CifreNr/>;
       case "Siruri": return <Siruri/>;
+      case "SumePartiale1D": return <SumePartiale1D/>;
+      case "SumePartiale2D": return <SumePartiale2D/>;
+      case "SmenulMars": return <SmenulMars/>;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
