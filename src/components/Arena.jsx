@@ -255,13 +255,13 @@ function Arena() {
 
         <div className="arena-mobile-tabs">
           <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>
-            🟢 Merge din prima
+            🟢 Easy
           </button>
           <button className={activeTab === 'medium' ? 'active' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>
-            🟡 Ceva nu-mi dă
+            🟡 Medie
           </button>
           <button className={activeTab === 'hard' ? 'active' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>
-            🔴 SegFault 🪦
+            🔴 Grea
           </button>
         </div>
 
