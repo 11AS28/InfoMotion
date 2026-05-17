@@ -10,7 +10,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs, increment } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
 
 const AuthContext = createContext();
@@ -23,14 +23,11 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Funcția pentru Codeforces handle
   const updateCodeforcesHandle = async (handle) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
     try {
-      await updateDoc(userRef, {
-        codeforcesHandle: handle
-      });
+      await updateDoc(userRef, { codeforcesHandle: handle });
       console.log("Handle salvat cu succes:", handle);
     } catch (error) {
       console.error("Eroare la salvarea handle-ului:", error);
@@ -47,17 +44,12 @@ export function AuthProvider({ children }) {
     try {
       const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
       const data = await response.json();
-
       if (data.status === "OK") {
         const user = data.result[0];
         const isMatch = user.organization && user.organization.includes(secret);
-
         if (isMatch) {
           const userRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userRef, {
-            codeforcesHandle: handle,
-            cfValidat: true
-          });
+          await updateDoc(userRef, { codeforcesHandle: handle, cfValidat: true });
           return { success: true };
         }
         return { success: false, error: "Codul nu a fost găsit în câmpul 'Organization'. Ai apăsat 'Save' pe Codeforces?" };
@@ -81,12 +73,8 @@ export function AuthProvider({ children }) {
 
   const verificaDacaEGata = (idLectie) => {
     if (!currentUser) return false;
-    if (currentUser.lectiiTerminate) {
-      return currentUser.lectiiTerminate.includes(idLectie);
-    }
-    if (currentUser.progres) {
-      return !!currentUser.progres[idLectie];
-    }
+    if (currentUser.lectiiTerminate) return currentUser.lectiiTerminate.includes(idLectie);
+    if (currentUser.progres) return !!currentUser.progres[idLectie];
     return false;
   };
 
@@ -95,10 +83,7 @@ export function AuthProvider({ children }) {
     const userRef = doc(db, 'users', currentUser.uid);
     try {
       await updateDoc(userRef, {
-        [`progres.${idLectie}`]: {
-          terminatLa: new Date(),
-          status: 'complet'
-        }
+        [`progres.${idLectie}`]: { terminatLa: new Date(), status: 'complet' }
       });
     } catch (error) {
       console.error("Eroare la salvarea progresului:", error);
@@ -118,36 +103,25 @@ export function AuthProvider({ children }) {
     } else if (ultimaLogare === azi) {
       return;
     } else {
-      const dataUltimaLogare = new Date(ultimaLogare);
-      const dataAzi = new Date(azi);
-      const diffTime = Math.abs(dataAzi - dataUltimaLogare);
+      const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffZile === 1) {
-        noulStreak += 1;
-      } else if (diffZile > 1) {
-        noulStreak = 1;
-      }
+      if (diffZile === 1) noulStreak += 1;
+      else if (diffZile > 1) noulStreak = 1;
     }
 
     try {
-      await setDoc(userRef, {
-        streakCount: noulStreak,
-        lastLoginDate: azi
-      }, { merge: true });
+      await setDoc(userRef, { streakCount: noulStreak, lastLoginDate: azi }, { merge: true });
     } catch (error) {
       console.error("Eroare la actualizarea streak-ului:", error);
     }
   };
 
-  // --- LOGIN / LOGOUT LOGIC ---
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
-
     if (!userSnap.exists()) {
       await setDoc(userRef, {
         uid: user.uid,
@@ -156,7 +130,9 @@ export function AuthProvider({ children }) {
         photoURL: user.photoURL,
         dataCrearii: new Date(),
         progres: {},
-        codeforcesHandle: ""
+        codeforcesHandle: "",
+        puncteTotale: 0,
+        problemeRezolvateCount: 0
       });
     }
     return user;
@@ -166,36 +142,29 @@ export function AuthProvider({ children }) {
 
   async function login(identificator, password) {
     let emailDeLogare = identificator;
-
     if (!identificator.includes('@')) {
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where("nume", "==", identificator));
+      const q = query(collection(db, 'users'), where("nume", "==", identificator));
       const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        throw new Error("auth/user-not-found");
-      }
+      if (querySnapshot.empty) throw new Error("auth/user-not-found");
       emailDeLogare = querySnapshot.docs[0].data().email;
     }
-
     return signInWithEmailAndPassword(auth, emailDeLogare, password);
   }
 
   async function signup(email, password, username) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
-    const userRef = doc(db, 'users', user.uid);
-    await setDoc(userRef, {
+    await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       nume: username,
       email: user.email,
       dataCrearii: new Date(),
       progres: {},
       codeforcesHandle: "",
-      streakCount: 0
+      streakCount: 0,
+      puncteTotale: 0,
+      problemeRezolvateCount: 0
     });
-
     await sendEmailVerification(user);
     return userCredential;
   }
@@ -227,21 +196,16 @@ export function AuthProvider({ children }) {
       alert("Te rugăm să îți setezi Codeforces Handle-ul în profil mai întâi!");
       return false;
     }
-
     const targetId = problemId.replace('/', '').trim().toUpperCase();
-
     try {
       const response = await fetch(`https://codeforces.com/api/user.status?handle=${currentUser.codeforcesHandle}&from=1&count=1000`);
       const data = await response.json();
-
       if (data.status === "OK") {
-        const rezolvata = data.result.some(submission => {
+        return data.result.some(submission => {
           const p = submission.problem;
           if (!p.contestId || !p.index) return false;
-          const currentId = `${p.contestId}${p.index}`.toUpperCase();
-          return currentId === targetId && submission.verdict === "OK";
+          return `${p.contestId}${p.index}`.toUpperCase() === targetId && submission.verdict === "OK";
         });
-        return rezolvata;
       }
     } catch (error) {
       console.error("Eroare la API-ul Codeforces:", error);
@@ -252,13 +216,9 @@ export function AuthProvider({ children }) {
   const updateUsername = async (newUsername) => {
     if (!currentUser) return;
     const cleanUsername = newUsername.trim();
-    if (cleanUsername.length < 3) {
-      throw new Error("Username-ul trebuie să aibă cel puțin 3 caractere.");
-    }
-    const userRef = doc(db, 'users', currentUser.uid);
+    if (cleanUsername.length < 3) throw new Error("Username-ul trebuie să aibă cel puțin 3 caractere.");
     try {
-      await updateDoc(userRef, { nume: cleanUsername });
-      console.log("Username actualizat cu succes!");
+      await updateDoc(doc(db, 'users', currentUser.uid), { nume: cleanUsername });
     } catch (error) {
       console.error("Eroare la actualizarea username-ului:", error);
       throw error;
@@ -274,33 +234,38 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ✅ FIX: acordaPuncte acceptă acum atât număr direct (din Arena)
-  // cât și string tip ('quiz', 'daily_normal', 'daily_sprinter')
+  // ✅ FIX PRINCIPAL:
+  // - Acceptă număr direct din Arena (ex: acordaPuncte(40)) SAU string ('quiz' etc.)
+  // - Folosește increment() din Firestore în loc de calcul manual
+  //   → nu mai depinde de currentUser.puncteTotale care putea fi undefined/NaN
+  // - Folosește setDoc cu merge:true în loc de updateDoc
+  //   → funcționează chiar dacă câmpul nu există încă în Firestore
   const acordaPuncte = async (tip) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
 
     let puncteDeAdaugat = 0;
-    let updateData = {};
+    let extraData = {};
 
     if (typeof tip === 'number') {
-      // Apel direct cu număr — folosit în Arena.js (ex: acordaPuncte(40))
       puncteDeAdaugat = tip;
     } else if (tip === 'quiz') {
       puncteDeAdaugat = 10;
     } else if (tip === 'daily_normal') {
       puncteDeAdaugat = 30;
-      updateData.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+      extraData.problemeRezolvateCount = increment(1);
     } else if (tip === 'daily_sprinter') {
       puncteDeAdaugat = 50;
-      updateData.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+      extraData.problemeRezolvateCount = increment(1);
     }
 
+    if (puncteDeAdaugat === 0) return;
+
     try {
-      await updateDoc(userRef, {
-        ...updateData,
-        puncteTotale: (currentUser.puncteTotale || 0) + puncteDeAdaugat
-      });
+      await setDoc(userRef, {
+        ...extraData,
+        puncteTotale: increment(puncteDeAdaugat)
+      }, { merge: true });
     } catch (error) {
       console.error("Eroare la acordarea punctelor:", error);
     }
