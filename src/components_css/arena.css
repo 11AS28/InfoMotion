@@ -74,7 +74,6 @@
     border-radius: 15px;
     padding: 20px;
     border: 1px solid var(--border, rgba(255, 255, 255, 0.05));
-    /* Setăm aliniere la stânga pt interiorul cardului pentru a arăta ca clasamentul */
 }
 
 .solvers-list h3 {
@@ -114,9 +113,6 @@
 .username { flex: 1; text-align: left; padding-left: 10px; }
 .value { font-weight: bold; }
 
-
-
-
 /* =========================================
    RESPONSIVITATE TELEFOANE
    ========================================= */
@@ -139,7 +135,6 @@
     padding: 0 15px;
 }
 
-/* Modificăm lățimea containerului să fie dashboard lat pe desktop */
 .arena-container {
     max-width: 1200px !important; 
 }
@@ -161,7 +156,7 @@
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Împinge butoanele perfect jos */
+    justify-content: space-between; 
     transition: transform 0.2s, border-color 0.2s;
 }
 
@@ -170,7 +165,6 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Forțăm link-urile și butoanele din interiorul casetelor să ocupe tot rândul */
 .arena-custom-card a {
     display: block;
     margin-bottom: 12px;
@@ -190,7 +184,7 @@
     font-size: 1.25rem;
     color: #f8fafc;
     margin: 10px 0 15px 0;
-    min-height: 48px; /* Aliniază înălțimea textului chiar dacă titlul e pe 2 rânduri */
+    min-height: 48px; 
 }
 
 .card-tag {
@@ -269,10 +263,9 @@
    ========================================= */
 @media (max-width: 900px) {
     .arena-grid-layout {
-        display: block; /* Dezactivăm cele 3 coloane paralele */
+        display: block; 
     }
     
-    /* Ascundem toate cardurile pe mobil, mai puțin cel activ */
     .arena-custom-card {
         display: none;
     }
@@ -281,7 +274,6 @@
         display: flex;
     }
 
-    /* Afișăm sistemul de taburi */
     .arena-mobile-tabs {
         display: flex;
         justify-content: center;
@@ -306,8 +298,63 @@
         border-color: var(--accent-color);
     }
 
-    /* Ascundem switch-ul mic de clasament pe mobil deoarece e sincronizat direct cu taburile mari */
     .desktop-rank-switch {
         display: none;
     }
 }
+
+
+/* =========================================
+   ADAPTARE SPECIALĂ PENTRU LIGHT MODE
+   ========================================= */
+/* Notă: Înlocuiește `.light-mode` de mai jos cu selectorul tău global dacă folosești [data-theme='light'] */
+
+.light-mode .arena-custom-card h3 {
+    color: #0f172a !important; /* Face titlul problemei gri închis/negru în loc de alb */
+}
+
+.light-mode .arena-custom-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+
+.light-mode .arena-custom-card:hover {
+    border-color: #cbd5e1;
+}
+
+.light-mode .card-xp {
+    color: #64748b; /* Face textul cu subpuncte XP lizibil pe alb */
+}
+
+.light-mode .user-row {
+    border-bottom-color: #e2e8f0;
+    color: #334155;
+}
+
+.light-mode .desktop-rank-switch button {
+    border-color: #cbd5e1;
+    color: #64748b;
+}
+
+.light-mode .desktop-rank-switch button.active-mini {
+    background: var(--accent-color, #00d1b2);
+    color: #ffffff;
+}
+
+.light-mode .arena-mobile-tabs button {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+.light-mode .arena-mobile-tabs button.active {
+    background: var(--accent-color, #00d1b2);
+    color: #ffffff;
+    border-color: var(--accent-color);
+}
+
+.light-mode .arena-container button:disabled {
+    background-color: #e2e8f0;
+    color: #94a3b8;
+}
+
