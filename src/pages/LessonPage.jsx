@@ -20,6 +20,8 @@ import SirurideCaractere from '../components/animatii/SirurideCaractere';
 import Prim from '../components/animatii/Prim';
 import DescomPrim from '../components/animatii/DescomPrim';
 import CifreNr from '../components/animatii/CifreNr';
+import Siruri from '../components/animatii/Siruri';
+
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -100,6 +102,7 @@ function LessonPage() {
       case "Prim": return <Prim/>
       case "DescomPrim": return <DescomPrim/>
       case "CifreNr": return <CifreNr/>
+      case "Siruri": return <Siruri/>
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
