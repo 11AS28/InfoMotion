@@ -27,12 +27,51 @@ function Arena() {
   };
 
   // Helper care returnează insigna potrivită
-  const afiseazaInsignaUtilizator = (count) => {
-    if (count >= 100) return <span title="Guru pe Spellcasting" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
-    if (count >= 50) return <span title="Grinder de OJI" style={{ marginLeft: '6px', cursor: 'help' }}>⚔️</span>;
-    if (count >= 10) return <span title="Dorel pe Redstone" style={{ marginLeft: '6px', cursor: 'help' }}>🥉</span>;
-    return null;
-  };
+ const afiseazaInsignaUtilizator = (count) => {
+  if (count >= 100)
+    return (
+      <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>
+        👑
+      </span>
+    );
+
+  if (count >= 50)
+    return (
+      <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>
+        🧙‍♂️
+      </span>
+    );
+
+  if (count >= 30)
+    return (
+      <span title="Arena Grinder" style={{ marginLeft: '6px', cursor: 'help' }}>
+        ⚔️
+      </span>
+    );
+
+  if (count >= 15)
+    return (
+      <span title="Miner de XP" style={{ marginLeft: '6px', cursor: 'help' }}>
+        ⚒️
+      </span>
+    );
+
+  if (count >= 5)
+    return (
+      <span title="Combo Mic" style={{ marginLeft: '6px', cursor: 'help' }}>
+        🔥
+      </span>
+    );
+
+  if (count >= 1)
+    return (
+      <span title="Primul Craft" style={{ marginLeft: '6px', cursor: 'help' }}>
+        🌱
+      </span>
+    );
+
+  return null;
+};
 
   useEffect(() => {
     const fetchArena = async () => {

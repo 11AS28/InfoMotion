@@ -127,10 +127,17 @@ function SidebarStats({ isOpen, onClose }) {
   };
 
   const listaBadgeuri = [
-    { id: 'b1', icon: '🥉', nume: 'Dorel pe Redstone', cerinta: 10, desc: 'Rezolvă 10 probleme în Arenă' },
-    { id: 'b2', icon: '⚔️', nume: 'Grinder de OJI', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
-    { id: 'b3', icon: '🧙‍♂️', nume: 'Guru pe Spellcasting', cerinta: 100, desc: 'Rezolvă 100+ probleme în Arenă' },
-    { id: 'b4', icon: ' ', nume: 'ceva random', cerinta:25, desc: 'rezolva 25+ probleme arena'}
+  { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
+
+  { id: 'b2', icon: '🔥', nume: 'Combo Mic', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
+
+  { id: 'b3', icon: '⚒️', nume: 'Miner de XP', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
+
+  { id: 'b4', icon: '⚔️', nume: 'Arena Grinder', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' },
+
+  { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
+
+  { id: 'b6', icon: '👑', nume: 'Boss Final', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
 
   return (
@@ -171,35 +178,7 @@ function SidebarStats({ isOpen, onClose }) {
           </div>
 
           {/* === SECȚIUNEA DINAMICĂ DE BADGE-URI === */}
-          <div className="sidebar-badges-section">
-            <h5>Trofeele Mele (Arenă)</h5>
-            <div className="badges-flex-list">
-              {listaBadgeuri.map((badge) => {
-                const esteDeblocat = totalProblemeDB >= badge.cerinta;
-                const maiAreNevoie = badge.cerinta - totalProblemeDB;
-
-                return (
-                  <div 
-                    key={badge.id} 
-                    className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
-                    title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
-                  >
-                    <div className="badge-icon-wrapper">
-                      <span className="badge-emoji">{badge.icon}</span>
-                      {!esteDeblocat && <FaLock className="badge-lock-icon" />}
-                    </div>
-
-                    <div className="badge-text-details">
-                      <span className="badge-title">{badge.nume}</span>
-                      <span className="badge-sub">
-                        {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          
 
           <div className="streak-section">
             <span>Daily LogIn Streak</span>
@@ -239,6 +218,7 @@ function SidebarStats({ isOpen, onClose }) {
               <strong>{currentUser.email}</strong>
             </div>
 
+
             <div className="info-item-input">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Codeforces Handle:</span>
@@ -250,6 +230,7 @@ function SidebarStats({ isOpen, onClose }) {
                   handleInput !== "" && <small style={{ color: '#ff4500', fontSize: '0.7rem' }}>NEVERIFICAT</small>
                 )}
               </div>
+              
               
               <div className="handle-input-group">
                 <input
@@ -283,12 +264,44 @@ function SidebarStats({ isOpen, onClose }) {
             </div>
 
             <br />
+
+            <div className="sidebar-badges-section">
+            <h5>Trofeele Mele (Arenă)</h5>
+            <div className="badges-flex-list">
+              {listaBadgeuri.map((badge) => {
+                const esteDeblocat = totalProblemeDB >= badge.cerinta;
+                const maiAreNevoie = badge.cerinta - totalProblemeDB;
+
+                return (
+                  <div 
+                    key={badge.id} 
+                    className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
+                    title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
+                  >
+                    <div className="badge-icon-wrapper">
+                      <span className="badge-emoji">{badge.icon}</span>
+                      {!esteDeblocat && <FaLock className="badge-lock-icon" />}
+                    </div>
+
+                    <div className="badge-text-details">
+                      <span className="badge-title">{badge.nume}</span>
+                      <span className="badge-sub">
+                        {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
             <div className="info-item">
               <span>Status Cont:</span>
               <strong className="status-online">Activ</strong>
             </div>
           </div>
         </div>
+
+        
 
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button className="logout-btn-sidebar" onClick={() => { logout(); onClose(); }}>
