@@ -16,7 +16,10 @@ import GreedyAnim from '../components/animatii/greedyAnim';
 import InterclasareAnim from '../components/animatii/InterclasareAnim';
 import AflareMaximAnim from '../components/animatii/AflareMaximAnim';
 import VariabileAnim from '../components/animatii/VariabileAnim';
-import SirurideCaractere from '../components/animatii/SirurideCaractere'
+import SirurideCaractere from '../components/animatii/SirurideCaractere';
+import Prim from '../components/animatii/Prim';
+import DescomPrim from '../components/animatii/DescomPrim';
+import CifreNr from '../components/animatii/CifreNr';
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -94,6 +97,9 @@ function LessonPage() {
       case "AflareMaximAnim": return <AflareMaximAnim />;
       case "VariabileAnim": return <VariabileAnim />;
       case "SirurideCaractere": return <SirurideCaractere/>
+      case "Prim": return <Prim/>
+      case "DescomPrim": return <DescomPrim/>
+      case "CifreNr": return <CifreNr/>
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
