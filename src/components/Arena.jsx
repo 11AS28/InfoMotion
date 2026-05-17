@@ -269,7 +269,7 @@ function Arena() {
           {/* CASETA 1: EASY */}
           <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-easy">🟢 Merge din prima</span>
+              <span className="card-tag tag-easy">🟢 Easy</span>
               <h3>{problems.easy.titlu}</h3>
               <p className="card-xp">20 XP | 40 XP în primii 3</p>
             </div>
@@ -287,7 +287,7 @@ function Arena() {
           {/* CASETA 2: MEDIUM */}
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-medium">🟡 Ceva nu-mi dă</span>
+              <span className="card-tag tag-medium">🟡 Medie</span>
               <h3>{problems.medium.titlu}</h3>
               <p className="card-xp">40 XP | 50 XP în primii 3</p>
             </div>
@@ -305,7 +305,7 @@ function Arena() {
           {/* CASETA 3: HARD */}
           <div className={`arena-custom-card card-hard ${activeTab === 'hard' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-hard">🔴 SegFault 🪦</span>
+              <span className="card-tag tag-hard">🔴 Grea</span>
               <h3>{problems.hard.titlu}</h3>
               <p className="card-xp">50 XP | 65 XP în primii 3</p>
             </div>
