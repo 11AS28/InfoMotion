@@ -22,10 +22,17 @@ function Arena() {
   const solversPerPage = 5;
 
   const getSafeDateString = () => {
-    const today = new Date();
-    return `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-  };
-
+  const now = new Date();
+  
+  // Dacă e înainte de 10:00 dimineața, "ziua arenei" e încă cea de ieri
+  if (now.getHours() < 10) {
+    const ieri = new Date(now);
+    ieri.setDate(ieri.getDate() - 1);
+    return `${ieri.getDate()}_${ieri.getMonth() + 1}_${ieri.getFullYear()}`;
+  }
+  
+  return `${now.getDate()}_${now.getMonth() + 1}_${now.getFullYear()}`;
+};
   const afiseazaInsignaUtilizator = (count) => {
     if (count >= 100) return <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>👑</span>;
     if (count >= 50) return <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;

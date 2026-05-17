@@ -52,3 +52,87 @@
     vertical-align: middle;
     margin-right: 10px;
 }
+/* =========================================
+   PAGINARE — se adaugă în clasament.css și arena.css
+   ========================================= */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Butoane Înapoi / Înainte */
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 209, 178, 0.08);
+    color: var(--accent-color, #00d1b2);
+    border: 1px solid rgba(0, 209, 178, 0.25);
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    /* Resetăm orice stil moștenit din .arena-container button */
+    margin-bottom: 0 !important;
+    width: auto !important;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: rgba(0, 209, 178, 0.18);
+    border-color: rgba(0, 209, 178, 0.5);
+    transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.06);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Textul "1 / 3" din mijloc */
+.page-info {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    min-width: 48px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   LIGHT MODE
+   ========================================= */
+html:not(.dark) .pagination {
+    border-top-color: #e2e8f0;
+}
+
+html:not(.dark) .page-btn {
+    background: rgba(0, 209, 178, 0.06);
+    color: #008f7a;
+    border-color: rgba(0, 209, 178, 0.3);
+}
+
+html:not(.dark) .page-btn:hover:not(:disabled) {
+    background: rgba(0, 209, 178, 0.14);
+    border-color: rgba(0, 209, 178, 0.5);
+}
+
+html:not(.dark) .page-btn:disabled {
+    background: #f1f5f9;
+    color: #cbd5e1;
+    border-color: #e2e8f0;
+}
+
+html:not(.dark) .page-info {
+    color: #94a3b8;
+}
