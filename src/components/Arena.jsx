@@ -14,7 +14,7 @@ function Arena() {
   });
   
   const [solvers, setSolvers] = useState([]);
-  const [userBadgesMap, setUserBadgesMap] = useState({}); // Mappăm numărul total de probleme pentru toți utilizatorii din listă
+  const [userBadgesMap, setUserBadgesMap] = useState({}); 
   const [activeTab, setActiveTab] = useState('easy'); 
   const [isChecking, setIsChecking] = useState(false); 
 
@@ -26,52 +26,15 @@ function Arena() {
     return `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
   };
 
-  // Helper care returnează insigna potrivită
- const afiseazaInsignaUtilizator = (count) => {
-  if (count >= 100)
-    return (
-      <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>
-        👑
-      </span>
-    );
-
-  if (count >= 50)
-    return (
-      <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>
-        🧙‍♂️
-      </span>
-    );
-
-  if (count >= 30)
-    return (
-      <span title="Arena Grinder" style={{ marginLeft: '6px', cursor: 'help' }}>
-        ⚔️
-      </span>
-    );
-
-  if (count >= 15)
-    return (
-      <span title="Miner de XP" style={{ marginLeft: '6px', cursor: 'help' }}>
-        ⚒️
-      </span>
-    );
-
-  if (count >= 5)
-    return (
-      <span title="Combo Mic" style={{ marginLeft: '6px', cursor: 'help' }}>
-        🔥
-      </span>
-    );
-
-  if (count >= 1)
-    return (
-      <span title="Primul Craft" style={{ marginLeft: '6px', cursor: 'help' }}>
-        🌱
-      </span>
-    );
-
-  return null;
-};
+  const afiseazaInsignaUtilizator = (count) => {
+    if (count >= 100) return <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>👑</span>;
+    if (count >= 50) return <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
+    if (count >= 30) return <span title="Arena Grinder" style={{ marginLeft: '6px', cursor: 'help' }}>⚔️</span>;
+    if (count >= 15) return <span title="Miner de XP" style={{ marginLeft: '6px', cursor: 'help' }}>⚒️</span>;
+    if (count >= 5) return <span title="Combo Mic" style={{ marginLeft: '6px', cursor: 'help' }}>🔥</span>;
+    if (count >= 1) return <span title="Primul Craft" style={{ marginLeft: '6px', cursor: 'help' }}>🌱</span>;
+    return null;
+  };
 
   useEffect(() => {
     const fetchArena = async () => {
@@ -143,7 +106,6 @@ function Arena() {
           }
         }
 
-        // --- EXTRAGERE DINAMICĂ INSEMNE PENTRU TOTI SOLVERII ---
         if (activeSolvers.length > 0) {
           const uniqueUids = [...new Set(activeSolvers.map(s => s.uid))];
           const badgeMap = {};
@@ -180,6 +142,7 @@ function Arena() {
       return;
     }
 
+    // 🛠️ REPARAT CRITICAL: Ne asigurăm că verificăm dacă utilizatorul CURENT a luat puncte azi, nu oricine de pe site!
     const hasAnyPointsToday = solvers.some(s => s.uid === currentUser.uid && s.aPrimitPuncte === true);
 
     setIsChecking(true);
@@ -205,7 +168,6 @@ function Arena() {
           mesajPuncte = "✅ Submisie validată ca antrenament privat! (0 XP adăugat, ai ales deja o problemă azi).";
         }
         
-        // == REPARAT: Folosim cheia ta oficială "problemeRezolvateCount" ==
         const userDocRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userDocRef, {
           problemeRezolvateCount: increment(1) 
@@ -223,7 +185,6 @@ function Arena() {
           solvers: arrayUnion(nouSolver)
         });
 
-        // Actualizăm harta de insigne local pentru utilizatorul curent direct pe ecran
         const curentCountLocal = userBadgesMap[currentUser.uid] || 0;
         setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: curentCountLocal + 1 }));
 
@@ -245,6 +206,8 @@ function Arena() {
   const idxFirst = idxLast - solversPerPage;
   const currentSolvers = solversFiltrati.slice(idxFirst, idxLast);
   const totalPages = Math.ceil(solversFiltrati.length / solversPerPage);
+  
+  // 🛠️ REPARAT ACUM: Și textul de warning de jos va fi calculat strict pentru userul autentificat
   const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
 
   return (
@@ -327,7 +290,6 @@ function Arena() {
           </p>
         )}
 
-        {/* === CLASAMENTUL DIALECTIC === */}
         <div className="solvers-list">
           <div className="solvers-list-header">
             <h3>Top Solveri - {activeTab === 'easy' ? '🟢 Easy' : activeTab === 'medium' ? '🟡 Medie' : '🔴 Grea'}</h3>
@@ -347,7 +309,6 @@ function Arena() {
                 else if (realRank === 2) rankClass = 'rank-2';
                 else if (realRank === 3) rankClass = 'rank-3';
 
-                // Citim câte probleme are utilizatorul mapat
                 const totalProblemeUser = userBadgesMap[s.uid] || 0;
 
                 return (
@@ -355,7 +316,6 @@ function Arena() {
                     <span className="rank">#{realRank}</span>
                     <span className="username">
                       {s.nume} 
-                      {/* 🌟 ADAUGAT: Insigna publică dinamică, vizibilă pentru toată lumea în dreptul userului */}
                       {afiseazaInsignaUtilizator(totalProblemeUser)}
                       {s.aPrimitPuncte ? " 🚀" : " 🧪 (Antrenament)"}
                     </span>

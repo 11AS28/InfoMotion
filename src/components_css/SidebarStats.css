@@ -1,27 +1,29 @@
-/* Containerul principal al barei laterale */
+/* =========================================
+   CONTAINER PRINCIPAL ȘI STRUCTURĂ GENERALĂ
+   ========================================= */
 .sidebar-container {
   position: fixed;
   top: 0;
-  right: -350px; /* Îl ascundem fizic complet în dreapta (pune puțin mai mult decât lățimea) */
+  right: -350px; 
   width: 320px;
   height: 100vh;
   z-index: 2000;
   padding: 30px 20px;
-  box-sizing: border-box; /* FOARTE IMPORTANT: Păstrează lățimea la 320px inclusiv cu padding */
-  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Animăm right în loc de transform */
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; 
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* IMPLICIT: LIGHT MODE */
   background-color: #ffffff;
-  color: #333;
+  color: #1e293b;
 }
 
-/* Când sidebar-ul este deschis */
 .sidebar-container.open {
-  right: 0; /* Îl aducem la marginea ecranului */
+  right: 0; 
 }
-/* Fundalul gri din spatele sidebar-ului */
+
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -29,15 +31,23 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px); /* Efect de blur la restul site-ului */
+  backdrop-filter: blur(4px); 
   z-index: 1999;
 }
 
-/* --- LOGICA DE DARK MODE --- */
-.sidebar-container[data-theme='dark'] {
-  background-color: #121212; /* Fundal închis */
-  color: #f5f5f5;
-  box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+.sidebar-content {
+  flex: 1; 
+  overflow-y: auto; 
+  padding-right: 5px; 
+}
+
+/* Personalizare scrollbar independentă de temă */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
 /* Butonul de închidere (X) */
@@ -48,63 +58,52 @@
   font-size: 28px;
   border: none;
   background: none;
-  color: #888;
+  color: #64748b;
   cursor: pointer;
   line-height: 1;
   transition: color 0.2s;
 }
-
 .close-btn:hover {
   color: #ff4757;
 }
+
+/* =========================================
+   STILURI COMPONENTE (IMPLICIT LIGHT MODE)
+   ========================================= */
 
 /* Header & Avatar */
 .sidebar-header { 
   text-align: center; 
   margin-top: 20px;
   margin-bottom: 25px; 
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 25px;
 }
-
-.sidebar-container[data-theme='dark'] .sidebar-header {
-  border-bottom-color: #333;
-}
-
 .user-avatar-placeholder {
   width: 70px; height: 70px;
-  background: #eee; border-radius: 50%;
+  background: #f1f5f9; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 30px; margin: 0 auto 10px;
   border: 2px solid #01696f;
+  color: #64748b;
 }
-
-.sidebar-container[data-theme='dark'] .user-avatar-placeholder {
-  background: #2a2a2a;
-  border-color: #00b4d8;
-}
-
 .sidebar-header h3 {
   margin: 0;
   font-size: 1.4rem;
-  color: inherit;
+  color: #0f172a;
 }
-
 .badge-nivel {
   background: #01696f; color: white;
   padding: 4px 12px; border-radius: 20px;
   font-size: 0.8rem; font-weight: bold;
-}
-
-/* Secțiunea de Progres */
-.sidebar-content {
-  padding: 10px 0;
+  display: inline-block;
+  margin-top: 5px;
 }
 
 .sidebar-content h4 {
   margin-bottom: 15px;
   font-size: 1.1rem;
-  color: inherit;
+  color: #0f172a;
 }
 
 /* Statistici Grid */
@@ -112,349 +111,405 @@
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 10px; margin-bottom: 20px;
 }
-
 .stat-box {
-  background: #f8f9fa; padding: 15px;
+  background: #f8fafc; padding: 15px;
   border-radius: 12px; text-align: center;
-  border: 1px solid #eee;
+  border: 1px solid #e2e8f0;
 }
-
-.sidebar-container[data-theme='dark'] .stat-box {
-  background: #1e1e1e; border-color: #333;
-}
-
-.stat-label { display: block; font-size: 0.75rem; color: #777; }
+.stat-label { display: block; font-size: 0.75rem; color: #64748b; }
 .stat-value { font-size: 1.2rem; font-weight: bold; color: #01696f; }
 
-/* Progres */
+/* Secțiunea Progres */
 .progress-section { margin-bottom: 25px; }
-
 .progress-info {
   display: flex; justify-content: space-between;
   font-size: 0.9rem; margin-bottom: 8px;
+  color: #475569;
 }
-
 .progress-bar-container {
-  height: 8px; background: #eee; border-radius: 10px; overflow: hidden;
+  height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden;
   width: 100%;
 }
-
-.sidebar-container[data-theme='dark'] .progress-bar-container { background: #333; }
-
 .progress-bar-fill {
   height: 100%; background: #01696f; transition: width 0.5s ease;
 }
 
-/* Lista de info */
+/* Secțiunea Streak */
+.streak-section {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 15px;
+}
+.streak-section span {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Detalii cont (Info List) */
 .info-list { display: flex; flex-direction: column; gap: 10px; }
-
+.info-item, .info-item-input {
+  display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem;
+  padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;
+}
 .info-item {
-  display: flex; justify-content: space-between; font-size: 0.85rem;
-  padding-bottom: 8px; border-bottom: 1px solid #eee;
+  flex-direction: row;
+  justify-content: space-between;
 }
+.info-item span, .info-item-input span { color: #64748b; }
+.info-item strong { color: #0f172a; }
+.status-online { color: #2ecc71; font-weight: bold; }
 
-.sidebar-container[data-theme='dark'] .info-item { border-bottom-color: #333; }
-
-.status-online { color: #2ecc71; }
-
-/* Codeforces Handle Input */
-.handle-input-group input {
+/* Input-uri */
+.sidebar-input {
   width: 100%;
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #333;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
   margin-top: 5px;
-  transition: border-color 0.3s;
+  box-sizing: border-box;
+  transition: all 0.3s;
 }
-
-.sidebar-container[data-theme='dark'] .handle-input-group input {
-  background: #2a2a2a;
-  color: #f5f5f5;
-  border-color: #444;
-}
-
-.handle-input-group input:focus {
-  border-color: #2ecc71; /* Se face verde când scrii în ea */
+.sidebar-input:focus {
+  border-color: #01696f;
+  box-shadow: 0 0 0 2px rgba(1, 105, 111, 0.1);
   outline: none;
 }
-
+.sidebar-input:disabled {
+  cursor: not-allowed;
+  border-color: #639922;
+  background: #f1f5f9;
+  color: #64748b;
+}
 .save-status {
   color: #2ecc71;
-  font-size: 0.7rem;
-  margin-top: 2px;
+  font-size: 0.75rem;
+  margin-top: 4px;
   display: block;
 }
 
-/* Buton Logout */
-.logout-btn-sidebar {
-  margin-top: auto; padding: 12px;
-  background: transparent; border: 1px solid #ff4757;
-  color: #ff4757; border-radius: 8px; cursor: pointer;
-  font-weight: bold; transition: 0.3s;
-}
-
-.logout-btn-sidebar:hover { background: #ff4757; color: white; }
-
-#foc {
-  color: #d17f32;
- 
-}
-
-/* Responsive Media Queries */
-/* Responsive Media Queries */
-@media screen and (max-width: 768px) {
-  .sidebar-container {
-    z-index: 3000 !important;
-    width: 85%; 
-    max-width: 320px;
-    height: 100dvh; /* Ocupă exact ecranul, fără să taie elemente */
-    top: 0;
-    padding: 15px 15px; /* Am micșorat padding-ul extrem de la 30px */
-    gap: 10px; /* Am tăiat distanța mare dintre secțiuni */
-  }
-
-  /* 1. Micșorăm poza de profil și spațiile din Header */
-  .sidebar-header {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-  }
-
-  .user-avatar-placeholder {
-    width: 50px;  /* De la 70px */
-    height: 50px;
-    font-size: 20px;
-    margin-bottom: 5px;
-  }
-
-  .sidebar-header h3 {
-    font-size: 1.1rem;
-  }
-
-  /* 2. Micșorăm cutiile de XP și Lecții */
-  .stats-grid {
-    margin-bottom: 10px;
-    gap: 8px;
-  }
-  
-  .stat-box {
-    padding: 8px;
-  }
-  
-  .stat-value {
-    font-size: 1rem;
-  }
-
-  /* 3. Comprimăm zonele cu input-uri (Email, Codeforces etc) */
-  .progress-section {
-    margin-bottom: 10px;
-  }
-
-  .info-list {
-    gap: 5px; /* Spațiu mai mic între liniile cu detalii */
-  }
-
-  .info-item {
-    padding-bottom: 4px;
-    font-size: 0.8rem;
-  }
-
-  .handle-input-group input {
-    padding: 4px 8px; /* Căsuțe de text mai scunde */
-    font-size: 0.85rem;
-  }
-
-  /* 4. Asigurăm că butonul de Deconectare încape la fix jos */
-  .logout-btn-sidebar {
-    margin-top: auto; /* Împinge butonul forțat jos de tot */
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-}
-
-/* Stil pentru secțiunea de verificare Codeforces */
+/* Verificare Codeforces */
 .verification-container {
   margin-top: 12px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 2px solid #378add;
-  border-radius: 4px;
+  padding: 12px;
+  background: #f0fdf4;
+  border-left: 3px solid #378add;
+  border-radius: 6px;
 }
-
 .verification-text {
-  font-size: 0.7rem;
-  color: #888;
+  font-size: 0.75rem;
+  color: #475569;
   margin-bottom: 6px;
   display: block;
 }
-
 .verification-code-display {
-  font-size: 0.85rem;
-  color: #ffd700;
+  font-size: 0.9rem;
+  color: #b45309; /* Maro închis/Chihlimbar lizibil pe deschis */
   font-family: 'Courier New', Courier, monospace;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 6px;
+  background: #fef3c7;
+  padding: 8px;
   border-radius: 4px;
   text-align: center;
   margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #fde68a;
   letter-spacing: 1px;
+  font-weight: bold;
 }
-
 .verify-btn-outline {
   width: 100%;
-  padding: 6px;
-  background: transparent;
+  padding: 8px;
+  background: #ffffff;
   border: 1px solid #378add;
   color: #378add;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: bold;
   transition: all 0.3s ease;
 }
-
 .verify-btn-outline:hover {
-  background: rgba(55, 138, 221, 0.1);
-  box-shadow: 0 0 8px rgba(55, 138, 221, 0.2);
+  background: #378add;
+  color: #ffffff;
 }
 
-/* Ajustare pentru input-ul dezactivat să nu fie prea șters */
-.sidebar-input:disabled {
-  cursor: not-allowed;
-  border-color: #639922;
-  color: #aaa;
-}
-
-/* =========================================
-   STILURI SECȚIUNE BADGE-URI / TROFEE SIDEBAR
-   ========================================= */
+/* Secțiune Badge-uri / Trofee */
 .sidebar-badges-section {
     margin: 25px 0;
     text-align: left;
-    background: rgba(255, 255, 255, 0.02);
+    background: #f8fafc;
     padding: 15px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
 }
-
 .sidebar-badges-section h5 {
     margin: 0 0 12px 0;
-    font-size: 0.95rem;
-    color: var(--accent-color, #00d1b2);
+    font-size: 0.85rem;
+    color: #01696f;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-
 .badges-flex-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
-
 .sidebar-badge-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px;
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     transition: all 0.3s ease;
-    border: 1px solid transparent;
+    border: 1px solid #e2e8f0;
 }
-
-/* Stil pentru când trofeul este BLOCAT */
 .sidebar-badge-item.locked {
-    opacity: 0.4;
-    filter: grayscale(80%);
+    opacity: 0.5;
+    background: #f1f5f9;
 }
-
-/* Stil pentru când trofeul este DEBLOCAT */
 .sidebar-badge-item.unlocked {
     opacity: 1;
-    filter: none;
-    background: rgba(0, 209, 178, 0.04);
-    border-color: rgba(0, 209, 178, 0.15);
+    background: rgba(1, 105, 111, 0.03);
+    border-color: rgba(1, 105, 111, 0.15);
 }
-
-/* Wrapper-ul pentru Iconița Trofeului */
 .badge-icon-wrapper {
     position: relative;
     width: 36px;
     height: 36px;
-    background: rgba(255, 255, 255, 0.05);
+    background: #f1f5f9;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
 .sidebar-badge-item.unlocked .badge-icon-wrapper {
-    background: rgba(0, 209, 178, 0.1);
+    background: rgba(1, 105, 111, 0.1);
 }
-
 .badge-emoji {
     font-size: 1.3rem;
 }
-
-/* Lăcățelul mic roșu peste badge-ul blocat */
 .badge-lock-icon {
     position: absolute;
     bottom: -2px;
     right: -2px;
     font-size: 0.75rem;
     color: #ff4d4d;
-    background: #151c27;
+    background: #ffffff;
     border-radius: 50%;
     padding: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-
-/* Aliniere texte detalii */
 .badge-text-details {
     display: flex;
     flex-direction: column;
 }
-
 .badge-title {
     font-size: 0.85rem;
     font-weight: bold;
-    color: #f8fafc;
+    color: #0f172a;
 }
-
 .badge-sub {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: #64748b;
     margin-top: 2px;
 }
-
 .sidebar-badge-item.unlocked .badge-sub {
-    color: var(--accent-color, #00d1b2);
-    font-weight: 500;
+    color: #01696f;
+    font-weight: 600;
 }
 
-.sidebar-container {
-  /* ... regulile tale existente (position: fixed, right: 0, width, etc.) ... */
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  /* Eliminăm overflow: hidden dacă existau blocate pe containerul mare */
+/* Buton Deconectare */
+.logout-btn-sidebar {
+  padding: 12px;
+  background: transparent; border: 1px solid #ff4757;
+  color: #ff4757; border-radius: 8px; cursor: pointer;
+  font-weight: bold; transition: 0.3s;
+}
+.logout-btn-sidebar:hover { background: #ff4757; color: white; }
+#foc { color: #ff4500; }
+
+
+/* =========================================
+   STILURI EXCLUSIVE PENTRU DARK MODE
+   ========================================= */
+.sidebar-container[data-theme='dark'] {
+  background-color: #121212; 
+  color: #f5f5f5;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.5);
 }
 
-.sidebar-content {
-  flex: 1; /* Ocupă tot spațiul disponibil dintre header și butoanele de jos */
-  overflow-y: auto; /* Permite scroll-ul în jos DOAR pentru zona de statistici/trofee */
-  padding-right: 5px; /* Spațiu mic să nu se lipească scrollbar-ul de text */
+.sidebar-container[data-theme='dark'] .sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* Opțional: Personalizare scrollbar ca să arate elegant și finuț */
-.sidebar-content::-webkit-scrollbar {
-  width: 6px;
+.sidebar-container[data-theme='dark'] .close-btn {
+  color: #94a3b8;
 }
-.sidebar-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+
+.sidebar-container[data-theme='dark'] .sidebar-header {
+  border-bottom-color: #27272a;
+}
+
+.sidebar-container[data-theme='dark'] .user-avatar-placeholder {
+  background: #1e1e1e;
+  border-color: #00b4d8;
+  color: #94a3b8;
+}
+
+.sidebar-container[data-theme='dark'] .sidebar-header h3,
+.sidebar-container[data-theme='dark'] .sidebar-content h4,
+.sidebar-container[data-theme='dark'] .info-item strong,
+.sidebar-container[data-theme='dark'] .badge-title {
+  color: #f8fafc;
+}
+
+.sidebar-container[data-theme='dark'] .stat-box {
+  background: #1e1e1e; border-color: #27272a;
+}
+
+.sidebar-container[data-theme='dark'] .stat-label,
+.sidebar-container[data-theme='dark'] .progress-info,
+.sidebar-container[data-theme='dark'] .streak-section span,
+.sidebar-container[data-theme='dark'] .info-item span,
+.sidebar-container[data-theme='dark'] .info-item-input span,
+.sidebar-container[data-theme='dark'] .badge-sub {
+  color: #94a3b8;
+}
+
+.sidebar-container[data-theme='dark'] .progress-bar-container { 
+  background: #27272a; 
+}
+
+.sidebar-container[data-theme='dark'] .streak-section {
+  background: #1e1e1e;
+  border-color: #27272a;
+}
+
+.sidebar-container[data-theme='dark'] .info-item,
+.sidebar-container[data-theme='dark'] .info-item-input { 
+  border-bottom-color: #27272a; 
+}
+
+.sidebar-container[data-theme='dark'] .sidebar-input {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-color: #3f3f46;
+}
+.sidebar-container[data-theme='dark'] .sidebar-input:focus {
+  border-color: #00b4d8;
+  box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.1);
+}
+.sidebar-container[data-theme='dark'] .sidebar-input:disabled {
+  background: #27272a;
+  color: #71717a;
+}
+
+.sidebar-container[data-theme='dark'] .verification-container {
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: #378add;
+}
+.sidebar-container[data-theme='dark'] .verification-text {
+  color: #888;
+}
+.sidebar-container[data-theme='dark'] .verification-code-display {
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-container[data-theme='dark'] .sidebar-badges-section {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+.sidebar-container[data-theme='dark'] .sidebar-badges-section h5 {
+    color: #00b4d8;
+}
+.sidebar-container[data-theme='dark'] .sidebar-badge-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: #27272a;
+}
+.sidebar-container[data-theme='dark'] .sidebar-badge-item.locked {
+    background: #1a1a1a;
+}
+.sidebar-container[data-theme='dark'] .sidebar-badge-item.unlocked {
+    background: rgba(0, 180, 216, 0.04);
+    border-color: rgba(0, 180, 216, 0.15);
+}
+.sidebar-container[data-theme='dark'] .badge-icon-wrapper {
+    background: rgba(255, 255, 255, 0.05);
+}
+.sidebar-container[data-theme='dark'] .sidebar-badge-item.unlocked .badge-icon-wrapper {
+    background: rgba(0, 180, 216, 0.1);
+}
+.sidebar-container[data-theme='dark'] .badge-lock-icon {
+    background: #151c27;
+}
+.sidebar-container[data-theme='dark'] .sidebar-badge-item.unlocked .badge-sub {
+    color: #00b4d8;
+}
+
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIVE)
+   ========================================= */
+@media screen and (max-width: 768px) {
+  .sidebar-container {
+    z-index: 3000 !important;
+    width: 85%; 
+    max-width: 320px;
+    height: 100dvh; 
+    top: 0;
+    padding: 15px 15px; 
+    gap: 10px; 
+  }
+
+  .sidebar-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+  .user-avatar-placeholder {
+    width: 50px;  
+    height: 50px;
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  .sidebar-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .stats-grid {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .stat-box {
+    padding: 8px;
+  }
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  .progress-section {
+    margin-bottom: 10px;
+  }
+  .info-list {
+    gap: 5px; 
+  }
+  .info-item {
+    padding-bottom: 4px;
+    font-size: 0.8rem;
+  }
+  .handle-input-group input {
+    padding: 4px 8px; 
+    font-size: 0.85rem;
+  }
+
+  .logout-btn-sidebar {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
 }
