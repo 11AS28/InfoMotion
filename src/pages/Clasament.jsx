@@ -5,12 +5,19 @@ import { useTheme } from '../context/ThemeContext';
 import '../pages_css/clasament.css';
 import Arena from '../components/Arena';
 
-
 function Clasament() {
   const { theme } = useTheme();
   const [topGeneral, setTopGeneral] = useState([]);
   const [topGrinders, setTopGrinders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // 🌟 Funcție helper publică pentru insigne globale
+  const afiseazaInsignaUtilizator = (count) => {
+    if (count >= 100) return <span title="Guru pe Spellcasting" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
+    if (count >= 50) return <span title="Grinder de OJI" style={{ marginLeft: '6px', cursor: 'help' }}>⚔️</span>;
+    if (count >= 10) return <span title="Dorel pe Redstone" style={{ marginLeft: '6px', cursor: 'help' }}>🥉</span>;
+    return null; // Nicio insignă sub 10 probleme
+  };
 
   useEffect(() => {
     async function fetchTopuri() {
@@ -34,10 +41,6 @@ function Clasament() {
 
   if (loading) return <div className="loader">Se încarcă Arena...</div>;
 
-  // Extragem primii 3 pentru podiumul de XP
-  const podium = topGeneral.slice(0, 3);
-  const restGeneral = topGeneral.slice(3);
-
   return (
     <div className="clasament-page" data-theme={theme}>
       
@@ -56,7 +59,11 @@ function Clasament() {
             {topGeneral.map((user, index) => (
               <div key={user.id} className={`user-row ${index === 0 ? 'rank-1' : ''}`}>
                 <span className="rank">#{index + 1}</span>
-                <span className="username">{user.nume || "Anonim"}</span>
+                <span className="username">
+                  {user.nume || "Anonim"}
+                  {/* 🌟 Adăugat: Afișează insigna dinamic în funcție de problemele contului în Top XP */}
+                  {afiseazaInsignaUtilizator(user.problemeRezolvateCount || 0)}
+                </span>
                 <span className="value">{user.puncteTotale || 0} XP</span>
               </div>
             ))}
@@ -71,15 +78,17 @@ function Clasament() {
             {topGrinders.map((user, index) => (
               <div key={user.id} className={`user-row ${index < 3 ? 'highlight-grinder' : ''}`}>
                 <span className="rank">#{index + 1}</span>
-                <span className="username">{user.nume}</span>
+                <span className="username">
+                  {user.nume}
+                  {/* 🌟 Adăugat: Afișează insigna dinamic și în topul de probleme */}
+                  {afiseazaInsignaUtilizator(user.problemeRezolvateCount || 0)}
+                </span>
                 <span className="value">{user.problemeRezolvateCount || 0} Soluții</span>
               </div>
             ))}
           </div>
         </section>
       </div>
-
-
 
     </div>
   );

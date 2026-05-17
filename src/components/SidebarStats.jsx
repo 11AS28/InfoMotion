@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'; // Am adăugat deleteDoc
-import { getAuth, deleteUser } from 'firebase/auth'; // Am adăugat getAuth și deleteUser
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'; 
+import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
-import { FaFire, FaCheckCircle } from "react-icons/fa";
+import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
@@ -14,26 +14,41 @@ function SidebarStats({ isOpen, onClose }) {
   const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
   const [usernameInput, setUsernameInput] = useState(currentUser?.nume || "");
   const [usernameError, setUsernameError] = useState("");
-  const [deleteError, setDeleteError] = useState(""); // State nou pentru erori la ștergere
+  const [deleteError, setDeleteError] = useState(""); 
 
-  // --- STATISTICI DINAMICE ---
+  // --- STATISTICI DINAMICE DIN DB ---
   const [totalLectiiDB, setTotalLectiiDB] = useState(0);
+  const [totalProblemeDB, setTotalProblemeDB] = useState(0); 
 
-  // 1. Aflăm numărul total de lecții din Firebase
   useEffect(() => {
-    async function getTotalLectii() {
+    async function IncarcaDateDB() {
       try {
+        // 1. Luăm numărul total de lecții
         const querySnapshot = await getDocs(collection(db, "lectii"));
-        setTotalLectiiDB(querySnapshot.size); // .size ne dă numărul de documente
+        setTotalLectiiDB(querySnapshot.size); 
+
+        // 2. Luăm numărul real de probleme folosind cheia corectă: problemeRezolvateCount
+        if (currentUser?.uid) {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userSnap = await getDoc(userDocRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            // Citim exact cheia pe care ai confirmat-o din baza de date
+            const probleme = userData.problemeRezolvateCount || 0;
+            setTotalProblemeDB(probleme);
+          }
+        }
       } catch (e) {
-        console.error("Eroare la numărarea lecțiilor:", e);
+        console.error("Eroare la încărcarea datelor din Firebase:", e);
       }
     }
+
     if (isOpen) {
-      getTotalLectii();
+      IncarcaDateDB();
       actualizeazaStreak();
     }
-  }, [isOpen, actualizeazaStreak]);
+  }, [isOpen, currentUser, actualizeazaStreak]);
 
   useEffect(() => {
     if (currentUser) {
@@ -69,29 +84,20 @@ function SidebarStats({ isOpen, onClose }) {
     } catch (error) { setUsernameError("Eroare la salvare."); }
   };
 
-  // --- FUNCȚIA DE ȘTERGERE A CONTULUI ---
   const handleDeleteAccount = async () => {
-    // 1. Cerem confirmare dublă de la utilizator
     const confirmDelete = window.confirm("⚠️ Ești sigur că vrei să îți ștergi contul definitiv? \n\nToate progresele, punctele și lecțiile terminate vor fi pierdute. Acțiunea este IREVERSIBILĂ!");
-    
-    if (!confirmDelete) return; // Dacă dă cancel, ne oprim aici.
+    if (!confirmDelete) return;
 
     try {
       const auth = getAuth();
       const user = auth.currentUser;
 
       if (user) {
-        // 2. Ștergem documentul utilizatorului din baza de date Firestore
         await deleteDoc(doc(db, 'users', user.uid));
-        
-        // 3. Ștergem contul din Firebase Auth
         await deleteUser(user);
-        
-        // 4. Închidem sidebarul (utilizatorul va fi deconectat automat și redirecționat de AuthContext)
         onClose();
       }
     } catch (error) {
-      // Firebase cere ca utilizatorul să se fi logat recent pentru a-și putea șterge contul
       if (error.code === 'auth/requires-recent-login') {
         setDeleteError("Din motive de securitate, trebuie să te deconectezi și să te loghezi din nou înainte de a șterge contul.");
       } else {
@@ -102,7 +108,6 @@ function SidebarStats({ isOpen, onClose }) {
 
   if (!currentUser) return null;
 
-  // --- CALCUL PROGRES REAL ---
   const stats = getStatistici();
   const lectiiTerminate = stats.terminate || 0;
   const progresReal = totalLectiiDB > 0 ? (lectiiTerminate / totalLectiiDB) * 100 : 0;
@@ -120,6 +125,13 @@ function SidebarStats({ isOpen, onClose }) {
     if (streak >= 1) return "#ffd700";
     return "#cccccc";
   };
+
+  const listaBadgeuri = [
+    { id: 'b1', icon: '🥉', nume: 'Dorel pe Redstone', cerinta: 10, desc: 'Rezolvă 10 probleme în Arenă' },
+    { id: 'b2', icon: '⚔️', nume: 'Grinder de OJI', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
+    { id: 'b3', icon: '🧙‍♂️', nume: 'Guru pe Spellcasting', cerinta: 100, desc: 'Rezolvă 100+ probleme în Arenă' },
+    { id: 'b4', icon: ' ', nume: 'ceva random', cerinta:25, desc: 'rezolva 25+ probleme arena'}
+  ];
 
   return (
     <>
@@ -143,8 +155,8 @@ function SidebarStats({ isOpen, onClose }) {
             </div>
 
             <div className="stat-box">
-              <span className="stat-label">Puncte XP</span>
-              <span className="stat-value">{currentUser.puncteTotale || 0}</span>
+              <span className="stat-label">Probleme Arenă</span>
+              <span className="stat-value">{totalProblemeDB}</span>
             </div>
           </div>
 
@@ -155,6 +167,37 @@ function SidebarStats({ isOpen, onClose }) {
             </div>
             <div className="progress-bar-container">
               <div className="progress-bar-fill" style={{ width: `${progresReal}%` }}></div>
+            </div>
+          </div>
+
+          {/* === SECȚIUNEA DINAMICĂ DE BADGE-URI === */}
+          <div className="sidebar-badges-section">
+            <h5>Trofeele Mele (Arenă)</h5>
+            <div className="badges-flex-list">
+              {listaBadgeuri.map((badge) => {
+                const esteDeblocat = totalProblemeDB >= badge.cerinta;
+                const maiAreNevoie = badge.cerinta - totalProblemeDB;
+
+                return (
+                  <div 
+                    key={badge.id} 
+                    className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
+                    title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
+                  >
+                    <div className="badge-icon-wrapper">
+                      <span className="badge-emoji">{badge.icon}</span>
+                      {!esteDeblocat && <FaLock className="badge-lock-icon" />}
+                    </div>
+
+                    <div className="badge-text-details">
+                      <span className="badge-title">{badge.nume}</span>
+                      <span className="badge-sub">
+                        {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -170,7 +213,6 @@ function SidebarStats({ isOpen, onClose }) {
           <br />
 
           <div className="info-list">
-            {/* 1. SCHIMBARE USERNAME */}
             <div className="info-item-input">
               <span>Username:</span>
               <div className="handle-input-group">
@@ -192,7 +234,6 @@ function SidebarStats({ isOpen, onClose }) {
               )}
             </div>
 
-            {/* 2. EMAIL */}
             <div className="info-item">
               <span>Email:</span>
               <strong>{currentUser.email}</strong>
@@ -249,7 +290,6 @@ function SidebarStats({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* --- BUTOANE JOS (DECONECTARE ȘI ȘTERGERE CONT) --- */}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button className="logout-btn-sidebar" onClick={() => { logout(); onClose(); }}>
             Deconectare Cont

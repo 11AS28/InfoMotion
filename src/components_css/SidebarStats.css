@@ -327,3 +327,134 @@
   border-color: #639922;
   color: #aaa;
 }
+
+/* =========================================
+   STILURI SECȚIUNE BADGE-URI / TROFEE SIDEBAR
+   ========================================= */
+.sidebar-badges-section {
+    margin: 25px 0;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-badges-section h5 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: var(--accent-color, #00d1b2);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badges-flex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+/* Stil pentru când trofeul este BLOCAT */
+.sidebar-badge-item.locked {
+    opacity: 0.4;
+    filter: grayscale(80%);
+}
+
+/* Stil pentru când trofeul este DEBLOCAT */
+.sidebar-badge-item.unlocked {
+    opacity: 1;
+    filter: none;
+    background: rgba(0, 209, 178, 0.04);
+    border-color: rgba(0, 209, 178, 0.15);
+}
+
+/* Wrapper-ul pentru Iconița Trofeului */
+.badge-icon-wrapper {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-badge-item.unlocked .badge-icon-wrapper {
+    background: rgba(0, 209, 178, 0.1);
+}
+
+.badge-emoji {
+    font-size: 1.3rem;
+}
+
+/* Lăcățelul mic roșu peste badge-ul blocat */
+.badge-lock-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 0.75rem;
+    color: #ff4d4d;
+    background: #151c27;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+/* Aliniere texte detalii */
+.badge-text-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.badge-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #f8fafc;
+}
+
+.badge-sub {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.sidebar-badge-item.unlocked .badge-sub {
+    color: var(--accent-color, #00d1b2);
+    font-weight: 500;
+}
+
+.sidebar-container {
+  /* ... regulile tale existente (position: fixed, right: 0, width, etc.) ... */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* Eliminăm overflow: hidden dacă existau blocate pe containerul mare */
+}
+
+.sidebar-content {
+  flex: 1; /* Ocupă tot spațiul disponibil dintre header și butoanele de jos */
+  overflow-y: auto; /* Permite scroll-ul în jos DOAR pentru zona de statistici/trofee */
+  padding-right: 5px; /* Spațiu mic să nu se lipească scrollbar-ul de text */
+}
+
+/* Opțional: Personalizare scrollbar ca să arate elegant și finuț */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}

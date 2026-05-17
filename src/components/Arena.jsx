@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 
 function Arena() {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
-  const [dailyProblem, setDailyProblem] = useState(null);
+  
+  const [problems, setProblems] = useState({
+    easy: { titlu: "Watermelon (Rating: 800)", link: "https://codeforces.com/problemset/problem/4/A", idCF: "4A" },
+    medium: { titlu: "Taxi (Rating: 1100)", link: "https://codeforces.com/problemset/problem/158/B", idCF: "158B" },
+    hard: { titlu: "Registration System (Rating: 1300)", link: "https://codeforces.com/problemset/problem/4/C", idCF: "4C" }
+  });
+  
   const [solvers, setSolvers] = useState([]);
+  const [userBadgesMap, setUserBadgesMap] = useState({}); // Mappăm numărul total de probleme pentru toți utilizatorii din listă
+  const [activeTab, setActiveTab] = useState('easy'); 
   const [isChecking, setIsChecking] = useState(false); 
 
-  // --- STAT PENTRU PAGINARE ---
   const [currentPage, setCurrentPage] = useState(1);
   const solversPerPage = 5;
 
@@ -19,167 +26,322 @@ function Arena() {
     return `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
   };
 
+  // Helper care returnează insigna potrivită
+  const afiseazaInsignaUtilizator = (count) => {
+    if (count >= 100) return <span title="Guru pe Spellcasting" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
+    if (count >= 50) return <span title="Grinder de OJI" style={{ marginLeft: '6px', cursor: 'help' }}>⚔️</span>;
+    if (count >= 10) return <span title="Dorel pe Redstone" style={{ marginLeft: '6px', cursor: 'help' }}>🥉</span>;
+    return null;
+  };
+
   useEffect(() => {
     const fetchArena = async () => {
+      const dataAzi = getSafeDateString();
+      const docRef = doc(db, 'dailyChallenges', dataAzi);
+      
       try {
-        const dataAzi = getSafeDateString();
-        const docRef = doc(db, 'dailyChallenges', dataAzi);
         const docSnap = await getDoc(docRef);
+        let activeSolvers = [];
         
         if (docSnap.exists()) {
-          setDailyProblem(docSnap.data());
-          setSolvers(docSnap.data().solvers || []);
+          const cloudData = docSnap.data();
+          setProblems({
+            easy: cloudData.easy || problems.easy,
+            medium: cloudData.medium || problems.medium,
+            hard: cloudData.hard || problems.hard
+          });
+          activeSolvers = cloudData.solvers || [];
+          setSolvers(activeSolvers);
         } else {
-          console.log("Generăm problema zilei din Codeforces...");
+          console.log("Generăm pachetul de 3 probleme din Codeforces...");
           
-          const response = await fetch('https://codeforces.com/api/problemset.problems');
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+          const response = await fetch('https://codeforces.com/api/problemset.problems', { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (!response.ok) throw new Error("API Codeforces a dat eroare");
+          
           const data = await response.json();
           
-          if (data.status === 'OK') {
+          if (data.status === 'OK' && data.result && data.result.problems) {
             const allProblems = data.result.problems;
-            const easyProblems = allProblems.filter(p => p.rating >= 800 && p.rating <= 1200);
-            const randomIndex = Math.floor(Math.random() * easyProblems.length);
-            const chosenProblem = easyProblems[randomIndex];
             
-            const idProblema = `${chosenProblem.contestId}${chosenProblem.index}`; 
-            const newDailyProblem = {
-              titlu: `${chosenProblem.name} (Rating: ${chosenProblem.rating})`,
-              link: `https://codeforces.com/problemset/problem/${chosenProblem.contestId}/${chosenProblem.index}`,
-              idCF: idProblema,
-              solvers: [],
-              data: dataAzi
-            };
-            
-            await setDoc(docRef, newDailyProblem);
-            setDailyProblem(newDailyProblem);
-            setSolvers([]);
+            const easyPool = allProblems.filter(p => p.rating >= 800 && p.rating <= 1100);
+            const medPool = allProblems.filter(p => p.rating >= 1200 && p.rating <= 1400);
+            const hardPool = allProblems.filter(p => p.rating >= 1500 && p.rating <= 1700);
+
+            if (easyPool.length > 0 && medPool.length > 0 && hardPool.length > 0) {
+              const pEasy = easyPool[Math.floor(Math.random() * easyPool.length)];
+              const pMed = medPool[Math.floor(Math.random() * medPool.length)];
+              const pHard = hardPool[Math.floor(Math.random() * hardPool.length)];
+              
+              const newChallengePackage = {
+                data: dataAzi,
+                solvers: [],
+                easy: {
+                  titlu: `${pEasy.name} (Rating: ${pEasy.rating || 900})`,
+                  link: `https://codeforces.com/problemset/problem/${pEasy.contestId}/${pEasy.index}`,
+                  idCF: `${pEasy.contestId}${pEasy.index}`
+                },
+                medium: {
+                  titlu: `${pMed.name} (Rating: ${pMed.rating || 1300})`,
+                  link: `https://codeforces.com/problemset/problem/${pMed.contestId}/${pMed.index}`,
+                  idCF: `${pMed.contestId}${pMed.index}`
+                },
+                hard: {
+                  titlu: `${pHard.name} (Rating: ${pHard.rating || 1600})`,
+                  link: `https://codeforces.com/problemset/problem/${pHard.contestId}/${pHard.index}`,
+                  idCF: `${pHard.contestId}${pHard.index}`
+                }
+              };
+              
+              await setDoc(docRef, newChallengePackage);
+              setProblems({ easy: newChallengePackage.easy, medium: newChallengePackage.medium, hard: newChallengePackage.hard });
+              setSolvers([]);
+            }
           }
         }
+
+        // --- EXTRAGERE DINAMICĂ INSEMNE PENTRU TOTI SOLVERII ---
+        if (activeSolvers.length > 0) {
+          const uniqueUids = [...new Set(activeSolvers.map(s => s.uid))];
+          const badgeMap = {};
+          
+          await Promise.all(uniqueUids.map(async (uid) => {
+            try {
+              const uSnap = await getDoc(doc(db, 'users', uid));
+              if (uSnap.exists()) {
+                badgeMap[uid] = uSnap.data().problemeRezolvateCount || 0;
+              }
+            } catch (err) {
+              console.error("Eroare la tragerea insignelor pentru user:", uid, err);
+            }
+          }));
+          
+          setUserBadgesMap(badgeMap);
+        }
+
       } catch (error) {
-        console.error("Eroare la preluarea/generarea problemei:", error);
+        console.error("Mecanism de avarie activat:", error);
       }
     };
     
     fetchArena();
   }, []);
 
-  const handleSolve = async () => {
-    if (!dailyProblem) return;
+  const handleSolve = async (dificultateTinta) => {
+    const currentProblem = problems[dificultateTinta];
+    if (!currentProblem) return;
 
-    const hasAlreadySolved = solvers.some(s => s.uid === currentUser.uid);
-    if (hasAlreadySolved) {
-      alert("Ai primit deja punctele pentru problema de azi!");
+    const hasSolvedThisOne = solvers.some(s => s.uid === currentUser.uid && s.dificultate === dificultateTinta);
+    if (hasSolvedThisOne) {
+      alert("Ai rezolvat deja această problemă!");
       return;
     }
 
+    const hasAnyPointsToday = solvers.some(s => s.uid === currentUser.uid && s.aPrimitPuncte === true);
+
     setIsChecking(true);
     try {
-      const isGata = await verificaProblemaCodeforces(dailyProblem.idCF);
+      const isGata = await verificaProblemaCodeforces(currentProblem.idCF);
       
       if (isGata) {
-        const tipPunctaj = solvers.length < 3 ? 'daily_sprinter' : 'daily_normal';
-        await acordaPuncte(tipPunctaj);
+        const dataAzi = getSafeDateString();
+        const nrSolversPeDificultate = solvers.filter(s => s.dificultate === dificultateTinta).length;
+        const esteInPrimii3 = nrSolversPeDificultate < 3;
+
+        let puncteDeAcordat = 0;
+        let mesajPuncte = "";
+
+        if (!hasAnyPointsToday) {
+          if (dificultateTinta === 'easy') puncteDeAcordat = esteInPrimii3 ? 40 : 20;
+          else if (dificultateTinta === 'medium') puncteDeAcordat = esteInPrimii3 ? 50 : 40;
+          else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
+          
+          await acordaPuncte(puncteDeAcordat);
+          mesajPuncte = `🎉 Felicitări! Ai primit ${puncteDeAcordat} puncte XP!`;
+        } else {
+          mesajPuncte = "✅ Submisie validată ca antrenament privat! (0 XP adăugat, ai ales deja o problemă azi).";
+        }
         
+        // == REPARAT: Folosim cheia ta oficială "problemeRezolvateCount" ==
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, {
+          problemeRezolvateCount: increment(1) 
+        });
+
         const nouSolver = { 
           nume: currentUser.nume, 
           uid: currentUser.uid, 
+          dificultate: dificultateTinta,
+          aPrimitPuncte: !hasAnyPointsToday,
           ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) 
         };
 
-        const dataAzi = getSafeDateString();
         await updateDoc(doc(db, 'dailyChallenges', dataAzi), {
           solvers: arrayUnion(nouSolver)
         });
 
+        // Actualizăm harta de insigne local pentru utilizatorul curent direct pe ecran
+        const curentCountLocal = userBadgesMap[currentUser.uid] || 0;
+        setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: curentCountLocal + 1 }));
+
         setSolvers(prev => [...prev, nouSolver]);
-        alert("Felicitări! Punctele au fost adăugate.");
+        alert(`${mesajPuncte}\n📈 Problema a fost adăugată la contorul tău total global pentru clasament!`);
       } else {
-        alert("Submisia nu a fost găsită sau nu este acceptată pe Codeforces.");
+        alert(`Nu am găsit submisia marcată cu 'Accepted' pe Codeforces pentru problema ${currentProblem.idCF}.`);
       }
     } catch (error) {
       console.error("Eroare la verificare:", error);
-      alert("A apărut o eroare la verificare.");
+      alert("Eroare la procesarea submisiei.");
     } finally {
       setIsChecking(false);
     }
   };
 
-  // --- LOGICA DE PAGINARE ---
+  const solversFiltrati = solvers.filter(s => s.dificultate === activeTab);
   const idxLast = currentPage * solversPerPage;
   const idxFirst = idxLast - solversPerPage;
-  const currentSolvers = solvers.slice(idxFirst, idxLast);
-  const totalPages = Math.ceil(solvers.length / solversPerPage);
+  const currentSolvers = solversFiltrati.slice(idxFirst, idxLast);
+  const totalPages = Math.ceil(solversFiltrati.length / solversPerPage);
+  const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
 
   return (
-    <div>
+    <div className="arena-wrapper">
       <div className="arena-container">
-        {dailyProblem ? (
-          <>
-            <h2>🚀 Problema Zilei: {dailyProblem.titlu}</h2>
-            <a href={dailyProblem.link} target="_blank" rel="noopener noreferrer">
-              Rezolvă pe Codeforces
-            </a>
-            <br />
-            <button 
-              onClick={handleSolve} 
-              disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid)}
-            >
-              {isChecking ? "Se verifică..." : "Verifică Submisia"}
-            </button>
-          </>
-        ) : (
-          <h2>Nu a fost setată nicio problemă pentru astăzi! 😴</h2>
+        
+        <h2>🚀 Arena Problemelor</h2>
+
+        <div className="arena-mobile-tabs">
+          <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>
+            🟢 Merge din prima
+          </button>
+          <button className={activeTab === 'medium' ? 'active' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>
+            🟡 Ceva nu-mi dă
+          </button>
+          <button className={activeTab === 'hard' ? 'active' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>
+            🔴 SegFault 🪦
+          </button>
+        </div>
+
+        <div className="arena-grid-layout">
+          {/* CASETA 1: EASY */}
+          <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
+            <div className="card-top">
+              <span className="card-tag tag-easy">🟢 Merge din prima</span>
+              <h3>{problems.easy.titlu}</h3>
+              <p className="card-xp">20 XP | 40 XP în primii 3</p>
+            </div>
+            <div className="card-bottom">
+              <a href={problems.easy.link} target="_blank" rel="noopener noreferrer">Rezolvă pe CF ➔</a>
+              <button 
+                onClick={() => handleSolve('easy')} 
+                disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'easy')}
+              >
+                {solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'easy') ? "Rezolvată" : "Verifică"}
+              </button>
+            </div>
+          </div>
+
+          {/* CASETA 2: MEDIUM */}
+          <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
+            <div className="card-top">
+              <span className="card-tag tag-medium">🟡 Ceva nu-mi dă</span>
+              <h3>{problems.medium.titlu}</h3>
+              <p className="card-xp">40 XP | 50 XP în primii 3</p>
+            </div>
+            <div className="card-bottom">
+              <a href={problems.medium.link} target="_blank" rel="noopener noreferrer">Rezolvă pe CF ➔</a>
+              <button 
+                onClick={() => handleSolve('medium')} 
+                disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'medium')}
+              >
+                {solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'medium') ? "Rezolvată" : "Verifică"}
+              </button>
+            </div>
+          </div>
+
+          {/* CASETA 3: HARD */}
+          <div className={`arena-custom-card card-hard ${activeTab === 'hard' ? 'mobile-active' : ''}`}>
+            <div className="card-top">
+              <span className="card-tag tag-hard">🔴 SegFault 🪦</span>
+              <h3>{problems.hard.titlu}</h3>
+              <p className="card-xp">50 XP | 65 XP în primii 3</p>
+            </div>
+            <div className="card-bottom">
+              <a href={problems.hard.link} target="_blank" rel="noopener noreferrer">Rezolvă pe CF ➔</a>
+              <button 
+                onClick={() => handleSolve('hard')} 
+                disabled={isChecking || solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'hard')}
+              >
+                {solvers.some(s => s.uid === currentUser?.uid && s.dificultate === 'hard') ? "Rezolvată" : "Verifică"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {utilizatorulAAlesPuncteAzi && (
+          <p className="arena-warning-text">
+            ⚠️ Ai încasat deja XP-ul pe azi. Restul problemelor se validează ca antrenament (0 XP).
+          </p>
         )}
 
+        {/* === CLASAMENTUL DIALECTIC === */}
         <div className="solvers-list">
-          <h3>Top Solveri (Azi)</h3>
+          <div className="solvers-list-header">
+            <h3>Top Solveri - {activeTab === 'easy' ? '🟢 Easy' : activeTab === 'medium' ? '🟡 Medie' : '🔴 Grea'}</h3>
+            <div className="desktop-rank-switch">
+              <button className={activeTab === 'easy' ? 'active-mini' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
+              <button className={activeTab === 'medium' ? 'active-mini' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
+              <button className={activeTab === 'hard' ? 'active-mini' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>Grea</button>
+            </div>
+          </div>
           
-          {solvers.length > 0 ? (
+          {solversFiltrati.length > 0 ? (
             <>
               {currentSolvers.map((s, idx) => {
-                // Calculăm rangul real (ex: pe pagina 2 primul are rangul 6)
                 const realRank = idxFirst + idx + 1;
-                
-                // Atribuim clasa în funcție de loc
                 let rankClass = '';
                 if (realRank === 1) rankClass = 'rank-1';
                 else if (realRank === 2) rankClass = 'rank-2';
                 else if (realRank === 3) rankClass = 'rank-3';
 
+                // Citim câte probleme are utilizatorul mapat
+                const totalProblemeUser = userBadgesMap[s.uid] || 0;
+
                 return (
                   <div key={idx} className={`user-row ${rankClass}`}>
                     <span className="rank">#{realRank}</span>
-                    <span className="username">{s.nume}</span>
+                    <span className="username">
+                      {s.nume} 
+                      {/* 🌟 ADAUGAT: Insigna publică dinamică, vizibilă pentru toată lumea în dreptul userului */}
+                      {afiseazaInsignaUtilizator(totalProblemeUser)}
+                      {s.aPrimitPuncte ? " 🚀" : " 🧪 (Antrenament)"}
+                    </span>
                     <span className="value">{s.ora}</span>
                   </div>
                 );
               })}
 
-              {/* CONTROALE PAGINARE */}
               {totalPages > 1 && (
                 <div className="pagination">
-                  <button 
-                    className="page-btn"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
+                  <button className="page-btn" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
                     &laquo; Înapoi
                   </button>
                   <span className="page-info">{currentPage} / {totalPages}</span>
-                  <button 
-                    className="page-btn"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
+                  <button className="page-btn" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
                     Înainte &raquo;
                   </button>
                 </div>
               )}
             </>
           ) : (
-            <p className="empty-solvers">Fii primul care rezolvă problema de azi!</p>
+            <p className="empty-solvers">Fii primul care sparge gheața la această categorie! 🔥</p>
           )}
         </div>
+
       </div>
     </div>
   );
