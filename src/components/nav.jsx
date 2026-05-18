@@ -17,7 +17,24 @@ function Nav() {
     <nav className="navbar">
       <div className="nav-header">
         <div className="nav-logo">
-          <Link to="/">InfoMotion<span>.</span></Link>
+          <Link 
+            to="/" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px' 
+            }}
+          >
+            <img 
+              src="/logo-infomotion.svg?v=2" 
+              alt="logo" 
+              style={{ width: '50px', height: 'auto', display: 'block' }} 
+            />
+
+            <div>
+            InfoMotion<span>.</span>
+            </div>
+          </Link>
         </div>
 
         <div className={`hamburger ${isOpen ? 'active' : ''}`} onClick={toggleMenu}>
