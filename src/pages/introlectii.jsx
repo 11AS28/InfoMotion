@@ -74,7 +74,7 @@ function Intro() {
               <h3>Animații Generate Automat</h3>
               <p>
                 Un motor intern care să genereze vizualizări pas cu pas direct din 
-                descrierea unui algoritm, fără cod scris manual pentru fiecare lecție.
+                descrierea unui algoritm, fără cod scris manual pentru fiecare animatie.
               </p>
             </div>
             <div className="feature-card">
