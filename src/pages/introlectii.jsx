@@ -1,13 +1,11 @@
 import React from 'react';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
-import '../pages_css/intro.css'; // Va trebui să creezi acest CSS scurt
+import '../pages_css/intro.css';
 
 function Intro() {
   return (
     <div className="page-wrapper">
-     
-      
       <main className="intro-container">
         {/* Partea de sus: Titlu și Misiune */}
         <section className="intro-hero">
@@ -63,9 +61,42 @@ function Intro() {
           </div>
         </section>
 
-      </main>
+        {/* Secțiunea 4: Ce urmează? */}
+        <section className="intro-section">
+          <h2>🚀 Ce urmează?</h2>
+          <p>
+            Info-Motion este un proiect în continuă evoluție. Iată câteva dintre direcțiile 
+            pe care vrem să le explorăm în viitor:
+          </p>
+          <div className="features-grid">
+            <div className="feature-card">
+              <span className="feature-icon">🤖</span>
+              <h3>Animații Generate Automat</h3>
+              <p>
+                Un motor intern care să genereze vizualizări pas cu pas direct din 
+                descrierea unui algoritm, fără cod scris manual pentru fiecare lecție.
+              </p>
+            </div>
+            <div className="feature-card">
+              <span className="feature-icon">📝</span>
+              <h3>Probleme Propuse de Elevi</h3>
+              <p>
+                Elevii vor putea propune probleme inspirate din <strong>Codeforces</strong> sau <strong>PbInfo</strong>, 
+                însoțite de un mesaj scurt, devenind contributori activi ai comunității.
+              </p>
+            </div>
+            <div className="feature-card">
+              <span className="feature-icon">📊</span>
+              <h3>Istoric de Activitate</h3>
+              <p>
+                Statistici personale detaliate: evoluție în timp, tipuri de probleme 
+                rezolvate și puncte slabe identificate automat.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      
+      </main>
     </div>
   );
 }
