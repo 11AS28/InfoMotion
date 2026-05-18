@@ -4,6 +4,9 @@ import '../pages_css/admin.css';
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
+// 1. IMPORTĂM SONNER
+import { Toaster, toast } from 'sonner';
+
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
   { username: import.meta.env.VITE_ADMIN_2_USER, password: import.meta.env.VITE_ADMIN_2_PASS },
@@ -21,8 +24,14 @@ function LoginScreen({ onLogin }) {
   function handleLogin(e) {
     e.preventDefault();
     const match = ADMINS.find((a) => a.username === username && a.password === password);
-    if (match) onLogin(username);
-    else { setError('Username sau parolă incorecte.'); setPassword(''); }
+    if (match) {
+      onLogin(username);
+      toast.success(`Bine ai revenit, ${username}!`);
+    } else { 
+      setError('Username sau parolă incorecte.'); 
+      setPassword(''); 
+      toast.error('Autentificare eșuată!');
+    }
   }
 
   return (
@@ -90,6 +99,7 @@ function Dashboard({ username, onLogout }) {
       setFirebaseUsers(querySnapshotUsers.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
       console.error("Eroare la preluare date:", e);
+      toast.error("Nu s-au putut încărca datele din Firebase.");
     }
   };
 
@@ -114,16 +124,18 @@ function Dashboard({ username, onLogout }) {
     setQuiz(Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
     setCfProblems(['', '']);
     setIsEditing(false);
-    setSearchTerm(''); // Resetăm și căutarea când resetăm formularul
+    setSearchTerm('');
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
       await deleteDoc(doc(db, "lectii", id));
-      alert("Lecție ștearsă!");
+      toast.success("Lecție ștearsă cu succes!"); // MODIFICAT
       refreshData();
-    } catch (e) { alert("Eroare la ștergere: " + e.message); }
+    } catch (e) { 
+      toast.error("Eroare la ștergere: " + e.message); // MODIFICAT
+    }
   };
 
   const startEdit = (lectie) => {
@@ -137,10 +149,11 @@ function Dashboard({ username, onLogout }) {
     setCfProblems(lectie.codeforces || ['', '']);
     setIsEditing(true);
     setActiveTab('adauga');
+    toast.info(`Editare lecție: ${lectie.titlu}`); // MODIFICAT (opțional, oferă feedback bun)
   };
 
   const handlePublish = async () => {
-    if (!fId || !fTitlu) return alert("Completează ID și Titlu!");
+    if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!"); // MODIFICAT
     setLoading(true);
     try {
       const lectieData = {
@@ -150,9 +163,11 @@ function Dashboard({ username, onLogout }) {
         dataModificarii: new Date().toISOString()
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
-      alert(isEditing ? "✅ Modificări salvate!" : "🚀 Lecție publicată!");
+      toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!"); // MODIFICAT
       resetForm(); await refreshData(); setActiveTab('lectii');
-    } catch (e) { alert("Eroare: " + e.message); }
+    } catch (e) { 
+      toast.error("Eroare la salvare: " + e.message); // MODIFICAT
+    }
     setLoading(false);
   };
 
@@ -202,7 +217,10 @@ function Dashboard({ username, onLogout }) {
         <div className="admin-header-logo">InfoMotion<span>.</span> <em>Admin</em></div>
         <div className="admin-header-right">
           <span className="admin-user-pill">👤 {username}</span>
-          <button className="admin-btn-logout" onClick={onLogout}>Deconectare</button>
+          <button className="admin-btn-logout" onClick={() => {
+            onLogout();
+            toast.info("Te-ai deconectat.");
+          }}>Deconectare</button>
         </div>
       </header>
 
@@ -226,7 +244,7 @@ function Dashboard({ username, onLogout }) {
 
       <main className="admin-main">
 
-        {/* ===== TAB OVERVIEW (Lecții) ===== */}
+        {/* ===== TAB OVERVIEW ===== */}
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
@@ -280,7 +298,6 @@ function Dashboard({ username, onLogout }) {
             </div>
 
             <div className='admin-two-col'>
-              {/* Card 1: Top XP */}
               <div className='admin-card' style={{flex: 1}}>
                 <div className='admin-section-title'>🏆 Top Elevi (După XP)</div>
                 {topUsers.length === 0 ? (
@@ -306,7 +323,6 @@ function Dashboard({ username, onLogout }) {
                 )}
               </div>
 
-              {/* Card 2: Top STREAK */}
               <div className='admin-card' style={{flex: 1}}>
                 <div className='admin-section-title'>🔥 Top Elevi (După Streak)</div>
                 {topStreakUsers.length === 0 ? (
@@ -335,10 +351,9 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        {/* ===== TAB LECȚII (UPDATE: Căutare inclusă) ===== */}
+        {/* ===== TAB LECȚII ===== */}
         {activeTab === 'lectii' && (
           <>
-            {/* Input Căutare */}
             <div style={{ marginBottom: '15px', width: '100%' }}>
               <input 
                 type="text" 
@@ -357,7 +372,6 @@ function Dashboard({ username, onLogout }) {
               />
             </div>
 
-            {/* Interfața pentru PC (Tabel) */}
             <div className="admin-table-wrap desktop-only">
               <table className="admin-table">
                 <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
@@ -381,7 +395,6 @@ function Dashboard({ username, onLogout }) {
               </table>
             </div>
 
-            {/* Interfața pentru Mobil (Carduri) */}
             <div className="admin-lessons-mobile-list mobile-only">
               {filteredLessons.length === 0 ? (
                 <p style={{ color: '#64748b', textAlign: 'center', width: '100%', padding: '20px 0' }}>Nicio lecție găsită.</p>
@@ -410,7 +423,6 @@ function Dashboard({ username, onLogout }) {
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
             <div className="admin-form-grid">
 
-              {/* Câmpuri de bază */}
               <div className="admin-field">
                 <label>ID (Slug)</label>
                 <input type="text" value={fId} onChange={(e) => setFId(e.target.value)} disabled={isEditing} placeholder="ex: grafuri-introducere" />
@@ -437,7 +449,6 @@ function Dashboard({ username, onLogout }) {
                 <textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} />
               </div>
 
-              {/* Animație */}
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>
                 <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -452,13 +463,11 @@ function Dashboard({ username, onLogout }) {
                 )}
               </div>
 
-              {/* Cod C++ */}
               <div className="admin-field admin-field--full">
                 <label>Cod C++</label>
                 <textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} />
               </div>
 
-              {/* Probleme Pbinfo */}
               <div className="admin-field admin-field--full">
                 <div className="admin-section-divider">Probleme Pbinfo</div>
                 {pbRows.map((row, idx) => (
@@ -472,7 +481,6 @@ function Dashboard({ username, onLogout }) {
                 <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
               </div>
 
-              {/* Quiz */}
               <div className="admin-field admin-field--full">
                 <div className="admin-section-divider">Quiz (5 Întrebări)</div>
                 {quiz.map((q, qIdx) => (
@@ -508,7 +516,6 @@ function Dashboard({ username, onLogout }) {
                 ))}
               </div>
 
-              {/* Codeforces */}
               <div className="admin-field admin-field--full">
                 <div className="admin-section-divider">Codeforces (2 Probleme)</div>
                 <div style={{ display: 'flex', gap: '15px' }}>
@@ -536,7 +543,14 @@ function Dashboard({ username, onLogout }) {
 // ===== EXPORT =====
 export default function Admin() {
   const [loggedUser, setLoggedUser] = useState(null);
-  return !loggedUser
-    ? <LoginScreen onLogin={setLoggedUser} />
-    : <Dashboard username={loggedUser} onLogout={() => setLoggedUser(null)} />;
+  
+  // 2. RANDĂM <Toaster /> AICI PENTRU A FI DISPONIBIL PESTE TOT ÎN PAGINĂ
+  return (
+    <>
+      <Toaster richColors position="top-right" closeButton />
+      {!loggedUser
+        ? <LoginScreen onLogin={setLoggedUser} />
+        : <Dashboard username={loggedUser} onLogout={() => setLoggedUser(null)} />}
+    </>
+  );
 }

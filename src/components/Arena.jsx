@@ -4,6 +4,9 @@ import { db } from '../firebase';
 import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 
+// 1. IMPORTĂM SONNER
+import { Toaster, toast } from 'sonner';
+
 function Arena() {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   
@@ -22,17 +25,18 @@ function Arena() {
   const solversPerPage = 5;
 
   const getSafeDateString = () => {
-  const now = new Date();
-  
-  // Dacă e înainte de 10:00 dimineața, "ziua arenei" e încă cea de ieri
-  if (now.getHours() < 10) {
-    const ieri = new Date(now);
-    ieri.setDate(ieri.getDate() - 1);
-    return `${ieri.getDate()}_${ieri.getMonth() + 1}_${ieri.getFullYear()}`;
-  }
-  
-  return `${now.getDate()}_${now.getMonth() + 1}_${now.getFullYear()}`;
-};
+    const now = new Date();
+    
+    // Dacă e înainte de 10:00 dimineața, "ziua arenei" e încă cea de ieri
+    if (now.getHours() < 10) {
+      const ieri = new Date(now);
+      ieri.setDate(ieri.getDate() - 1);
+      return `${ieri.getDate()}_${ieri.getMonth() + 1}_${ieri.getFullYear()}`;
+    }
+    
+    return `${now.getDate()}_${now.getMonth() + 1}_${now.getFullYear()}`;
+  };
+
   const afiseazaInsignaUtilizator = (count) => {
     if (count >= 100) return <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>👑</span>;
     if (count >= 50) return <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
@@ -133,28 +137,47 @@ function Arena() {
 
       } catch (error) {
         console.error("Mecanism de avarie activat:", error);
+        toast.error("Nu s-au putut încărca provocările din Codeforces.");
       }
     };
     
     fetchArena();
   }, []);
 
-  const handleSolve = async (dificultateTinta) => {
-    const currentProblem = problems[dificultateTinta];
-    if (!currentProblem) return;
+const handleSolve = async (dificultateTinta) => {
+    console.log("--- START VERIFICARE ARENA (CORECȚIE DUPLICARE) ---");
+    // console.log("Dificultate țintă:", dificultateTinta);
+    // console.log("User curent:", currentUser);
 
-    const hasSolvedThisOne = solvers.some(s => s.uid === currentUser.uid && s.dificultate === dificultateTinta);
-    if (hasSolvedThisOne) {
-      alert("Ai rezolvat deja această problemă!");
+    if (!currentUser || !currentUser.uid) {
+      toast.error("Eroare de autentificare! Asigură-te că ești logat.");
       return;
     }
 
-    // 🛠️ REPARAT CRITICAL: Ne asigurăm că verificăm dacă utilizatorul CURENT a luat puncte azi, nu oricine de pe site!
+    const currentProblem = problems[dificultateTinta];
+    if (!currentProblem) {
+      console.log("Problema nu a fost găsită în state.");
+      return;
+    }
+
+    // console.log("ID-ul problemei pe Codeforces:", currentProblem.idCF);
+
+    const hasSolvedThisOne = solvers.some(s => s.uid === currentUser.uid && s.dificultate === dificultateTinta);
+    if (hasSolvedThisOne) {
+      toast.warning("Ai rezolvat deja această problemă!");
+      return;
+    }
+
     const hasAnyPointsToday = solvers.some(s => s.uid === currentUser.uid && s.aPrimitPuncte === true);
 
     setIsChecking(true);
+    // 🛡️ REPARATIE: Folosim Sonner pentru starea de loading
+    const idValidare = toast.loading("Se verifică statusul pe Codeforces...");
+
     try {
+      // console.log("Se apelează verificaProblemaCodeforces...");
       const isGata = await verificaProblemaCodeforces(currentProblem.idCF);
+      // console.log("Rezultat primit de la Codeforces API (isGata):", isGata);
       
       if (isGata) {
         const dataAzi = getSafeDateString();
@@ -162,7 +185,6 @@ function Arena() {
         const esteInPrimii3 = nrSolversPeDificultate < 3;
 
         let puncteDeAcordat = 0;
-        let mesajPuncte = "";
 
         if (!hasAnyPointsToday) {
           if (dificultateTinta === 'easy') puncteDeAcordat = esteInPrimii3 ? 40 : 20;
@@ -170,9 +192,18 @@ function Arena() {
           else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
           
           await acordaPuncte(puncteDeAcordat);
-          mesajPuncte = `🎉 Felicitări! Ai primit ${puncteDeAcordat} puncte XP!`;
+          
+          // 🛡️ REPARATIE: Folosim Sonner pentru succes
+          toast.success(`🎉 Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
+            id: idValidare,
+            description: "Problema a fost salvată și adăugată la scorul tău global!"
+          });
         } else {
-          mesajPuncte = "✅ Submisie validată ca antrenament privat! (0 XP adăugat, ai ales deja o problemă azi).";
+          // 🛡️ REPARATIE: Folosim Sonner pentru antrenament (info)
+          toast.info("✅ Antrenament privat validat!", {
+            id: idValidare,
+            description: "0 XP adăugat (ai încasat deja punctele pe o altă problemă astăzi)."
+          });
         }
         
         const userDocRef = doc(db, 'users', currentUser.uid);
@@ -181,7 +212,7 @@ function Arena() {
         });
 
         const nouSolver = { 
-          nume: currentUser.nume, 
+          nume: currentUser.nume || "Utilizator", 
           uid: currentUser.uid, 
           dificultate: dificultateTinta,
           aPrimitPuncte: !hasAnyPointsToday,
@@ -196,15 +227,20 @@ function Arena() {
         setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: curentCountLocal + 1 }));
 
         setSolvers(prev => [...prev, nouSolver]);
-        alert(`${mesajPuncte}\n📈 Problema a fost adăugată la contorul tău total global pentru clasament!`);
       } else {
-        alert(`Nu am găsit submisia marcată cu 'Accepted' pe Codeforces pentru problema ${currentProblem.idCF}.`);
+        // 🛡️ REPARATIE: Folosim Sonner pentru eroare (submisie negăsită)
+        toast.error("Submisie neidentificată!", {
+          id: idValidare,
+          description: `Nu s-a găsit statusul 'Accepted' pe Codeforces pentru problema ${currentProblem.idCF}.`
+        });
       }
     } catch (error) {
-      console.error("Eroare la verificare:", error);
-      alert("Eroare la procesarea submisiei.");
+      console.error("Eroare gravă prinsă în catch la verificare:", error);
+      // 🛡️ REPARATIE: Folosim Sonner pentru erori generale de sistem
+      toast.error("Eroare de sistem la procesarea submisiei.", { id: idValidare });
     } finally {
       setIsChecking(false);
+      // console.log("--- FINAL VERIFICARE ARENA ---");
     }
   };
 
@@ -214,7 +250,6 @@ function Arena() {
   const currentSolvers = solversFiltrati.slice(idxFirst, idxLast);
   const totalPages = Math.ceil(solversFiltrati.length / solversPerPage);
   
-  // 🛠️ REPARAT ACUM: Și textul de warning de jos va fi calculat strict pentru userul autentificat
   const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
 
   return (
@@ -353,4 +388,12 @@ function Arena() {
   );
 }
 
-export default Arena;
+// 2. EXPORTĂM CU CONTAINERUL <Toaster /> INTEGRAT STRUCTURAL
+export default function ArenaWithToaster() {
+  return (
+    <>
+      <Toaster richColors position="top-right" closeButton />
+      <Arena />
+    </>
+  );
+}

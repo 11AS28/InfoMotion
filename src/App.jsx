@@ -2,7 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SpeedInsights } from "@vercel/speed-insights/react"
-
+import { Toaster, toast } from 'sonner';
 
 import Nav from './components/nav';
 import Footer from './components/footer';
@@ -37,7 +37,6 @@ function App() {
       <AuthProvider>
         {/* Nav-ul apare DOAR dacă NU suntem pe admin */}
         {!isAdminPage && <Nav />}
-
         <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
           <Routes>
             {/* ─── RUTE PUBLICE ─── */}
@@ -92,6 +91,7 @@ function App() {
 
         {/* Footer-ul apare DOAR dacă NU suntem pe admin */}
         {!isAdminPage && <Footer />}
+        
       </AuthProvider>
       <SpeedInsights />
     </ThemeProvider>
