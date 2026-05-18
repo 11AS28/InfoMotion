@@ -147,3 +147,180 @@ body {
     width: 100%;
   }
 }
+/* =========================================
+   ADAUGĂ ACESTEA LA SFÂRȘITUL contact.css
+   ========================================= */
+
+/* Titlu secțiuni */
+.section-title {
+    font-size: 1.6rem;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* =========================================
+   FORMULAR DE CONTACT
+   ========================================= */
+.contact-form-section {
+    margin-top: 50px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    resize: none;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1, 105, 111, 0.1);
+}
+
+.form-submit-btn {
+    align-self: flex-start;
+    padding: 14px 32px;
+    background-color: #01696f;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.form-submit-btn:hover:not(:disabled) {
+    background-color: #015558;
+    transform: scale(1.03);
+}
+
+.form-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-feedback {
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 12px 18px;
+    border-radius: 10px;
+}
+
+.form-feedback.success {
+    background-color: rgba(1, 105, 111, 0.08);
+    color: #01696f;
+}
+
+.form-feedback.error {
+    background-color: rgba(220, 53, 69, 0.08);
+    color: #dc3545;
+}
+
+/* =========================================
+   FAQ
+   ========================================= */
+.faq-section {
+    margin-top: 50px;
+    margin-bottom: 40px;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-item {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--bg-color);
+}
+
+.faq-item:hover,
+.faq-item.open {
+    border-color: #01696f;
+    box-shadow: 0 4px 12px rgba(1, 105, 111, 0.08);
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.faq-icon {
+    flex-shrink: 0;
+    color: #01696f;
+    transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-icon {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    margin-top: 14px;
+    font-size: 0.97rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-submit-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+    }
+}
