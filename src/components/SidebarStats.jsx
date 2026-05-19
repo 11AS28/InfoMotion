@@ -18,7 +18,7 @@ function SidebarStats({ isOpen, onClose }) {
 
   const [totalLectiiDB, setTotalLectiiDB] = useState(0);
   const [totalProblemeDB, setTotalProblemeDB] = useState(0);
-  // ✅ NOU: state pentru XP
+
   const [puncteTotale, setPuncteTotale] = useState(0);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function SidebarStats({ isOpen, onClose }) {
           
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            // ✅ Citim atât problemele cât și XP-ul direct din Firestore
+            
             setTotalProblemeDB(userData.problemeRezolvateCount || 0);
             setPuncteTotale(userData.puncteTotale || 0);
           }
@@ -154,13 +154,13 @@ function SidebarStats({ isOpen, onClose }) {
               <span className="stat-value">{lectiiTerminate} / {totalLectiiDB}</span>
             </div>
 
-            {/* ✅ NOU: Afișăm XP-ul total din Firestore */}
+            
             <div className="stat-box">
               <span className="stat-label">XP Total</span>
               <span className="stat-value">⭐ {puncteTotale}</span>
             </div>
 
-            {/* ✅ NOU: Probleme Arena ca stat box separat */}
+            
             <div className="stat-box">
               <span className="stat-label">Probleme Arenă</span>
               <span className="stat-value">⚔️ {totalProblemeDB}</span>
