@@ -10,7 +10,7 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   const [loading, setLoading] = useState(false);
   const { currentUser, acordaPuncte } = useAuth();
 
-  // Calculăm progresul și scorul
+
   const answeredCount = answers.filter(ans => ans !== null).length;
   const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
   const isPerfect = score === quizData.length;
@@ -27,21 +27,20 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     setIsQuizChecked(false);
   };
 
-  // Funcția care finalizează totul
   const handleFinalizeLesson = async () => {
     setLoading(true);
     try {
       const userRef = doc(db, 'users', currentUser.uid);
       
-      // 1. Marcăm lecția ca terminată în Firebase
+     
       await updateDoc(userRef, { 
         lectiiTerminate: arrayUnion(lessonId) 
       });
       
-      // 2. Acordăm punctele (automatizarea de care vorbeam)
+      
       await acordaPuncte('quiz'); 
       
-      // 3. Închidem modalul și anunțăm succesul
+      
       onFinished(); 
     } catch (e) {
       alert("Eroare la salvarea progresului: " + e.message);
