@@ -38,13 +38,16 @@ export default function SlidingWindowDequeAnim() {
   return (
     <div className="di-container">
       <h3 className="di-title">Animație: Sliding Window Minimum cu Deque (K = 3)</h3>
-      <p className="di-desc" style={{ minHeight: '65px' }}>{cur.desc}</p>
+      <p className="di-desc" style={{ minHeight: '85px' }}>{cur.desc}</p>
       
-      <div className="di-visual" style={{ textAlign: 'left' }}>
+      <div className="di-visual" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
         {/* Vizualizare Vector și Fereastră */}
-        <div style={{ marginBottom: '25px' }}>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Vectorul V și Fereastra Glisantă:</span>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
+        <div style={{ marginBottom: '25px', width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+            Vectorul V și Fereastra Glisantă:
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {vector.slice(1).map((val, idx) => {
               const realIdx = idx + 1;
               const inWindow = realIdx > (cur.i - K) && realIdx <= cur.i;
@@ -60,7 +63,7 @@ export default function SlidingWindowDequeAnim() {
               }
 
               return (
-                <div key={realIdx} style={{ textAlign: 'center' }}>
+                <div key={realIdx} style={{ textAlign: 'center', margin: '3px' }}>
                   <div className="di-box" style={{ width: '45px', height: '45px', background: bg, border: border }}>{val}</div>
                   <small style={{ color: 'var(--text-muted)' }}>i={realIdx}</small>
                 </div>
@@ -70,13 +73,22 @@ export default function SlidingWindowDequeAnim() {
         </div>
 
         {/* Starea Deque-ului */}
-        <div style={{ marginBottom: '25px' }}>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Starea Deque (Conține indici, arătăm și valorile):</span>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '5px', alignItems: 'center' }}>
+        <div style={{ marginBottom: '25px', width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+            Starea Deque (Conține indici, arătăm și valorile):
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>FRONT [</div>
             {cur.dq.map((indice, idx) => (
-              <div key={indice} className="di-box" style={{ background: idx === 0 ? '#639922' : '#1e293b', border: idx === 0 ? '2px solid #8cd932' : '1px solid #4a5568', width: '65px', padding: '5px' }}>
-                <span style={{ fontSize: '0.7rem', display: 'block', color: '#a0aec0' }}>id: {indice}</span>
+              <div key={indice} className="di-box" style={{ 
+                background: idx === 0 ? '#639922' : '#1e293b', 
+                border: idx === 0 ? '2px solid #8cd932' : '1px solid #4a5568', 
+                width: 'auto', 
+                minWidth: '65px', 
+                padding: '5px 10px',
+                margin: '2px'
+              }}>
+                <span style={{ fontSize: '0.75rem', display: 'block', color: '#a0aec0' }}>id: {indice}</span>
                 <strong>V={vector[indice]}</strong>
               </div>
             ))}
@@ -85,18 +97,20 @@ export default function SlidingWindowDequeAnim() {
         </div>
 
         {/* Minimele rezultate */}
-        <div>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Minimele ferestrelor generate:</span>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
+        <div style={{ width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+            Minimele ferestrelor generate:
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {cur.minime.map((m, idx) => (
-              <div key={idx} className="di-box" style={{ background: '#2d3748', width: '40px', height: '40px', color: '#8cd932', fontWeight: 'bold' }}>{m}</div>
+              <div key={idx} className="di-box" style={{ background: '#2d3748', width: '40px', height: '40px', color: '#8cd932', fontWeight: 'bold', margin: '2px' }}>{m}</div>
             ))}
-            {cur.minime.length === 0 && <span style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Niciun minim încă...</span>}
+            {cur.minime.length === 0 && <span style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '10px' }}>Niciun minim încă...</span>}
           </div>
         </div>
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ marginTop: '25px', flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

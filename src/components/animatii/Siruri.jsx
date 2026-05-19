@@ -23,36 +23,47 @@ export default function FibonacciAnim() {
       <h3 className="di-title">Animație: Generarea Șirului lui Fibonacci</h3>
       <p className="di-desc" style={{ minHeight: '60px' }}>{cur.desc}</p>
       
-      <div className="di-visual">
+           <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
         {/* Valorile curente ale pointerilor de recurență */}
-        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '25px' }}>
-          <div className="di-box" style={{ background: '#1e293b', border: '2px solid #ffb347' }}>f1 = {cur.f1}</div>
-          <div style={{ fontSize: '1.5rem', alignSelf: 'center', color: 'var(--text-muted)' }}>+</div>
-          <div className="di-box" style={{ background: '#1e293b', border: '2px solid #ffb347' }}>f2 = {cur.f2}</div>
-          <div style={{ fontSize: '1.5rem', alignSelf: 'center', color: 'var(--text-muted)' }}>=</div>
-          <div className="di-box" style={{ background: '#639922' }}>f3 = {cur.f3}</div>
+        <div style={{ 
+            display: 'flex', 
+            gap: '10px', 
+            justifyContent: 'center', 
+            marginBottom: '35px', // Spațiu crescut între ecuație și șir
+            flexWrap: 'wrap',
+            alignItems: 'center' 
+        }}>
+          <div className="di-box" style={{ background: '#1e293b', border: '2px solid #ffb347', width: 'auto', padding: '0 15px' }}>f1 = {cur.f1}</div>
+          <div style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}>+</div>
+          <div className="di-box" style={{ background: '#1e293b', border: '2px solid #ffb347', width: 'auto', padding: '0 15px' }}>f2 = {cur.f2}</div>
+          <div style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}>=</div>
+          <div className="di-box" style={{ background: '#639922', width: 'auto', padding: '0 15px' }}>f3 = {cur.f3}</div>
         </div>
 
-        {/* Șirul generat efectiv */}
-        <p style={{ margin: '20px 0 5px 0', fontSize: '0.9rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-          ȘIRUL GENERAT PÂNĂ ACUM:
-        </p>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {cur.sir.map((num, idx) => (
-            <div key={idx} className="di-box" style={{ 
-              width: '45px', 
-              height: '45px', 
-              background: idx === cur.sir.length - 1 ? '#639922' : 'var(--bg-subtle)',
-              border: idx === cur.sir.length - 1 ? '2px solid #8cd932' : '1px solid #4a5568',
-              fontSize: '1rem'
-            }}>
-              {num}
-            </div>
-          ))}
+        {/* Șirul generat efectiv, izolat complet pe propriul rând (flexDirection: column) */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', textAlign: 'center', fontWeight: 'bold' }}>
+            ȘIRUL GENERAT PÂNĂ ACUM:
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {cur.sir.map((num, idx) => (
+              <div key={idx} className="di-box" style={{ 
+                width: '45px', 
+                height: '45px', 
+                background: idx === cur.sir.length - 1 ? '#639922' : 'var(--bg-subtle)',
+                border: idx === cur.sir.length - 1 ? '2px solid #8cd932' : '1px solid #4a5568',
+                fontSize: '1rem'
+              }}>
+                {num}
+              </div>
+            ))}
+          </div>
         </div>
+
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

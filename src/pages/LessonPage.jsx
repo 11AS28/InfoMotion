@@ -28,6 +28,8 @@ const SlindingWindow = React.lazy(() => import('../components/animatii/SlindingW
 const MergeSort = React.lazy(() => import('../components/animatii/MergeSort'));
 const QuickSort = React.lazy(() => import('../components/animatii/QuickSort'));
 const StivaMonotona = React.lazy(() => import('../components/animatii/StivaMonotona'));
+const StructuriNeomogene = React.lazy(() => import('../components/animatii/StructuriNeomogeneAnim'));
+const Matrici = React.lazy(() => import('../components/animatii/MatriciAnim'));
 
 
 
@@ -118,6 +120,8 @@ function LessonPage() {
       case "MergeSort": return <MergeSort/>;
       case "QuickSort": return <QuickSort/>;
       case "StivaMonotona": return <StivaMonotona/>;
+      case "StructuriNeomogene": return <StructuriNeomogene/>;
+      case "Matrici": return <Matrici/>;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };

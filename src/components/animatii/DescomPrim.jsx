@@ -22,32 +22,40 @@ export default function FactoriPrimiAnim() {
   return (
     <div className="di-container">
       <h3 className="di-title">Animație: Descompunere în Factori Primi</h3>
-      <p className="di-desc">{cur.desc}</p>
+      <p className="di-desc" style={{ minHeight: '60px' }}>{cur.desc}</p>
       
-      <div className="di-visual">
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <div className="di-box" style={{ background: '#2d3748' }}>N = {cur.n}</div>
-          <div className="di-box" style={{ background: '#BA7517' }}>d = {cur.d}</div>
-          <div className="di-box" style={{ background: '#4a5568' }}>p = {cur.p}</div>
+      <div className="di-visual" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
+        {/* Folosim flexWrap pentru ca elementele N, d, p să nu se înghesuie pe mobil */}
+        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="di-box" style={{ background: '#2d3748', width: '100px', maxWidth: '100%' }}>N = {cur.n}</div>
+          <div className="di-box" style={{ background: '#BA7517', width: '100px', maxWidth: '100%' }}>d = {cur.d}</div>
+          <div className="di-box" style={{ background: '#4a5568', width: '100px', maxWidth: '100%' }}>p = {cur.p}</div>
         </div>
 
-        <div style={{ marginTop: '40px', textAlign: 'center' }}>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '5px' }}>REZULTAT PARȚIAL:</p>
-            <div style={{ 
-                fontSize: '1.8rem', 
-                fontWeight: 'bold', 
-                color: '#8cd932', 
-                fontFamily: 'monospace',
-                padding: '10px 30px',
-                border: '2px dashed #8cd932',
-                borderRadius: '10px'
-            }}>
-                {cur.res || "..."}
-            </div>
+        <div style={{ 
+          marginTop: '30px', 
+          textAlign: 'center', 
+          width: '100%',
+          maxWidth: '400px' // Îi limităm lățimea ca să nu se întindă urât, dar permite restrângerea pe mobil
+        }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '5px' }}>REZULTAT PARȚIAL:</p>
+          <div style={{ 
+            fontSize: 'clamp(1.2rem, 4vw, 1.8rem)', // 'clamp' face textul responsiv pe mobil (se micșorează adaptiv)
+            fontWeight: 'bold', 
+            color: '#8cd932', 
+            fontFamily: 'monospace',
+            padding: '15px',
+            border: '2px dashed #8cd932',
+            borderRadius: '10px',
+            wordBreak: 'break-all' // Asigură că dacă expresia ajunge lungă, se rupe pe alt rând pe telefoanele înguste
+          }}>
+            {cur.res || "..."}
+          </div>
         </div>
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

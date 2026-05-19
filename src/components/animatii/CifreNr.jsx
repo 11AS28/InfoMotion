@@ -25,25 +25,31 @@ export default function ProcesareCifreAnim() {
       <h3 className="di-title">Animație: Descompunerea unui număr în cifre</h3>
       <p className="di-desc" style={{ minHeight: '60px' }}>{cur.desc}</p>
       
-      <div className="di-visual">
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-          <div className="di-box" style={{ background: cur.n === 0 ? '#c93b3b' : '#1e293b' }}>N = {cur.n}</div>
-          <div className="di-box" style={{ background: '#BA7517' }}>u.c. = {cur.uc}</div>
+      <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
+        {/* N și u.c. - flexWrap pentru a se rupe pe ecrane foarte mici */}
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
+          <div className="di-box" style={{ background: cur.n === 0 ? '#c93b3b' : '#1e293b', width: 'auto', padding: '0 20px' }}>N = {cur.n}</div>
+          <div className="di-box" style={{ background: '#BA7517', width: 'auto', padding: '0 20px' }}>u.c. = {cur.uc}</div>
         </div>
 
-        <div style={{ display: 'flex', gap: '30px', marginTop: '30px', justifyContent: 'center' }}>
-          <div>
-            <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>SUMA:</p>
-            <div className="di-box" style={{ background: '#2d3748', width: '100px' }}>{cur.suma}</div>
+        {/* Variabilele calculate (Suma și Oglindit) */}
+        <div style={{ display: 'flex', gap: '20px', marginTop: '30px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>SUMA:</p>
+            <div className="di-box" style={{ background: '#2d3748', width: '120px', maxWidth: '100%' }}>{cur.suma}</div>
           </div>
-          <div>
-            <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>OGLINDIT:</p>
-            <div className="di-box" style={{ background: '#639922', width: '120px' }}>{cur.ogl}</div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>OGLINDIT:</p>
+            <div className="di-box" style={{ background: '#639922', width: '120px', maxWidth: '100%' }}>{cur.ogl}</div>
           </div>
+
         </div>
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

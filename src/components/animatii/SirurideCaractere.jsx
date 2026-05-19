@@ -76,7 +76,8 @@ export default function LungimeSirAnim() {
       <p className="di-desc" style={{ minHeight: '60px' }}>{currentStage.desc}</p>
       
       <div className="di-visual">
-        <div className="di-array" style={{ border: 'none', background: 'transparent', gap: '12px' }}>
+        {/* Folosim flexWrap pentru ca elementele array-ului să coboare pe rândul următor pe ecrane mici */}
+        <div className="di-array" style={{ border: 'none', background: 'transparent', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
           {currentStage.vector.map((char, idx) => {
             let boxStyle = {};
             
@@ -115,16 +116,21 @@ export default function LungimeSirAnim() {
         </div>
       </div>
 
-      {/* Afișarea contorului/lungimii */}
-      <div style={{ marginBottom: '30px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-        Variabila <code style={{ color: '#639922', backgroundColor: 'var(--bg-subtle)', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>lungime = {currentStage.lungime}</code>
-        {currentStage.finished && <span style={{ marginLeft: '15px', color: currentStage.highlightBox === 4 ? '#ff6b6b' : '#8cd932', fontSize: '1rem' }}>{currentStage.highlightBox === 4 ? "🛑 Condiție s[i] != '\\0' FALSĂ!" : "✓ Gata!"}</span>}
+      {/* Afișarea contorului/lungimii cu aspect flexibil */}
+      <div style={{ marginBottom: '30px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+        <div>
+          Variabila <code style={{ color: '#639922', backgroundColor: 'var(--bg-subtle)', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>lungime = {currentStage.lungime}</code>
+        </div>
+        {/* Mesajul de terminare pus pe un rând separat pentru a preveni coliziunea pe ecrane mici */}
+        <div style={{ minHeight: '24px' }}>
+          {currentStage.finished && <span style={{ color: currentStage.highlightBox === 4 ? '#ff6b6b' : '#8cd932', fontSize: '1rem' }}>{currentStage.highlightBox === 4 ? "🛑 Condiție s[i] != '\\0' FALSĂ!" : "✓ Gata!"}</span>}
+        </div>
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
-        <button onClick={reset} className="btn-reset">Reset</button>
+        <button onClick={reset} className="btn-reset" style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--text-muted)' }}>Reset</button>
       </div>
     </div>
   );

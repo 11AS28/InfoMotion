@@ -66,11 +66,14 @@ export default function SmenulLuiMarsAnim() {
       <h3 className="di-title">Animație: Șmenul lui Mars Detaliat</h3>
       <p className="di-desc" style={{ minHeight: '75px' }}>{cur.desc}</p>
       
-      <div className="di-visual" style={{ textAlign: 'left' }}>
+      <div className="di-visual" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
         {/* Vectorul D */}
-        <div style={{ marginBottom: '20px' }}>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Vectorul D (Diferențe):</span>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
+        <div style={{ marginBottom: '30px', width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+            Vectorul D (Diferențe):
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {cur.d.slice(1).map((val, i) => {
               const idx = i + 1;
               let bg = 'var(--bg-subtle)';
@@ -91,9 +94,11 @@ export default function SmenulLuiMarsAnim() {
         </div>
 
         {/* Vectorul V */}
-        <div>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Vectorul V (Rezultat):</span>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
+        <div style={{ width: '100%' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+            Vectorul V (Rezultat):
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {cur.v.slice(1).map((val, i) => {
               const idx = i + 1;
               let bg = 'var(--bg-subtle)';
@@ -113,7 +118,7 @@ export default function SmenulLuiMarsAnim() {
         </div>
       </div>
 
-      <div className="di-controls" style={{ marginTop: '25px' }}>
+      <div className="di-controls" style={{ marginTop: '25px', flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

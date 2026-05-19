@@ -87,12 +87,12 @@ export default function StivaMonotonaAnim() {
   return (
     <div className="di-container">
       <h3 className="di-title">Animație Detaliată: Stivă Monotonă</h3>
-      <p className="di-desc" style={{ minHeight: '75px' }}>{cur.desc}</p>
+      <p className="di-desc" style={{ minHeight: '85px' }}>{cur.desc}</p>
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', gap: '25px', alignItems: 'center' }}>
         
         {/* Schita Vector Principal */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
           {cur.v.slice(1).map((val, i) => {
             const realIdx = i + 1;
             let bg = 'var(--bg-subtle)';
@@ -104,7 +104,7 @@ export default function StivaMonotonaAnim() {
             }
 
             return (
-              <div key={realIdx} style={{ textAlign: 'center' }}>
+              <div key={realIdx} style={{ textAlign: 'center', margin: '2px' }}>
                 <div className="di-box" style={{ width: '45px', height: '45px', background: bg, border: border, fontWeight: 'bold' }}>
                   {val}
                 </div>
@@ -114,10 +114,11 @@ export default function StivaMonotonaAnim() {
           })}
         </div>
 
-        {/* Reprezentarea Stivei (Vizualizata pe verticala, de la baza in sus) */}
-        <div style={{ display: 'flex', gap: '40px', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        {/* Reprezentarea Stivei (Vizualizata pe verticala, de la baza in sus) și a Vectorului Rezultat */}
+        {/* Adăugat flexWrap pentru ecrane înguste unde stiva și rezultatul nu pot sta aliniate lateral */}
+        <div style={{ display: 'flex', gap: '40px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
           
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', minWidth: '120px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '5px' }}>Starea Stivei (Vârf în sus):</span>
             <div style={{ 
               width: '80px', 
@@ -129,31 +130,34 @@ export default function StivaMonotonaAnim() {
               flexDirection: 'column-reverse', 
               gap: '5px', 
               padding: '5px',
-              background: 'rgba(255, 255, 255, 0.02)'
+              background: 'rgba(255, 255, 255, 0.02)',
+              margin: '0 auto' // Asigură centrarea cutiei de stivă sub propriul text
             }}>
               {cur.stiva.map((val, idx) => (
                 <div key={idx} className="di-box" style={{ 
                   width: '100%', 
-                  height: '25px', 
+                  height: 'auto', // Permite flexibilitate la textul "(Top)"
+                  minHeight: '25px', 
                   background: idx === cur.stiva.length - 1 ? '#BA7517' : '#1e293b',
                   fontSize: '0.85rem',
+                  padding: '2px 0',
                   border: idx === cur.stiva.length - 1 ? '1px solid #ffb347' : '1px solid #4a5568'
                 }}>
                   {val} {idx === cur.stiva.length - 1 ? "(Top)" : ""}
                 </div>
               ))}
               {cur.stiva.length === 0 && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'normal', textAlign: 'center', marginTop: '45px' }}>Golă</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'normal', textAlign: 'center', marginTop: '45px' }}>Goală</div>
               )}
             </div>
           </div>
 
           {/* Rezultate Parbriz */}
-          <div>
+          <div style={{ textAlign: 'center' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '5px' }}>Vectorul Rezultat:</span>
-            <div style={{ display: 'flex', gap: '5px' }}>
+            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
               {cur.rez.slice(1).map((val, i) => (
-                <div key={i} className="di-box" style={{ width: '40px', height: '40px', background: '#2d3748', fontSize: '0.9rem', color: val > 0 ? '#8cd932' : 'var(--text-muted)' }}>
+                <div key={i} className="di-box" style={{ width: '40px', height: '40px', background: '#2d3748', fontSize: '0.9rem', color: val > 0 ? '#8cd932' : 'var(--text-muted)', margin: '2px' }}>
                   {val}
                 </div>
               ))}
@@ -164,7 +168,7 @@ export default function StivaMonotonaAnim() {
 
       </div>
 
-      <div className="di-controls" style={{ marginTop: '25px' }}>
+      <div className="di-controls" style={{ marginTop: '25px', flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>

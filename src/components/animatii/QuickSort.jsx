@@ -78,12 +78,18 @@ export default function QuickSortAnimExtins() {
   return (
     <div className="di-container">
       <h3 className="di-title">Animație Extinsă: Quick Sort Pas cu Pas</h3>
-      <p className="di-desc" style={{ minHeight: '75px' }}>{cur.desc}</p>
+      <p className="di-desc" style={{ minHeight: '85px' }}>{cur.desc}</p>
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
         
         {/* Schita vectorului principal */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <div style={{ 
+            display: 'flex', 
+            gap: '10px', 
+            justifyContent: 'center', 
+            flexWrap: 'wrap', // IMPORTANT: Permite trecerea elementelor pe rândul următor pe ecrane mici
+            width: '100%' 
+        }}>
           {cur.v.map((val, idx) => {
             let bg = 'var(--bg-subtle)';
             let border = '1px solid #4a5568';
@@ -106,12 +112,12 @@ export default function QuickSortAnimExtins() {
             }
 
             return (
-              <div key={idx} style={{ textAlign: 'center' }}>
+              <div key={idx} style={{ textAlign: 'center', margin: '5px' }}>
                 <div className="di-box" style={{ width: '50px', height: '50px', background: bg, border: border, fontWeight: 'bold' }}>
                   {val}
                 </div>
                 {/* Etichete de indici dedesubt */}
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', minHeight: '15px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px', minHeight: '18px' }}>
                   {idx === cur.pivotIdx ? "PIVOT " : ""}
                   {idx === cur.i ? "i " : ""}
                   {idx === cur.j ? "j" : ""}
@@ -123,14 +129,21 @@ export default function QuickSortAnimExtins() {
 
         {/* Panou informativ dinamic */}
         {cur.type !== "final" && cur.pivotIdx !== -1 && (
-          <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.03)', padding: '8px 15px', borderRadius: '4px' }}>
-            Valoare Pivot curent: <strong>{cur.v[cur.pivotIdx]}</strong>
+          <div style={{ 
+            fontSize: '0.9rem', 
+            color: 'var(--text-muted)', 
+            background: 'rgba(255, 255, 255, 0.05)', 
+            padding: '10px 20px', 
+            borderRadius: '6px',
+            textAlign: 'center'
+          }}>
+            Valoare Pivot curent: <strong style={{ color: '#ffb347', fontSize: '1.1rem' }}>{cur.v[cur.pivotIdx]}</strong>
           </div>
         )}
 
       </div>
 
-      <div className="di-controls" style={{ marginTop: '25px' }}>
+      <div className="di-controls" style={{ marginTop: '25px', flexWrap: 'wrap' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>
