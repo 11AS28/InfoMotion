@@ -125,13 +125,13 @@ function SidebarStats({ isOpen, onClose }) {
   };
 
   const listaBadgeuri = [
-    { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
-    { id: 'b2', icon: '🔥', nume: 'Combo Mic', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
-    { id: 'b3', icon: '⚒️', nume: 'Miner de XP', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
-    { id: 'b4', icon: '⚔️', nume: 'Arena Grinder', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' },
-    { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
-    { id: 'b6', icon: '👑', nume: 'Boss Final', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
-  ];
+  { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
+  { id: 'b2', icon: '🔥', nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' }, // sau "Ucenic Curajos"
+  { id: 'b3', icon: '⚒️', nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' }, // păstrează iconița de unelte
+  { id: 'b4', icon: '⚔️', nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
+  { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
+  { id: 'b6', icon: '👑', nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' } // sau "Zeul Arenei" / "Legenda Codului"
+];
 
   return (
     <>
