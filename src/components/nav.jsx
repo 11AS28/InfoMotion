@@ -49,7 +49,7 @@ function Nav() {
         <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
         <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
         <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
-        {/* --- BUTON DARK MODE --- */}
+        
         <li>
           <button
             className={`theme-toggle ${theme === 'dark' ? 'dark-active' : ''}`}
@@ -64,7 +64,7 @@ function Nav() {
           </button>
         </li>
 
-        {/* Zona de User */}
+        
         {currentUser ? (
           <li className="nav-user-info">
     <div className="nav-user-badge" onClick={() => setIsSidebarOpen(true)}>
@@ -83,7 +83,7 @@ function Nav() {
         </li>
       </ul>
 
-      {/* Componenta Sidebar este în afara UL-ului pentru a nu strica layout-ul de mobil */}
+      
       <SidebarStats 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
