@@ -52,9 +52,6 @@
     vertical-align: middle;
     margin-right: 10px;
 }
-/* =========================================
-   PAGINARE — se adaugă în clasament.css și arena.css
-   ========================================= */
 
 .pagination {
     display: flex;
@@ -80,7 +77,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s, transform 0.15s, border-color 0.2s;
-    /* Resetăm orice stil moștenit din .arena-container button */
+   
     margin-bottom: 0 !important;
     width: auto !important;
 }
@@ -109,9 +106,7 @@
     letter-spacing: 0.5px;
 }
 
-/* =========================================
-   LIGHT MODE
-   ========================================= */
+
 html:not(.dark) .pagination {
     border-top-color: #e2e8f0;
 }

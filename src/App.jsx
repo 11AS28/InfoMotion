@@ -36,7 +36,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         
-        {!isAdminPage && !AdminUsers && <Nav />}
+        {!isAdminPage && <Nav />}
         <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
           <Routes>
             
@@ -90,7 +90,7 @@ function App() {
         </main>
 
        
-        {!isAdminPage && !AdminUsers &&<Footer />}
+        {!isAdminPage &&<Footer />}
         
       </AuthProvider>
       <SpeedInsights />

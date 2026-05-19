@@ -4,7 +4,7 @@ import Footer from "../components/footer";
 import '../pages_css/contact.css';
 import { FaDiscord, FaGithub, FaInstagram, FaChevronDown } from "react-icons/fa";
 import { CgMail } from "react-icons/cg";
-import { db } from "../firebase"; // importul tău normal de firebase
+import { db } from "../firebase"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const FAQ_ITEMS = [

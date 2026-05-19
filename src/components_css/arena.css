@@ -1,6 +1,4 @@
-/* =========================================
-   CONTAINER PRINCIPAL ARENA
-   ========================================= */
+
 .arena-container {
     background: var(--bg-card, #151c27);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -37,9 +35,7 @@
     transform: translateY(-2px);
 }
 
-/* =========================================
-   BUTON VERIFICARE SUBMISIE
-   ========================================= */
+
 .arena-container button {
     background-color: var(--accent-color, #00d1b2);
     color: var(--text-color, #f8fafc);
@@ -65,9 +61,7 @@
     transform: none;
 }
 
-/* =========================================
-   LISTA TOP SOLVERI
-   ========================================= */
+
 .solvers-list {
     background: var(--bg-card, #151c27);
     border-radius: 15px;
@@ -111,9 +105,7 @@
 .username { flex: 1; text-align: left; padding-left: 10px; }
 .value { font-weight: bold; }
 
-/* =========================================
-   RESPONSIVITATE TELEFOANE
-   ========================================= */
+
 @media (max-width: 768px) {
     .arena-container {
         padding: 20px;
@@ -126,9 +118,7 @@
     }
 }
 
-/* =========================================
-   SISTEM REZOLVARE GRID
-   ========================================= */
+
 .arena-wrapper {
     padding: 0 15px;
 }
@@ -250,9 +240,7 @@
     display: none;
 }
 
-/* =========================================
-   MEDIA QUERY: MOBIL
-   ========================================= */
+
 @media (max-width: 900px) {
     .arena-grid-layout {
         display: block; 
@@ -295,11 +283,6 @@
     }
 }
 
-/* =========================================
-   LIGHT MODE — selectorul corect este :not(.dark) pe html
-   Tema ta adaugă clasa 'dark' pe <html> pentru dark mode,
-   deci light mode = html fără clasa 'dark'
-   ========================================= */
 html:not(.dark) .arena-container {
     background: #ffffff;
     border-color: #e2e8f0;
@@ -320,7 +303,7 @@ html:not(.dark) .arena-custom-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* FIX PRINCIPAL: titlurile erau albe pe alb */
+
 html:not(.dark) .arena-custom-card h3 {
     color: #0f172a;
 }
@@ -388,7 +371,6 @@ html:not(.dark) .arena-warning-text {
     border-color: rgba(186, 117, 23, 0.3);
 }
 
-/* Paginare */
 html:not(.dark) .page-btn {
     background: #f1f5f9;
     border-color: #cbd5e1;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // <--- IMPORT NOU
-import { useAuth } from '../context/AuthContext'; // <--- IMPORT NOU
+import { Link } from 'react-router-dom'; 
+import { useAuth } from '../context/AuthContext';
 import '../pages_css/mainPage.css';
 import Nav from '../components/nav';
 import Footer from '../components/footer';

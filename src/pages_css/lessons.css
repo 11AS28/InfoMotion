@@ -1,6 +1,3 @@
-/* =========================================
-   CONTAINER PRINCIPAL PENTRU LECȚIE
-   ========================================= */
 .lesson-container {
   padding: 100px 5% 60px;
   max-width: 1000px;
@@ -15,7 +12,6 @@ body {
   min-height: 100vh;
 }
 
-/* Butonul de Înapoi */
 .back-link {
   display: inline-block;
   color: var(--text-secondary);
@@ -26,18 +22,14 @@ body {
 }
 
 .back-link:hover {
-  color: var(--accent-color); /* Accentul teal */
-  transform: translateX(-5px); /* Se mută puțin la stânga */
+  color: var(--accent-color); 
+  transform: translateX(-5px); 
 }
 
-/* =========================================
-   HEADER LECȚIE (Titlu și Badge)
-   ========================================= */
 .lesson-header {
   margin-bottom: 40px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color); /* Înlocuit cu variabilă */
-  
+  border-bottom: 1px solid var(--border-color); 
 }
 
 .lesson-badge {
@@ -55,13 +47,10 @@ body {
 
 .lesson-header h1 {
   font-size: 2.8rem;
-  color: var(--text-primary); /* Înlocuit cu variabilă */
+  color: var(--text-primary); 
   line-height: 1.2;
 }
 
-/* =========================================
-   CONȚINUT LECȚIE (Teorie și Animație)
-   ========================================= */
 .lesson-content {
   display: flex;
   flex-direction: column;
@@ -84,12 +73,10 @@ body {
   color: var(--text-secondary);
   font-size: 1.1rem;
   line-height: 1.7;
-  
 }
 
-/* Placeholder pentru când nu ai încă animația gata */
 .animation-placeholder {
-  background-color: var(--bg-card); /* Ajustat pentru Dark Mode */
+  background-color: var(--bg-card); 
   border: 2px dashed var(--border-color);
   border-radius: 16px;
   padding: 80px 20px;
@@ -99,9 +86,6 @@ body {
   font-size: 1.2rem;
 }
 
-/* =========================================
-   ZONA DE FINALIZARE LECȚIE (Cu Auth/Progres)
-   ========================================= */
 .lesson-finish-action {
   margin: 50px 0 40px 0;
   padding: 30px;
@@ -174,15 +158,12 @@ body {
   100% { opacity: 1; transform: scale(1); }
 }
 
-/* =========================================
-   ZONA DE COD C++
-   ========================================= */
 .lesson-code {
   margin-bottom: 40px;
 }
 
 .lesson-code pre {
-  background-color: #1e293b; /* Rămâne mereu închis ca un editor real */
+  background-color: #1e293b; 
   color: #f8fafc; 
   padding: 25px;
   border-radius: 12px;
@@ -196,9 +177,6 @@ body {
   line-height: 1.5;
 }
 
-/* =========================================
-   SECȚIUNEA EXERSEAZĂ (PBINFO)
-   ========================================= */
 .lesson-problems {
   background-color: var(--bg-card); 
   padding: 30px;
@@ -213,14 +191,12 @@ body {
   font-size: 1.5rem;
 }
 
-/* Container-ul care ține toate problemele una sub alta */
 .problems-grid {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-/* Fiecare link (card) către pbInfo în parte */
 .problem-card {
   display: flex;
   align-items: center;
@@ -236,10 +212,9 @@ body {
 .problem-card:hover {
   border-color: var(--accent-color);
   box-shadow: 0 4px 12px rgba(1, 105, 111, 0.1);
-  transform: translateX(5px); /* Efect mișto de deplasare la dreapta */
+  transform: translateX(5px); 
 }
 
-/* Pilula cu ID-ul (#119) */
 .prob-id {
   font-weight: 700;
   color: var(--accent-color);
@@ -249,10 +224,8 @@ body {
   margin-right: 15px;
   min-width: 60px;
   text-align: center;
-  
 }
 
-/* Titlul problemei */
 .prob-title {
   color: var(--text-primary);
   font-weight: 600;
@@ -260,9 +233,6 @@ body {
   font-size: 1.05rem;
 }
 
-/* =========================================
-   ZONA DE FINALIZARE LECȚIE (QUIZ BUTTON)
-   ========================================= */
 .finish-container {
   display: flex;
   flex-direction: column;
@@ -278,15 +248,13 @@ body {
   margin: 0;
 }
 
-.check-icon{
+.check-icon {
   align-items: center;
   justify-content: center;
   padding: auto;
   margin: auto;
-
 }
 
-/* Butonul de Quiz */
 .finish-btn {
   background-color: var(--accent-color);
   color: var(--accent-color);
@@ -306,12 +274,8 @@ body {
 .finish-btn:hover {
   background-color: var(--accent-hover, #015257);
   transform: translateY(-3px);
- 
 }
 
-/* =========================================
-   PAGINĂ DE EROARE (Lecția nu a fost găsită)
-   ========================================= */
 .not-found-lesson {
   display: flex;
   flex-direction: column;
@@ -342,38 +306,29 @@ body {
   background-color: var(--accent-hover, #015257);
 }
 
-/* =========================================
-   ANIMAȚII
-   ========================================= */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-
-
-/* Containerul părinte care forțează așezarea orizontală */
 .lesson-page-main-layout {
     display: flex;
-    flex-direction: row; /* Sidebar la stânga, Main la dreapta */
+    flex-direction: row; 
     align-items: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding: 40px 20px; /* Spațiu sus și pe margini */
-    gap: 30px; /* Spațiu între sidebar și teorie */
-    background-color: #0b111a; /* Ajustează la culoarea ta de fundal */
-    
+    padding: 40px 20px; 
+    gap: 30px; 
+    background-color: #0b111a; 
 }
 
-/* Sidebar-ul fixat în stânga */
 .lessons-sidebar {
     width: 300px;
     min-width: 300px;
-    background: #151c27; /* Culoarea cardului din imaginea ta */
+    background: #151c27; 
     border-radius: 15px;
     padding: 20px;
     border: 5px solid var(--border-color);
-    /* Îl facem să stea fix când dai scroll pe teorie */
     position: sticky ;
     top: 20px; 
 }
@@ -405,32 +360,27 @@ body {
     color: white;
 }
 
-/* Stilul pentru lecția selectată (ca în imaginea ta) */
 .sidebar-item.active {
-    background-color: #00d1b2; /* Culoarea turcoaz din screenshot */
+    background-color: #00d1b2; 
     color: #000;
     font-weight: 600;
 }
 
-/* Conținutul lecției (Teoria) */
 .lesson-container {
-    flex: 1; /* Ocupă restul spațiului din dreapta */
+    flex: 1; 
     background: transparent;
     padding: 0;
     margin: 0;
-    max-width: 900px; /* Limitează lățimea textului pentru citire ușoară */
+    max-width: 900px; 
 }
 
-
-
-/* Containerul nou pentru a le pune pe orizontală */
 .lesson-main-content-flex {
     display: flex;
     flex-direction: row;
     align-items: flex-start !important;
     gap: 100px;
     width: 100%;
-    max-width: 1700px; /* Sau cât e containerul tău la nav */
+    max-width: 1700px; 
     margin: 0 auto;
 }
 
@@ -442,7 +392,6 @@ body {
     position: sticky;
     top: 100px;
     height: max-content;
-    /* FOLOSIM VARIABILE PENTRU DARK MODE */
     background-color: var(--bg-card, #ffffff); 
     border: 1px solid var(--border-color, #eee);
     color: var(--text-primary, #000);
@@ -451,15 +400,13 @@ body {
 
 .sidebar-item {
     color: var(--text-secondary, #555);
-    /* ... restul stilurilor ... */
 }
 
 .sidebar-item.active {
-    background-color: #00d1b2; /* Asta rămâne verde mereu */
+    background-color: #00d1b2; 
     color: #fff;
 }
 
-/* Dacă e nevoie să ajustăm containerul de teorie să nu mai fie centrat forțat */
 .lesson-container {
     flex: 1;
     margin: 0 !important; 
@@ -467,11 +414,8 @@ body {
     min-width: 0;
     box-sizing: border-box;
     max-width: 1000px;
-    margin:  0 auto;
-    
+    margin: 0 auto;
 }
-
-
 
 @media (max-width: 1400px) {
     .lesson-main-content-flex {
@@ -479,8 +423,6 @@ body {
         padding: 40px 30px; 
     }
 }
-
-
 
 @media (max-width: 1024px) {
   .lesson-page-main-layout, 
@@ -493,14 +435,11 @@ body {
       width: fit-content;
       top: 0;
       display: none;
-      
-     
   }
 }
 
 @media (max-width: 768px) {
   .lesson-container {
-  
     padding: 30px 15px 40px !important; 
     width: 100%; 
     box-sizing: border-box; 

@@ -105,7 +105,7 @@ function AdminUsers() {
   return (
     <div style={{ maxWidth: '1300px', margin: '20px auto', padding: '15px', color: 'white', fontFamily: 'sans-serif' }}>
       
-      
+      {/*nu cre ca mai avea sens sa mai fac o fisier doar pt asta no?*/} 
       <style>{`
         .desktop-table { display: table; width: 100%; border-collapse: collapse; margin-top: 20px; background: '#1a1a20'; border-radius: 8px; overflow: hidden; }
         .mobile-cards { display: none; }
