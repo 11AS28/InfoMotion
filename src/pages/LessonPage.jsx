@@ -27,7 +27,7 @@ const SmenulMars = React.lazy(() => import('../components/animatii/SmenulMars'))
 const SlindingWindow = React.lazy(() => import('../components/animatii/SlindingWindow'));
 const MergeSort = React.lazy(() => import('../components/animatii/MergeSort'));
 const QuickSort = React.lazy(() => import('../components/animatii/QuickSort'));
-
+const StivaMonotona = React.lazy(() => import('../components/animatii/StivaMonotona'));
 
 
 
@@ -117,6 +117,7 @@ function LessonPage() {
       case "SlindingWindow": return <SlindingWindow/>;
       case "MergeSort": return <MergeSort/>;
       case "QuickSort": return <QuickSort/>;
+      case "StivaMonotona": return <StivaMonotona/>;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
