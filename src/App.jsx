@@ -25,21 +25,21 @@ import AdminUsers from './pages/AdminUsers';
 import './theme.css';
 
 function App() {
-  // Folosim useLocation pentru a detecta unde ne aflăm în site
+  
   const location = useLocation();
 
-  // Verificăm dacă suntem pe pagina de admin
+ 
   const isAdminPage = location.pathname === '/admin';
 
   return (
 
     <ThemeProvider>
       <AuthProvider>
-        {/* Nav-ul apare DOAR dacă NU suntem pe admin */}
-        {!isAdminPage && <Nav />}
+        
+        {!isAdminPage && !AdminUsers && <Nav />}
         <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
           <Routes>
-            {/* ─── RUTE PUBLICE ─── */}
+            
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
@@ -47,10 +47,10 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
 
-            {/* Administrare - fără PrivateRoute (se ocupă Admin.jsx de login) */}
+            
             <Route path="/admin" element={<Admin />} />
 
-            {/* ─── RUTE PROTEJATE ─── */}
+           
             <Route
               path="/lectii"
               element={
@@ -89,8 +89,8 @@ function App() {
           </Routes>
         </main>
 
-        {/* Footer-ul apare DOAR dacă NU suntem pe admin */}
-        {!isAdminPage && <Footer />}
+       
+        {!isAdminPage && !AdminUsers &&<Footer />}
         
       </AuthProvider>
       <SpeedInsights />
