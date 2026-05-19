@@ -8,7 +8,7 @@ function Footer() {
         <footer className="site-footer">
             <div className="footer-content">
                 
-                {/* Partea de Sus a Footer-ului (Brand + Social) */}
+               
                 <div className="footer-top">
                     
                     <div className="footer-brand">
@@ -18,7 +18,7 @@ function Footer() {
                     </div>
 
                     <div className="social-links">
-                        {/* Pune linkurile tale reale aici */}
+                        
                         <a href="https://github.com/11AS28/InfoMotion" target="_blank" rel="noreferrer" aria-label="GitHub">
                             <FaGithub />
                         </a>  
@@ -33,7 +33,7 @@ function Footer() {
                     
                 </div>
 
-                {/* Partea de Jos (Copyright) */}
+                
                 <div className="footer-bottom">
                     <p>infomotion2026@gmail.com</p>
                     <br />

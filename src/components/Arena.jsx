@@ -3,8 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
-
-// 1. IMPORTĂM SONNER
 import { Toaster, toast } from 'sonner';
 
 function Arena() {
@@ -27,7 +25,7 @@ function Arena() {
   const getSafeDateString = () => {
     const now = new Date();
     
-    // Dacă e înainte de 10:00 dimineața, "ziua arenei" e încă cea de ieri
+   
     if (now.getHours() < 10) {
       const ieri = new Date(now);
       ieri.setDate(ieri.getDate() - 1);
@@ -146,8 +144,7 @@ function Arena() {
 
 const handleSolve = async (dificultateTinta) => {
     console.log("--- START VERIFICARE ARENA (CORECȚIE DUPLICARE) ---");
-    // console.log("Dificultate țintă:", dificultateTinta);
-    // console.log("User curent:", currentUser);
+   
 
     if (!currentUser || !currentUser.uid) {
       toast.error("Eroare de autentificare! Asigură-te că ești logat.");
@@ -171,7 +168,6 @@ const handleSolve = async (dificultateTinta) => {
     const hasAnyPointsToday = solvers.some(s => s.uid === currentUser.uid && s.aPrimitPuncte === true);
 
     setIsChecking(true);
-    // 🛡️ REPARATIE: Folosim Sonner pentru starea de loading
     const idValidare = toast.loading("Se verifică statusul pe Codeforces...");
 
     try {
@@ -193,13 +189,13 @@ const handleSolve = async (dificultateTinta) => {
           
           await acordaPuncte(puncteDeAcordat);
           
-          // 🛡️ REPARATIE: Folosim Sonner pentru succes
+      
           toast.success(`🎉 Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
             id: idValidare,
             description: "Problema a fost salvată și adăugată la scorul tău global!"
           });
         } else {
-          // 🛡️ REPARATIE: Folosim Sonner pentru antrenament (info)
+          
           toast.info("✅ Antrenament privat validat!", {
             id: idValidare,
             description: "0 XP adăugat (ai încasat deja punctele pe o altă problemă astăzi)."
@@ -228,7 +224,7 @@ const handleSolve = async (dificultateTinta) => {
 
         setSolvers(prev => [...prev, nouSolver]);
       } else {
-        // 🛡️ REPARATIE: Folosim Sonner pentru eroare (submisie negăsită)
+        
         toast.error("Submisie neidentificată!", {
           id: idValidare,
           description: `Nu s-a găsit statusul 'Accepted' pe Codeforces pentru problema ${currentProblem.idCF}.`
@@ -236,7 +232,7 @@ const handleSolve = async (dificultateTinta) => {
       }
     } catch (error) {
       console.error("Eroare gravă prinsă în catch la verificare:", error);
-      // 🛡️ REPARATIE: Folosim Sonner pentru erori generale de sistem
+     
       toast.error("Eroare de sistem la procesarea submisiei.", { id: idValidare });
     } finally {
       setIsChecking(false);
@@ -271,7 +267,7 @@ const handleSolve = async (dificultateTinta) => {
         </div>
 
         <div className="arena-grid-layout">
-          {/* CASETA 1: EASY */}
+        
           <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-easy">🟢 Easy</span>
@@ -289,7 +285,7 @@ const handleSolve = async (dificultateTinta) => {
             </div>
           </div>
 
-          {/* CASETA 2: MEDIUM */}
+        
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-medium">🟡 Medie</span>
@@ -307,7 +303,7 @@ const handleSolve = async (dificultateTinta) => {
             </div>
           </div>
 
-          {/* CASETA 3: HARD */}
+        
           <div className={`arena-custom-card card-hard ${activeTab === 'hard' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-hard">🔴 Grea</span>
@@ -387,8 +383,6 @@ const handleSolve = async (dificultateTinta) => {
     </div>
   );
 }
-
-// 2. EXPORTĂM CU CONTAINERUL <Toaster /> INTEGRAT STRUCTURAL
 export default function ArenaWithToaster() {
   return (
     <>

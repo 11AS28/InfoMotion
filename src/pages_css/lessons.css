@@ -473,13 +473,6 @@ body {
 
 
 
-
-
-/* =========================================
-   RESPONSIVITATE (TELEFOANE ȘI TABLETE)
-   ========================================= */
-
-/* Pentru laptopuri cu ecran mediu/mic */
 @media (max-width: 1400px) {
     .lesson-main-content-flex {
         gap: 30px; 

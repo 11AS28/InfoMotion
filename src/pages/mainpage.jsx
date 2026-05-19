@@ -5,19 +5,18 @@ import '../pages_css/mainPage.css';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
 
-// Acesta este vectorul inițial pe care îl vom sorta
+
 const INITIAL_ARRAY = [24, 18, 35, 12, 42, 8];
 
 function MainPage() {
-  // --- AICI LUĂM USER-UL LOGAT ---
+  
   const { currentUser } = useAuth(); 
 
-  // Starea pentru vector (ce se afișează efectiv pe ecran)
   const [array, setArray] = useState(INITIAL_ARRAY);
   const [activeIndices, setActiveIndices] = useState([]);
   const [sortedIndices, setSortedIndices] = useState([]);
 
-  // Funcția care generează toate mutările și le redă încet pe ecran
+ 
   const startBubbleSort = async () => {
     let arr = [...INITIAL_ARRAY];
     setArray([...arr]);
@@ -63,22 +62,20 @@ function MainPage() {
   return (
     <div className="main-page">
 
-      {/* ──────────────────────────────────────────────────────────── */}
-      {/* ───────── NOUA SECȚIUNE DE JOS (ULTIMA DIN PAGINĂ) ───────── */}
-      {/* ──────────────────────────────────────────────────────────── */}
+      
       <section className="cta-bottom" style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: 'var(--bg-card)' }}>
         <h2 style={{ fontSize: '2.5rem', color: 'var(--text-primary)', marginBottom: '15px' }}>
           Ești pregătit să treci la următorul nivel?
         </h2>
         
-        {/* Schimbăm textul în funcție de logare */}
+        
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '40px' }}>
           {currentUser 
             ? "Mă bucur să te văd! Ești deja logat, alege o lecție și începe să înveți." 
             : "Alătură-te elevilor de elită. Creează un cont gratuit și deblochează lecțiile!"}
         </p>
 
-        {/* Schimbăm butonul în funcție de logare */}
+        
         {currentUser ? (
           <Link to="/lectii" className="button" style={{ textDecoration: 'none' }}>
             Începe să înveți
@@ -125,7 +122,7 @@ function MainPage() {
           </div>
         </div>
 
-        {/* PARTEA DREAPTĂ: Visualizer */}
+        
         <div className="hero-right">
           <div className="visualizer-container">
             <h3>Visualizer Algoritm</h3>

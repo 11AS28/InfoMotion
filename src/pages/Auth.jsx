@@ -14,7 +14,6 @@ function Auth() {
   const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
   
-  // --- STATE NOU PENTRU TERMENI ȘI CONDIȚII ---
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [error, setError] = useState("");
@@ -22,8 +21,7 @@ function Auth() {
   const [showResendBtn, setShowResendBtn] = useState(false);
 
   const handleGoogleLogin = async () => {
-    // La Google Login, de obicei Google gestionează ToS-ul lor, dar dacă vrei 
-    // să îl forțezi să accepte ToS-ul TĂU înainte de click pe Google la înregistrare:
+    
     if (isRegistering && !agreedToTerms) {
       setError("Te rugăm să fii de acord cu Termenii, Condițiile și Politica de Confidențialitate înainte de a continua.");
       return;
@@ -44,7 +42,7 @@ function Auth() {
 
     try {
       if (isRegistering) {
-        // --- VALIDARE NOUĂ PENTRU CHECKBOX ---
+        
         if (!agreedToTerms) {
           setError("Trebuie să accepți Termenii și Condițiile și Politica de Confidențialitate pentru a crea un cont.");
           return;
@@ -65,7 +63,7 @@ function Auth() {
         setIsRegistering(false);
         setPassword(""); 
         setUsername("");
-        setAgreedToTerms(false); // Resetăm checkbox-ul după succes
+        setAgreedToTerms(false); // resetăm checkbox-ul după succes
       } else {
         const userCredential = await login(identificator, password); 
         const user = userCredential.user;
@@ -210,7 +208,7 @@ function Auth() {
             />
           </div>
 
-          {/* --- CHECKBOX-UL PENTRU TERMENI ȘI CONDIȚII (Apare doar la Register) --- */}
+          
           {isRegistering && (
             <div className="terms-checkbox-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
               <input 

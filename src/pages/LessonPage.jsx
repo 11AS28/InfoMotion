@@ -3,12 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
-
-// Importă Firebase
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Importăm leneș (Lazy) animațiile
+
 const BubbleSortAnim = React.lazy(() => import('../components/animatii/BubbleSortAnim'));
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
 const DivideAnim = React.lazy(() => import('../components/animatii/DivideAnim'));
@@ -49,7 +47,7 @@ function LessonPage() {
       setEsteGata(false);
 
       try {
-        // 1. Luăm datele lecției din Firestore
+      
         const docRef = doc(db, "lectii", idLectie);
         const docSnap = await getDoc(docRef);
 
@@ -57,7 +55,7 @@ function LessonPage() {
           const dateLectie = docSnap.data();
           setLectie(dateLectie);
 
-          // 2. Aducem toate lecțiile din aceeași clasă (pentru sidebar)
+          
           if (dateLectie.clasa) {
             const q = query(
               collection(db, "lectii"),
@@ -71,7 +69,7 @@ function LessonPage() {
             setToateLectiileDinClasa(lista);
           }
 
-          // 3. Verificăm progresul utilizatorului
+          
           if (currentUser) {
             const userRef = doc(db, 'users', currentUser.uid);
             const userSnap = await getDoc(userRef);
@@ -150,7 +148,7 @@ function LessonPage() {
         </aside>
 
         <main className="lesson-container">
-          {/* Aici rămâne restul codului tău: Link înapoi, titlu, teorie, etc. */}
+          
           <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
           <header className="lesson-header">
             <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
@@ -165,7 +163,7 @@ function LessonPage() {
 
             <div className="lesson-animation">
               <h2>🎮 Animație Interactivă</h2>
-              {/* Aici folosim Suspense ca aplicația să nu "crape" cât timp descarcă codul */}
+              
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? <ComponentaAnimatie /> : <div className="animation-placeholder">Animația va fi disponibilă curând.</div>}
               </Suspense>
