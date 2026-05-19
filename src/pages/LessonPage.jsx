@@ -24,6 +24,12 @@ const Siruri = React.lazy(() => import('../components/animatii/Siruri'));
 const SumePartiale1D = React.lazy(() => import('../components/animatii/SumePartiale1D'));
 const SumePartiale2D = React.lazy(() => import('../components/animatii/SumePartiale2D'));
 const SmenulMars = React.lazy(() => import('../components/animatii/SmenulMars'));
+const SlindingWindow = React.lazy(() => import('../components/animatii/SlindingWindow'));
+const MergeSort = React.lazy(() => import('../components/animatii/MergeSort'));
+const QuickSort = React.lazy(() => import('../components/animatii/QuickSort'));
+
+
+
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -108,6 +114,9 @@ function LessonPage() {
       case "SumePartiale1D": return <SumePartiale1D/>;
       case "SumePartiale2D": return <SumePartiale2D/>;
       case "SmenulMars": return <SmenulMars/>;
+      case "SlindingWindow": return <SlindingWindow/>;
+      case "MergeSort": return <MergeSort/>;
+      case "QuickSort": return <QuickSort/>;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };

@@ -7,45 +7,52 @@ export default function SmenulLuiMarsAnim() {
   const stages = [
     {
       type: "init",
-      d: [0, 0, 0, 0, 0, 0, 0],
-      v: [0, 0, 0, 0, 0, 0, 0],
-      sum: 0,
-      desc: "1. Inițializare. Avem un vector V plin de 0. Vrem să facem operația: adaugă +5 pe intervalul [L=2, R=4]."
+      d: [0, 0, 0, 0, 0, 0],
+      v: [0, 0, 0, 0, 0, 0],
+      idx: -1, sum: 0,
+      desc: "1. PREGĂTIRE: Avem un vector V inițializat cu 0. Vrem să executăm operația: adaugă valoarea +3 pe intervalul [L=2, R=4] fără să parcurgem intervalul cu un for."
     },
     {
       type: "update",
-      d: [0, 5, 0, 0, -5, 0, 0],
-      v: [0, 0, 0, 0, 0, 0, 0],
-      sum: 0,
-      desc: "2. Aplicăm Șmenul în vectorul D: Marcăm începutul cu D[2] += 5 și finalul cu D[4+1] -= 5. Totul în O(1)!"
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 0, 0, 0, 0, 0],
+      idx: -1, sum: 0,
+      desc: "2. MARCARE CAPETE: Punem +3 la începutul intervalului D[2] și anulăm efectul punând -3 imediat după capătul din dreapta, la D[5]. Această operație durează doar doi pași: O(1)."
     },
     {
       type: "build-1",
-      d: [0, 5, 0, 0, -5, 0, 0],
-      v: [0, 5, 0, 0, 0, 0, 0],
-      sum: 5,
-      desc: "3. Reconstituire pas 1 (i=1..2): Ajungem la D[2]=5. Suma acumulată devine 5. V[2] primește valoarea 5."
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 0, 0, 0, 0, 0],
+      idx: 1, sum: 0,
+      desc: "3. RECONSTRUIRE I=1: Începem propagarea. La poziția 1, D[1]=0. Suma acumulată rămâne 0. V[1] primește 0."
     },
     {
       type: "build-2",
-      d: [0, 5, 0, 0, -5, 0, 0],
-      v: [0, 5, 5, 5, 0, 0, 0],
-      sum: 5,
-      desc: "4. Reconstituire pas 2 (i=3..4): D[3] și D[4] sunt 0, deci suma acumulată rămâne 5. V[3] și V[4] devin și ele 5!"
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 3, 0, 0, 0, 0],
+      idx: 2, sum: 3,
+      desc: "4. RECONSTRUIRE I=2: Ajungem la marcajul de început D[2]=3. Suma acumulată crește la 3. Elementul V[2] devine 3."
     },
     {
       type: "build-3",
-      d: [0, 5, 0, 0, -5, 0, 0],
-      v: [0, 5, 5, 5, 0, 0, 0],
-      sum: 0,
-      desc: "5. Reconstituire pas 3 (i=5): Ajungem la D[5]=-5. Suma acumulată scade: 5 + (-5) = 0. V[5] rămâne 0. Efectul s-a oprit!"
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 3, 3, 3, 0, 0],
+      idx: 4, sum: 3,
+      desc: "5. RECONSTRUIRE I=3 și I=4: Pentru pozițiile 3 și 4, valorile din D sunt 0. Suma acumulată rămâne blocată la valoarea 3. Astfel, atât V[3] cât și V[4] devin egale cu 3."
+    },
+    {
+      type: "build-4",
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 3, 3, 3, 0, 0],
+      idx: 5, sum: 0,
+      desc: "6. RECONSTRUIRE I=5: Ajungem la marcajul de oprire D[5]=-3. Suma acumulată scade: 3 + (-3) = 0. V[5] rămâne 0. Efectul adunării s-a oprit exact unde trebuia!"
     },
     {
       type: "final",
-      d: [0, 5, 0, 0, -5, 0, 0],
-      v: [0, 5, 5, 5, 0, 0, 0],
-      sum: 0,
-      desc: "6. Gata! Vectorul final V are acum valoarea 5 exact pe intervalul [2, 4]. Genial și extrem de rapid!"
+      d: [0, 3, 0, 0, -3, 0],
+      v: [0, 3, 3, 3, 0, 0],
+      idx: -1, sum: 0,
+      desc: "7. FINALIZARE: Reconstrucția este gata. Toate elementele din intervalul [2, 4] au primit valoarea 3 în mod corect dintr-o singură parcurgere liniară."
     }
   ];
 
@@ -56,8 +63,8 @@ export default function SmenulLuiMarsAnim() {
 
   return (
     <div className="di-container">
-      <h3 className="di-title">Animație: Șmenul lui Mars</h3>
-      <p className="di-desc" style={{ minHeight: '65px' }}>{cur.desc}</p>
+      <h3 className="di-title">Animație: Șmenul lui Mars Detaliat</h3>
+      <p className="di-desc" style={{ minHeight: '75px' }}>{cur.desc}</p>
       
       <div className="di-visual" style={{ textAlign: 'left' }}>
         {/* Vectorul D */}
@@ -67,16 +74,13 @@ export default function SmenulLuiMarsAnim() {
             {cur.d.slice(1).map((val, i) => {
               const idx = i + 1;
               let bg = 'var(--bg-subtle)';
-              let border = '1px solid #4a5568';
-              
               if (cur.type !== "init") {
-                if (idx === 2) { bg = '#639922'; border = '2px solid #8cd932'; } // L
-                if (idx === 5) { bg = '#c93b3b'; border = '2px solid #ff6b6b'; } // R+1
+                if (idx === 2) bg = '#639922';
+                if (idx === 5) bg = '#c93b3b';
               }
-
               return (
                 <div key={idx} style={{ textAlign: 'center' }}>
-                  <div className="di-box" style={{ width: '45px', height: '45px', background: bg, border: border, fontSize: '1rem' }}>
+                  <div className="di-box" style={{ width: '45px', height: '45px', background: bg }}>
                     {val > 0 ? `+${val}` : val}
                   </div>
                   <small style={{ color: 'var(--text-muted)' }}>D[{idx}]</small>
@@ -87,40 +91,29 @@ export default function SmenulLuiMarsAnim() {
         </div>
 
         {/* Vectorul V */}
-        <div style={{ marginBottom: '20px' }}>
+        <div>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Vectorul V (Rezultat):</span>
           <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
             {cur.v.slice(1).map((val, i) => {
               const idx = i + 1;
               let bg = 'var(--bg-subtle)';
-              let border = '1px solid #4a5568';
-              
-              if ((cur.type.startsWith("build") || cur.type === "final") && idx >= 2 && idx <= 4) {
-                if (val > 0) {
-                  bg = '#BA7517';
-                  border = '2px solid #ffb347';
-                }
+              if (cur.idx === idx || (cur.type === "build-3" && (idx === 3 || idx === 4))) {
+                bg = '#3b82f6';
+              } else if (cur.type === "final" && idx >= 2 && idx <= 4) {
+                bg = '#BA7517';
               }
-
               return (
                 <div key={idx} style={{ textAlign: 'center' }}>
-                  <div className="di-box" style={{ width: '45px', height: '45px', background: bg, border: border, fontSize: '1rem' }}>{val}</div>
+                  <div className="di-box" style={{ width: '45px', height: '45px', background: bg }}>{val}</div>
                   <small style={{ color: 'var(--text-muted)' }}>V[{idx}]</small>
                 </div>
               );
             })}
           </div>
         </div>
-
-        {/* Valoare acumulată live */}
-        {cur.type.startsWith("build") && (
-          <div style={{ marginTop: '15px', padding: '8px', background: '#1e293b', borderRadius: '6px', textAlign: 'center', fontFamily: 'monospace' }}>
-            Suma parțială propagată acum: <strong style={{ color: '#8cd932', fontSize: '1.2rem' }}>{cur.sum}</strong>
-          </div>
-        )}
       </div>
 
-      <div className="di-controls">
+      <div className="di-controls" style={{ marginTop: '25px' }}>
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">Înapoi</button>
         <button onClick={nextStep} disabled={step === stages.length - 1} className="btn-primary">Pasul Următor</button>
       </div>
