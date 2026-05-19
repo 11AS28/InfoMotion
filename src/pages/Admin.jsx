@@ -3,8 +3,6 @@ import { lessonsData as localData } from '../lessonsData';
 import '../pages_css/admin.css';
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-
-// 1. IMPORTĂM SONNER
 import { Toaster, toast } from 'sonner';
 
 const ADMINS = [
@@ -14,7 +12,7 @@ const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_4_USER, password: import.meta.env.VITE_ADMIN_4_PASS }
 ];
 
-// ===== LOGIN SCREEN =====
+
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -61,7 +59,7 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ===== DASHBOARD =====
+
 function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
@@ -69,10 +67,10 @@ function Dashboard({ username, onLogout }) {
   const [firebaseUsers, setFirebaseUsers] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- STATE CAUTARE ---
+
   const [searchTerm, setSearchTerm] = useState('');
 
-  // --- STATE LECȚIE ---
+
   const [fId, setFId] = useState('');
   const [fClasa, setFClasa] = useState('clasa-9');
   const [fTitlu, setFTitlu] = useState('');
@@ -87,14 +85,14 @@ function Dashboard({ username, onLogout }) {
   );
   const [cfProblems, setCfProblems] = useState(['', '']);
 
-  // ===== DATA =====
+  
   const refreshData = async () => {
     try {
-      // Preluăm Lecțiile
+      
       const querySnapshotLectii = await getDocs(collection(db, "lectii"));
       setFirebaseLessons(querySnapshotLectii.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-      // Preluăm Userii
+      
       const querySnapshotUsers = await getDocs(collection(db, "users"));
       setFirebaseUsers(querySnapshotUsers.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
@@ -105,7 +103,7 @@ function Dashboard({ username, onLogout }) {
 
   useEffect(() => { refreshData(); }, [activeTab]);
 
-  // ===== HELPERS PBINFO & QUIZ & RESET & ȘTERGERE & EDITARE =====
+  
   const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
@@ -131,10 +129,10 @@ function Dashboard({ username, onLogout }) {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
       await deleteDoc(doc(db, "lectii", id));
-      toast.success("Lecție ștearsă cu succes!"); // MODIFICAT
+      toast.success("Lecție ștearsă cu succes!"); 
       refreshData();
     } catch (e) { 
-      toast.error("Eroare la ștergere: " + e.message); // MODIFICAT
+      toast.error("Eroare la ștergere: " + e.message); 
     }
   };
 
@@ -149,11 +147,11 @@ function Dashboard({ username, onLogout }) {
     setCfProblems(lectie.codeforces || ['', '']);
     setIsEditing(true);
     setActiveTab('adauga');
-    toast.info(`Editare lecție: ${lectie.titlu}`); // MODIFICAT (opțional, oferă feedback bun)
+    toast.info(`Editare lecție: ${lectie.titlu}`); 
   };
 
   const handlePublish = async () => {
-    if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!"); // MODIFICAT
+    if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!");
     setLoading(true);
     try {
       const lectieData = {
@@ -163,15 +161,15 @@ function Dashboard({ username, onLogout }) {
         dataModificarii: new Date().toISOString()
       };
       await setDoc(doc(db, "lectii", fId), lectieData);
-      toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!"); // MODIFICAT
+      toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!"); 
       resetForm(); await refreshData(); setActiveTab('lectii');
     } catch (e) { 
-      toast.error("Eroare la salvare: " + e.message); // MODIFICAT
+      toast.error("Eroare la salvare: " + e.message); 
     }
     setLoading(false);
   };
 
-  // ===== STATS OVERVIEW LECȚII =====
+
   const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
   const totalLectii = currentData.length;
   const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
@@ -186,21 +184,20 @@ function Dashboard({ username, onLogout }) {
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
-  // ===== STATS UTILIZATORI =====
+
   const totalUsers = firebaseUsers.length;
   const verifiedCFUsers = firebaseUsers.filter(u => u.cfValidat).length;
   const totalPlatformXP = firebaseUsers.reduce((sum, u) => sum + (u.puncteTotale || 0), 0);
   const avgStreak = totalUsers > 0 ? (firebaseUsers.reduce((sum, u) => sum + (u.streakCount || 0), 0) / totalUsers).toFixed(1) : 0;
-  
-  // --- Sortare pentru TOP XP ---
+
   const topUsers = [...firebaseUsers].sort((a, b) => (b.puncteTotale || 0) - (a.puncteTotale || 0)).slice(0, 5);
   const maxUserXP = topUsers.length > 0 ? Math.max(topUsers[0].puncteTotale || 1, 1) : 1;
 
-  // --- Sortare pentru TOP STREAK ---
+
   const topStreakUsers = [...firebaseUsers].sort((a, b) => (b.streakCount || 0) - (a.streakCount || 0)).slice(0, 5);
   const maxUserStreak = topStreakUsers.length > 0 ? Math.max(topStreakUsers[0].streakCount || 1, 1) : 1;
 
-  // ===== FILTRARE LECȚII DUPĂ SEARCHBAR =====
+
   const filteredLessons = firebaseLessons.filter((l) => {
     const search = searchTerm.toLowerCase();
     const titluMatch = l.titlu?.toLowerCase().includes(search);
@@ -208,7 +205,7 @@ function Dashboard({ username, onLogout }) {
     return titluMatch || idMatch;
   });
 
-  // ===== TABS =====
+
   const tabs = ['overview','utilizatori' ,'lectii', 'adauga'];
 
   return (
@@ -244,7 +241,7 @@ function Dashboard({ username, onLogout }) {
 
       <main className="admin-main">
 
-        {/* ===== TAB OVERVIEW ===== */}
+       
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
@@ -271,7 +268,7 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        {/* ===== TAB UTILIZATORI ===== */}
+        
         {activeTab === 'utilizatori' && (
           <>
             <div className="admin-stat-grid" style={{ marginBottom: '20px' }}>
@@ -351,7 +348,7 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        {/* ===== TAB LECȚII ===== */}
+        
         {activeTab === 'lectii' && (
           <>
             <div style={{ marginBottom: '15px', width: '100%' }}>
@@ -417,7 +414,7 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        {/* ===== TAB ADAUGĂ / EDITEAZĂ ===== */}
+        
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
@@ -540,11 +537,10 @@ function Dashboard({ username, onLogout }) {
   );
 }
 
-// ===== EXPORT =====
 export default function Admin() {
   const [loggedUser, setLoggedUser] = useState(null);
   
-  // 2. RANDĂM <Toaster /> AICI PENTRU A FI DISPONIBIL PESTE TOT ÎN PAGINĂ
+ 
   return (
     <>
       <Toaster richColors position="top-right" closeButton />

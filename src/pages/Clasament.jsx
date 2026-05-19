@@ -1,150 +1,219 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+
 import { db } from '../firebase';
 import { useTheme } from '../context/ThemeContext';
-import '../pages_css/clasament.css';
+
 import Arena from '../components/Arena';
+
+import '../pages_css/clasament.css';
 
 function Clasament() {
   const { theme } = useTheme();
-  const [topGeneral, setTopGeneral] = useState([]);
-  const [topGrinders, setTopGrinders] = useState([]);
+
+  const [topXP, setTopXP] = useState([]);
+  const [topProbleme, setTopProbleme] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
-  // Paginare separată pentru fiecare top
-  const [pageGeneral, setPageGeneral] = useState(1);
-  const [pageGrinders, setPageGrinders] = useState(1);
-  const perPage = 10;
+  const [paginaXP, setPaginaXP] = useState(1);
+  const [paginaProbleme, setPaginaProbleme] = useState(1);
 
-  const afiseazaInsignaUtilizator = (count) => {
-    if (count >= 100) return <span title="Boss Final" style={{ marginLeft: '6px', cursor: 'help' }}>👑</span>;
-    if (count >= 50)  return <span title="Mage de Algoritmi" style={{ marginLeft: '6px', cursor: 'help' }}>🧙‍♂️</span>;
-    if (count >= 30)  return <span title="Arena Grinder" style={{ marginLeft: '6px', cursor: 'help' }}>⚔️</span>;
-    if (count >= 15)  return <span title="Miner de XP" style={{ marginLeft: '6px', cursor: 'help' }}>⚒️</span>;
-    if (count >= 5)   return <span title="Combo Mic" style={{ marginLeft: '6px', cursor: 'help' }}>🔥</span>;
-    if (count >= 1)   return <span title="Primul Craft" style={{ marginLeft: '6px', cursor: 'help' }}>🌱</span>;
-    return null;
-  };
+  const USERS_PER_PAGE = 10;
 
   useEffect(() => {
-    async function fetchTopuri() {
-      setLoading(true);
+    const loadClasament = async () => {
       try {
-        // ✅ Mărit la 200 pentru ambele topuri
-        const qGeneral = query(collection(db, "users"), orderBy("puncteTotale", "desc"), limit(200));
-        const snapGeneral = await getDocs(qGeneral);
-        setTopGeneral(snapGeneral.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const xpQuery = query(
+          collection(db, 'users'),
+          orderBy('puncteTotale', 'desc'),
+          limit(200)
+        );
 
-        const qGrinders = query(collection(db, "users"), orderBy("problemeRezolvateCount", "desc"), limit(200));
-        const snapGrinders = await getDocs(qGrinders);
-        setTopGrinders(snapGrinders.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } catch (error) {
-        console.error("Eroare la încărcarea clasamentului:", error);
-      } finally {
-        setLoading(false);
+        const problemeQuery = query(
+          collection(db, 'users'),
+          orderBy('problemeRezolvateCount', 'desc'),
+          limit(200)
+        );
+
+        const xpSnapshot = await getDocs(xpQuery);
+        const problemeSnapshot = await getDocs(problemeQuery);
+
+        const xpData = xpSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        const problemeData = problemeSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setTopXP(xpData);
+        setTopProbleme(problemeData);
+      } catch (err) {
+        console.log(err);
       }
-    }
-    fetchTopuri();
+
+      setLoading(false);
+    };
+
+    loadClasament();
   }, []);
 
-  // Helper: returnează rândurile pentru pagina curentă
-  const getPagina = (lista, page) => {
-    const start = (page - 1) * perPage;
-    return lista.slice(start, start + perPage);
-  };
+  function getBadge(count) {
+    if (count >= 100) return '👑';
+    if (count >= 50) return '🧙‍♂️';
+    if (count >= 30) return '⚔️';
+    if (count >= 15) return '⚒️';
+    if (count >= 5) return '🔥';
+    if (count >= 1) return '🌱';
 
-  const totalPaginiGeneral  = Math.ceil(topGeneral.length / perPage);
-  const totalPaginiGrinders = Math.ceil(topGrinders.length / perPage);
+    return '';
+  }
 
-  // Componenta mică de paginare refolosibilă
-  const Paginare = ({ page, total, onPrev, onNext }) => (
-    <div className="pagination">
-      <button className="page-btn" onClick={onPrev} disabled={page === 1}>
-        &laquo; Înapoi
-      </button>
-      <span className="page-info">{page} / {total}</span>
-      <button className="page-btn" onClick={onNext} disabled={page === total || total === 0}>
-        Înainte &raquo;
-      </button>
-    </div>
+  function getUsers(lista, pagina) {
+    const start = (pagina - 1) * USERS_PER_PAGE;
+    const end = start + USERS_PER_PAGE;
+
+    return lista.slice(start, end);
+  }
+
+  const totalPaginiXP = Math.ceil(topXP.length / USERS_PER_PAGE);
+  const totalPaginiProbleme = Math.ceil(
+    topProbleme.length / USERS_PER_PAGE
   );
 
-  if (loading) return <div className="loader">Se încarcă Arena...</div>;
+  if (loading) {
+    return <div className="loader">Se încarcă...</div>;
+  }
 
   return (
     <div className="clasament-page" data-theme={theme}>
-
       <h1>
-        <img src="/logo-infomotion.svg" alt="logo" id='arena-badge' />
+        <img src="/logo-infomotion.svg" alt="logo" id="arena-badge" />
         Arena Info-Motion
-        <img src="/logo-infomotion.svg" alt="logo" id='arena-badge' />
+        <img src="/logo-infomotion.svg" alt="logo" id="arena-badge" />
       </h1>
-      <br /><br />
 
       <Arena />
 
       <div className="topuri-container">
-
-        {/* TOP GENERAL XP */}
         <section className="top-section">
           <div className="leaderboard-card">
-            <h2>🌟 Top General (XP)</h2>
-            <br />
-            {getPagina(topGeneral, pageGeneral).map((user, index) => {
-              const realRank = (pageGeneral - 1) * perPage + index + 1;
+            <h2>🌟 Top General</h2>
+
+            {getUsers(topXP, paginaXP).map((user, index) => {
+              const pozitie =
+                (paginaXP - 1) * USERS_PER_PAGE + index + 1;
+
               return (
-                <div key={user.id} className={`user-row ${realRank === 1 ? 'rank-1' : ''}`}>
-                  <span className="rank">#{realRank}</span>
+                <div
+                  key={user.id}
+                  className={`user-row ${pozitie === 1 ? 'rank-1' : ''}`}
+                >
+                  <span className="rank">#{pozitie}</span>
+
                   <span className="username">
-                    {user.nume || "Anonim"}
-                    {afiseazaInsignaUtilizator(user.problemeRezolvateCount || 0)}
+                    {user.nume || 'Anonim'}
+
+                    <span style={{ marginLeft: 5 }}>
+                      {getBadge(user.problemeRezolvateCount || 0)}
+                    </span>
                   </span>
-                  <span className="value">{user.puncteTotale || 0} XP</span>
+
+                  <span className="value">
+                    {user.puncteTotale || 0} XP
+                  </span>
                 </div>
               );
             })}
 
-            {totalPaginiGeneral > 1 && (
-              <Paginare
-                page={pageGeneral}
-                total={totalPaginiGeneral}
-                onPrev={() => setPageGeneral(p => Math.max(p - 1, 1))}
-                onNext={() => setPageGeneral(p => Math.min(p + 1, totalPaginiGeneral))}
-              />
+            {totalPaginiXP > 1 && (
+              <div className="pagination">
+                <button
+                  className="page-btn"
+                  disabled={paginaXP === 1}
+                  onClick={() => setPaginaXP(paginaXP - 1)}
+                >
+                  Înapoi
+                </button>
+
+                <span className="page-info">
+                  {paginaXP} / {totalPaginiXP}
+                </span>
+
+                <button
+                  className="page-btn"
+                  disabled={paginaXP === totalPaginiXP}
+                  onClick={() => setPaginaXP(paginaXP + 1)}
+                >
+                  Înainte
+                </button>
+              </div>
             )}
           </div>
         </section>
 
-        {/* THE GRINDERS */}
         <section className="top-section">
           <div className="leaderboard-card">
-            <h2>🛠️ The Grinders (Probleme)</h2>
-            <br />
-            {getPagina(topGrinders, pageGrinders).map((user, index) => {
-              const realRank = (pageGrinders - 1) * perPage + index + 1;
+            <h2>🛠️ The Grinders</h2>
+
+            {getUsers(topProbleme, paginaProbleme).map((user, index) => {
+              const pozitie =
+                (paginaProbleme - 1) * USERS_PER_PAGE + index + 1;
+
               return (
-                <div key={user.id} className={`user-row ${realRank <= 3 ? 'highlight-grinder' : ''}`}>
-                  <span className="rank">#{realRank}</span>
+                <div
+                  key={user.id}
+                  className={`user-row ${
+                    pozitie <= 3 ? 'highlight-grinder' : ''
+                  }`}
+                >
+                  <span className="rank">#{pozitie}</span>
+
                   <span className="username">
-                    {user.nume}
-                    {afiseazaInsignaUtilizator(user.problemeRezolvateCount || 0)}
+                    {user.nume || 'Anonim'}
+
+                    <span style={{ marginLeft: 5 }}>
+                      {getBadge(user.problemeRezolvateCount || 0)}
+                    </span>
                   </span>
-                  <span className="value">{user.problemeRezolvateCount || 0} Soluții</span>
+
+                  <span className="value">
+                    {user.problemeRezolvateCount || 0} Soluții
+                  </span>
                 </div>
               );
             })}
 
-            {totalPaginiGrinders > 1 && (
-              <Paginare
-                page={pageGrinders}
-                total={totalPaginiGrinders}
-                onPrev={() => setPageGrinders(p => Math.max(p - 1, 1))}
-                onNext={() => setPageGrinders(p => Math.min(p + 1, totalPaginiGrinders))}
-              />
+            {totalPaginiProbleme > 1 && (
+              <div className="pagination">
+                <button
+                  className="page-btn"
+                  disabled={paginaProbleme === 1}
+                  onClick={() => setPaginaProbleme(paginaProbleme - 1)}
+                >
+                  Înapoi
+                </button>
+
+                <span className="page-info">
+                  {paginaProbleme} / {totalPaginiProbleme}
+                </span>
+
+                <button
+                  className="page-btn"
+                  disabled={paginaProbleme === totalPaginiProbleme}
+                  onClick={() =>
+                    setPaginaProbleme(paginaProbleme + 1)
+                  }
+                >
+                  Înainte
+                </button>
+              </div>
             )}
           </div>
         </section>
-
       </div>
     </div>
   );
