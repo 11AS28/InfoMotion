@@ -105,7 +105,7 @@ function AdminUsers() {
   return (
     <div style={{ maxWidth: '1300px', margin: '20px auto', padding: '15px', color: 'white', fontFamily: 'sans-serif' }}>
       
-      {/* Injectăm stilul CSS pentru a ascunde tabelul pe mobil și a arăta cardurile */}
+      
       <style>{`
         .desktop-table { display: table; width: 100%; border-collapse: collapse; margin-top: 20px; background: '#1a1a20'; border-radius: 8px; overflow: hidden; }
         .mobile-cards { display: none; }
@@ -126,7 +126,7 @@ function AdminUsers() {
         <button onClick={() => setIsAuthorized(false)} style={{ ...btnStyle, background: '#a12424', padding: '10px 16px' }}>Ieșire Panou</button>
       </div>
       
-      {/* --- VARIANTA DESKTOP (TABEL) --- */}
+      
       <table className="desktop-table" style={{ background: '#1a1a20' }}>
         <thead>
           <tr style={{ background: '#25252d', color: '#378ADD', textAlign: 'left' }}>
@@ -167,7 +167,7 @@ function AdminUsers() {
         </tbody>
       </table>
 
-      {/* --- VARIANTA MOBIL (CARDURI RESPONSIVE) --- */}
+      
       <div className="mobile-cards">
         {users.map(user => (
           <div key={user.id} className="user-card" style={{ borderLeft: editUserId === user.id ? '4px solid #639922' : '4px solid #378ADD' }}>
