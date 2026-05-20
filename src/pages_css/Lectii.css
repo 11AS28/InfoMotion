@@ -1,6 +1,3 @@
-/* =========================================
-   CONTAINER PRINCIPAL
-   ========================================= */
 
 
 body {
@@ -38,9 +35,6 @@ body {
   color: var(--text-secondary);
 }
 
-/* =========================================
-   ZONA DE FILTRARE ȘI CĂUTARE
-   ========================================= */
 .filters-section {
   display: flex;
   flex-direction: column;
@@ -123,9 +117,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* =========================================
-   GRILA CU LECȚII
-   ========================================= */
 .lectii-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 pe desktop */
@@ -200,9 +191,6 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* =========================================
-   MESAJ - FĂRĂ REZULTATE
-   ========================================= */
 .no-results {
   text-align: center;
   padding: 60px 20px;
@@ -242,9 +230,7 @@ body {
   background-color: var(--accent-hover, #015257);
 }
 
-/* =========================================
-   ANIMAȚII
-   ========================================= */
+
 @keyframes fadeUp {
   from { 
     opacity: 0; 
@@ -255,10 +241,6 @@ body {
     transform: translateY(0); 
   }
 }
-
-/* =========================================
-   MEDIA QUERIES (RESPONSIVITATE)
-   ========================================= */
 
 /* Tablete (sub 1024px) */
 @media (max-width: 1024px) {
@@ -306,9 +288,7 @@ body {
   }
 }
 
-/* =========================================
-   SECȚIUNEA EXERSEAZĂ (PBINFO)
-   ========================================= */
+
 
 .lesson-practice {
   margin-top: 50px;
@@ -395,4 +375,43 @@ body {
   .pbinfo-card {
     flex-wrap: wrap; /* Permite elementelor să treacă pe rândul următor dacă e nevoie */
   }
+}
+
+/* Stiluri pentru structura de Roadmap */
+.roadmap-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-top: 2rem;
+  position: relative;
+}
+
+.roadmap-section {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 3px solid #38bdf8; /* O linie verticală albastră în stânga fiecărui capitol */
+}
+
+.roadmap-capitol-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.roadmap-step-badge {
+  background-color: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.roadmap-capitol-header h2 {
+  font-size: 1.75rem;
+  color: #f8fafc;
+  margin: 0;
 }

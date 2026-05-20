@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { lessonsData as localData } from '../lessonsData';
 import '../pages_css/admin.css';
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -11,7 +10,6 @@ const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_3_USER, password: import.meta.env.VITE_ADMIN_3_PASS },
   { username: import.meta.env.VITE_ADMIN_4_USER, password: import.meta.env.VITE_ADMIN_4_PASS }
 ];
-
 
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -59,7 +57,6 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-
 function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
@@ -67,12 +64,12 @@ function Dashboard({ username, onLogout }) {
   const [firebaseUsers, setFirebaseUsers] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
 
-
   const [searchTerm, setSearchTerm] = useState('');
 
-
+  // Stările pentru formularul lecției
   const [fId, setFId] = useState('');
   const [fClasa, setFClasa] = useState('clasa-9');
+  const [fOrdine, setFOrdine] = useState(1); // STARE NOUĂ ADAUGATĂ CORECT
   const [fTitlu, setFTitlu] = useState('');
   const [fDescriere, setFDescriere] = useState('');
   const [fTeorie, setFTeorie] = useState('');
@@ -85,14 +82,11 @@ function Dashboard({ username, onLogout }) {
   );
   const [cfProblems, setCfProblems] = useState(['', '']);
 
-  
   const refreshData = async () => {
     try {
-      
       const querySnapshotLectii = await getDocs(collection(db, "lectii"));
       setFirebaseLessons(querySnapshotLectii.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-      
       const querySnapshotUsers = await getDocs(collection(db, "users"));
       setFirebaseUsers(querySnapshotUsers.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
@@ -103,7 +97,6 @@ function Dashboard({ username, onLogout }) {
 
   useEffect(() => { refreshData(); }, [activeTab]);
 
-  
   const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
   const removePbRow = (idx) => pbRows.length > 1 && setPbRows(pbRows.filter((_, i) => i !== idx));
@@ -116,7 +109,7 @@ function Dashboard({ username, onLogout }) {
   };
 
   const resetForm = () => {
-    setFId(''); setFClasa('clasa-9'); setFTitlu(''); setFDescriere('');
+    setFId(''); setFClasa('clasa-9'); setFOrdine(1); setFTitlu(''); setFDescriere('');
     setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
     setPbRows([{ id: '', titlu: '', url: '' }]);
     setQuiz(Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
@@ -137,11 +130,18 @@ function Dashboard({ username, onLogout }) {
   };
 
   const startEdit = (lectie) => {
-    setFId(lectie.id); setFClasa(lectie.clasa || 'clasa-9'); setFTitlu(lectie.titlu || '');
-    setFDescriere(lectie.descriere || ''); setFTeorie(lectie.teorie || ''); setFCod(lectie.codCPlusPlus || '');
+    setFId(lectie.id); 
+    setFClasa(lectie.clasa || 'clasa-9'); 
+    setFOrdine(lectie.ordine || 1); 
+    setFTitlu(lectie.titlu || '');
+    setFDescriere(lectie.descriere || ''); 
+    setFTeorie(lectie.teorie || ''); 
+    setFCod(lectie.codCPlusPlus || '');
+    
     if (!lectie.animatie) setFAnim('null');
     else if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) setFAnim(lectie.animatie);
     else { setFAnim('custom'); setFAnimCustom(lectie.animatie); }
+    
     setPbRows(lectie.problemePbinfo?.length > 0 ? lectie.problemePbinfo : [{ id: '', titlu: '', url: '' }]);
     setQuiz(lectie.quiz || Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
     setCfProblems(lectie.codeforces || ['', '']);
@@ -150,40 +150,49 @@ function Dashboard({ username, onLogout }) {
     toast.info(`Editare lecție: ${lectie.titlu}`); 
   };
 
-  const handlePublish = async () => {
+const handlePublish = async () => {
     if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!");
     setLoading(true);
     try {
       const lectieData = {
-        id: fId, clasa: fClasa, titlu: fTitlu, descriere: fDescriere, teorie: fTeorie,
-        codCPlusPlus: fCod, animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
-        problemePbinfo: pbRows.filter(r => r.id || r.titlu), quiz: quiz, codeforces: cfProblems,
+        id: fId, 
+        clasa: fClasa, 
+        ordine: Number(fOrdine), 
+        titlu: fTitlu, 
+        descriere: fDescriere, 
+        teorie: fTeorie,
+        codCPlusPlus: fCod, 
+        animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
+        problemePbinfo: pbRows.filter(r => r.id || r.titlu), 
+        quiz: quiz, 
+        codeforces: cfProblems,
         dataModificarii: new Date().toISOString()
       };
+     
       await setDoc(doc(db, "lectii", fId), lectieData);
+      
       toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!"); 
-      resetForm(); await refreshData(); setActiveTab('lectii');
+      resetForm(); 
+      await refreshData(); 
+      setActiveTab('lectii');
     } catch (e) { 
       toast.error("Eroare la salvare: " + e.message); 
     }
     setLoading(false);
   };
 
-
-  const currentData = firebaseLessons.length > 0 ? firebaseLessons : localData;
-  const totalLectii = currentData.length;
-  const cuAnimatie = currentData.filter((l) => l.animatie && l.animatie !== 'null').length;
-  const claseUnice = [...new Set(currentData.map((l) => l.clasa))].length;
-  const totalPbinfo = currentData.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
+  const totalLectii = firebaseLessons.length;
+  const cuAnimatie = firebaseLessons.filter((l) => l.animatie && l.animatie !== 'null').length;
+  const claseUnice = [...new Set(firebaseLessons.map((l) => l.clasa))].length;
+  const totalPbinfo = firebaseLessons.reduce((s, l) => s + (l.problemePbinfo || []).length, 0);
 
   const countPerClasa = { 9: 0, 10: 0, 11: 0, 12: 0 };
-  currentData.forEach((l) => {
+  firebaseLessons.forEach((l) => {
     const n = parseInt(l.clasa?.split('-')[1]);
     if (!isNaN(n)) countPerClasa[n]++;
   });
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
-
 
   const totalUsers = firebaseUsers.length;
   const verifiedCFUsers = firebaseUsers.filter(u => u.cfValidat).length;
@@ -193,10 +202,8 @@ function Dashboard({ username, onLogout }) {
   const topUsers = [...firebaseUsers].sort((a, b) => (b.puncteTotale || 0) - (a.puncteTotale || 0)).slice(0, 5);
   const maxUserXP = topUsers.length > 0 ? Math.max(topUsers[0].puncteTotale || 1, 1) : 1;
 
-
   const topStreakUsers = [...firebaseUsers].sort((a, b) => (b.streakCount || 0) - (a.streakCount || 0)).slice(0, 5);
   const maxUserStreak = topStreakUsers.length > 0 ? Math.max(topStreakUsers[0].streakCount || 1, 1) : 1;
-
 
   const filteredLessons = firebaseLessons.filter((l) => {
     const search = searchTerm.toLowerCase();
@@ -204,7 +211,6 @@ function Dashboard({ username, onLogout }) {
     const idMatch = l.id?.toLowerCase().includes(search);
     return titluMatch || idMatch;
   });
-
 
   const tabs = ['overview','utilizatori' ,'lectii', 'adauga'];
 
@@ -240,8 +246,6 @@ function Dashboard({ username, onLogout }) {
       </div>
 
       <main className="admin-main">
-
-       
         {activeTab === 'overview' && (
           <>
             <div className="admin-stat-grid">
@@ -268,7 +272,6 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        
         {activeTab === 'utilizatori' && (
           <>
             <div className="admin-stat-grid" style={{ marginBottom: '20px' }}>
@@ -348,7 +351,6 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        
         {activeTab === 'lectii' && (
           <>
             <div style={{ marginBottom: '15px', width: '100%' }}>
@@ -414,7 +416,6 @@ function Dashboard({ username, onLogout }) {
           </>
         )}
 
-        
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
@@ -433,6 +434,19 @@ function Dashboard({ username, onLogout }) {
                   <option value="clasa-11">Clasa 11</option>
                 </select>
               </div>
+
+              {/* INPUT NOU CORECT INTEGRAT PENTRU SARTARE */}
+              <div className="admin-field">
+                <label>Număr de ordine (Poziția în Curs)</label>
+                <input 
+                  type="number" 
+                  value={fOrdine} 
+                  onChange={(e) => setFOrdine(e.target.value)} 
+                  min="1" 
+                  placeholder="ex: 1 (ușor) -> 10 (greu)" 
+                />
+              </div>
+
               <div className="admin-field admin-field--full">
                 <label>Titlu</label>
                 <input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} />
@@ -531,7 +545,6 @@ function Dashboard({ username, onLogout }) {
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
@@ -540,7 +553,6 @@ function Dashboard({ username, onLogout }) {
 export default function Admin() {
   const [loggedUser, setLoggedUser] = useState(null);
   
- 
   return (
     <>
       <Toaster richColors position="top-right" closeButton />
