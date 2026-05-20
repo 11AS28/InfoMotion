@@ -48,20 +48,10 @@ function Intro() {
           </div>
         </section>
 
-        {/* Secțiunea 3: Tehnologii */}
-        <section className="intro-section tech-section">
-          <h2>🛠️ Tehnologii Folosite</h2>
-          <div className="tech-tags">
-            <span className="tech-tag">React.js</span>
-            <span className="tech-tag">Vite</span>
-            <span className="tech-tag">React Router</span>
-            <span className="tech-tag">CSS Grid & Flexbox</span>
-            <span className="tech-tag">JavaScript ES6+</span>
-            <span className="tech-tag">Firebase</span>
-          </div>
-        </section>
 
-        {/* Secțiunea 4: Ce urmează? */}
+
+
+        {/* Secțiunea 3: Ce urmează? */}
         <section className="intro-section">
           <h2>🚀 Ce urmează?</h2>
           <p>
@@ -81,7 +71,7 @@ function Intro() {
               <span className="feature-icon">📝</span>
               <h3>Probleme Propuse de Elevi</h3>
               <p>
-                Elevii vor putea propune probleme inspirate din <strong>Codeforces</strong> sau <strong>PbInfo</strong>, 
+                Elevii vor putea propune probleme inspirate din <strong>Codeforces</strong> sau <strong>PbInfo</strong> 
                 însoțite de un mesaj scurt, devenind contributori activi ai comunității.
               </p>
             </div>
@@ -95,6 +85,22 @@ function Intro() {
             </div>
           </div>
         </section>
+
+
+        {/* Secțiunea 4: Tehnologii */}
+        <section className="intro-section tech-section">
+          <h2>🛠️ Tehnologii Folosite</h2>
+          <div className="tech-tags">
+            <span className="tech-tag">React.js</span>
+            <span className="tech-tag">Vite</span>
+            <span className="tech-tag">React Router</span>
+            <span className="tech-tag">CSS Grid & Flexbox</span>
+            <span className="tech-tag">JavaScript ES6+</span>
+            <span className="tech-tag">Firebase</span>
+          </div>
+        </section>
+
+        
 
       </main>
     </div>

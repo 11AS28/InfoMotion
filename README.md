@@ -15,23 +15,28 @@ O platformă educațională interactivă dedicată elevilor care doresc să înv
 ## ✨ Funcționalități principale
 
 ### 📚 Lecții interactive
+
 - Explicații în limbaj prietenos, adaptate nivelului elevilor
 - Animații vizuale care ilustrează algoritmii **pas cu pas**
 - Secțiuni de teorie, cod și probleme practice (inspirate din [pbinfo.ro](https://www.pbinfo.ro/))
 - Bara de căutare pentru găsirea rapidă a unui concept
 
 ### ✅ Sistem de Quiz
+
 - Fiecare lecție conține un quiz de verificare
 - Finalizarea cu succes marchează lecția ca **completată** și acordă **10 puncte**
 
 ### 🏆 Arena — Problema Zilei & Clasamente
+
 - O problemă de algoritmică nouă în fiecare zi
 - Rezolvare corectă: **30 puncte**
 - Bonus pentru primii 3 care trimit soluția corectă: **50 puncte** total
 - Clasament bazat pe punctele acumulate din lecții și din Problema Zilei
 
 ### 👤 Profil utilizator
+
 Fiecare cont afișează:
+
 - Nivel: Începător / Avansat / Expert
 - Număr lecții finalizate
 - Punctaj acumulat
@@ -41,7 +46,9 @@ Fiecare cont afișează:
 - Codeforces Handle (verificabil)
 
 ### 🛠️ Panou de administrare (Admin Panel)
+
 Accesibil doar administratorilor:
+
 - Adăugare lecții noi
 - Editarea și ștergerea lecțiilor existente
 - Actualizarea conținutului platformei
@@ -57,26 +64,28 @@ Platforma rulează direct în browser, fără instalare:
 3. Apasă **„Începe să înveți"** pentru a accesa lecțiile disponibile
 
 ### Navigare
-| Secțiune | Descriere |
-|---|---|
-| Acasă | Informații generale despre platformă |
-| Despre | Scopul și funcționalitățile aplicației |
-| Contact | Datele de contact ale autorilor |
-| Arena | Problema zilei și clasamentele |
-| Începe să înveți | Toate lecțiile disponibile |
+
+| Secțiune         | Descriere                              |
+| ---------------- | -------------------------------------- |
+| Acasă            | Informații generale despre platformă   |
+| Despre           | Scopul și funcționalitățile aplicației |
+| Contact          | Datele de contact ale autorilor        |
+| Arena            | Problema zilei și clasamentele         |
+| Începe să înveți | Toate lecțiile disponibile             |
 
 ---
 
 ## 🧰 Tehnologii folosite
 
-| Categorie | Tehnologie |
-|---|---|
-| Frontend | [React](https://react.dev/) |
-| Build tool | [Vite](https://vite.dev/) |
+| Categorie    | Tehnologie                                      |
+| ------------ | ----------------------------------------------- |
+| Frontend     | [React](https://react.dev/)                     |
+| Build tool   | [Vite](https://vite.dev/)                       |
 | Backend & DB | [Firebase](https://firebase.google.com/) (BaaS) |
-| API extern | [Codeforces API](https://codeforces.com/) |
+| API extern   | [Codeforces API](https://codeforces.com/)       |
 
 **Firebase** este utilizat pentru:
+
 - Autentificarea utilizatorilor
 - Stocarea lecțiilor și a conținutului platformei
 - Gestionarea datelor utilizatorilor (profil, punctaj, Codeforces handle)
@@ -86,6 +95,7 @@ Platforma rulează direct în browser, fără instalare:
 ## 💻 Cerințe hardware & software
 
 ### Hardware (recomandat)
+
 - Procesor modern: minim quad-core (i5 sau echivalent)
 - RAM: minim 8 GB
 - SSD pentru performanță crescută
@@ -93,12 +103,14 @@ Platforma rulează direct în browser, fără instalare:
 - Compatibil și cu dispozitive mobile
 
 ### Software — Sisteme de operare compatibile
+
 - Windows 10+
 - macOS
 - Orice distribuție Linux modernă
 - Android / iOS
 
 ### Browsere compatibile
+
 - Google Chrome
 - Mozilla Firefox
 - Microsoft Edge
@@ -106,6 +118,7 @@ Platforma rulează direct în browser, fără instalare:
 - Brave Browser
 
 ### Editor de cod (opțional, pentru secțiunea Arena)
+
 - Visual Studio Code (+ compiler C++)
 - Code::Blocks
 - Notepad++ (+ compiler C++)
