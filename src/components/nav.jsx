@@ -13,6 +13,46 @@ function Nav() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  // ✅ FUNCȚIE PENTRU CONFIGURAREA BADGE-ULUI (Text și Culori discrete)
+  const getRoleBadge = () => {
+    if (!currentUser) return null;
+    
+    if (currentUser.role === 'teacher') {
+      return (
+        <span style={{
+          fontSize: '11px',
+          fontWeight: 'bold',
+          padding: '2px 8px',
+          borderRadius: '12px',
+          backgroundColor: '#e3f2fd', // fundal albastru deschis
+          color: '#0d47a1',          // text albastru închis
+          marginLeft: '8px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          Profesor
+        </span>
+      );
+    }
+    
+    // Default sau dacă e explicit 'student'
+    return (
+      <span style={{
+        fontSize: '11px',
+        fontWeight: 'bold',
+        padding: '2px 8px',
+        borderRadius: '12px',
+        backgroundColor: '#e8f5e9', // fundal verde deschis
+        color: '#1b5e20',          // text verde închis
+        marginLeft: '8px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
+      }}>
+        Elev
+      </span>
+    );
+  };
+
   return (
     <nav className="navbar">
       <div className="nav-header">
@@ -32,7 +72,7 @@ function Nav() {
             />
 
             <div>
-            InfoMotion<span>.</span>
+              InfoMotion<span>.</span>
             </div>
           </Link>
         </div>
@@ -48,7 +88,11 @@ function Nav() {
         <li><Link to="/" onClick={() => setIsOpen(false)}>Acasă</Link></li>
         <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
         <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
-        <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
+        
+        {/* ✅ OPTIONAL: Ascundem Arena dacă e profesor, ca să nu încurce */}
+        {currentUser?.role !== 'teacher' && (
+          <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
+        )}
         
         <li>
           <button
@@ -64,16 +108,18 @@ function Nav() {
           </button>
         </li>
 
-        
         {currentUser ? (
           <li className="nav-user-info">
-    <div className="nav-user-badge" onClick={() => setIsSidebarOpen(true)}>
-      <span className="user-icon-mini">👤</span> 
-      <span className="user-name-text">
-        {currentUser.nume || currentUser.email.split('@')[0]}
-      </span>
-    </div>
-  </li>
+            {/* Adăugat display: flex și alignItems ca să stea badge-ul perfect pe mijloc la aliniere */}
+            <div className="nav-user-badge" onClick={() => setIsSidebarOpen(true)} style={{ display: 'flex', alignItems: 'center' }}>
+              <span className="user-icon-mini">👤</span> 
+              <span className="user-name-text">
+                {currentUser.nume || currentUser.email.split('@')[0]}
+              </span>
+              {/* ✅ AICI injectăm badge-ul custom de rol */}
+              {getRoleBadge()}
+            </div>
+          </li>
         ) : (
           <li><Link to="/auth" className="btn-login" onClick={() => setIsOpen(false)}>Logare</Link></li>
         )}
@@ -83,7 +129,6 @@ function Nav() {
         </li>
       </ul>
 
-      
       <SidebarStats 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 

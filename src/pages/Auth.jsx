@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Am adăugat Link aici
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/auth.css';
 import { FaGoogle } from "react-icons/fa";
@@ -10,6 +10,7 @@ function Auth() {
   const { loginWithGoogle, login, signup, logout, resetPassword } = useAuth();
   
   const [isRegistering, setIsRegistering] = useState(false); 
+  const [role, setRole] = useState('student'); // ✅ STATE NOU: 'student' sau 'teacher'
   const [identificator, setIdentificator] = useState(''); 
   const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
@@ -21,12 +22,10 @@ function Auth() {
   const [showResendBtn, setShowResendBtn] = useState(false);
 
   const handleGoogleLogin = async () => {
-    
     if (isRegistering && !agreedToTerms) {
       setError("Te rugăm să fii de acord cu Termenii, Condițiile și Politica de Confidențialitate înainte de a continua.");
       return;
     }
-    
     try {
       await loginWithGoogle();
       navigate('/lectii'); 
@@ -42,7 +41,6 @@ function Auth() {
 
     try {
       if (isRegistering) {
-        
         if (!agreedToTerms) {
           setError("Trebuie să accepți Termenii și Condițiile și Politica de Confidențialitate pentru a crea un cont.");
           return;
@@ -57,13 +55,14 @@ function Auth() {
           return;
         }
 
-        await signup(identificator, password, username); 
+        // ✅ Pasăm și starea `role` către funcția de signup din context
+        await signup(identificator, password, username, role); 
         
         setSuccessMsg("Cont creat cu succes! Te rugăm să îți verifici emailul (inclusiv folderul Spam) pentru a activa contul.");
         setIsRegistering(false);
         setPassword(""); 
         setUsername("");
-        setAgreedToTerms(false); // resetăm checkbox-ul după succes
+        setAgreedToTerms(false);
       } else {
         const userCredential = await login(identificator, password); 
         const user = userCredential.user;
@@ -132,7 +131,8 @@ function Auth() {
       <div className="auth-card">
         <div className="auth-header">
           <h1>InfoMotion<span>.</span></h1>
-          <p>{isRegistering ? "Creează un cont de elev" : "Intră în contul tău"}</p>
+          {/* ✅ Text dinamic în funcție de rol */}
+          <p>{isRegistering ? `Creează un cont de ${role === 'student' ? 'elev' : 'profesor'}` : "Intră în contul tău"}</p>
           <br />
         </div>
 
@@ -160,6 +160,44 @@ function Auth() {
           </div>
         )}
         
+        {/* ✅ SELECTOR DE ROL: Afișat doar la înregistrare */}
+        {isRegistering && (
+          <div className="role-selector-container" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <button
+              type="button"
+              onClick={() => setRole('student')}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                border: role === 'student' ? '2px solid var(--accent, #007bff)' : '1px solid #ccc',
+                backgroundColor: role === 'student' ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
+                color: role === 'student' ? 'var(--accent, #007bff)' : 'var(--text-secondary)',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Sunt Elev
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('teacher')}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                border: role === 'teacher' ? '2px solid var(--accent, #007bff)' : '1px solid #ccc',
+                backgroundColor: role === 'teacher' ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
+                color: role === 'teacher' ? 'var(--accent, #007bff)' : 'var(--text-secondary)',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Sunt Profesor
+            </button>
+          </div>
+        )}
+
         <button className="google-btn" onClick={handleGoogleLogin} style={{ width: '100%', marginBottom: '20px' }}>
           <FaGoogle />
           {isRegistering ? "Înregistrează-te cu Google" : "Continuă cu Google"}
@@ -187,12 +225,12 @@ function Auth() {
           )}
 
           <div className="admin-field" style={{ marginBottom: '15px' }}>
-            <label>{isRegistering ? "Email" : "Email"}</label>
+            <label>Email</label>
             <input 
-              type={isRegistering ? "email" : "email"} 
+              type="email" 
               value={identificator} 
               onChange={(e) => setIdentificator(e.target.value)} 
-              placeholder={isRegistering ? "elev@exemplu.com" : "Email-ul tău"}
+              placeholder={isRegistering ? (role === 'student' ? "elev@exemplu.com" : "profesor@exemplu.com") : "Email-ul tău"}
               required 
             />
           </div>
@@ -208,7 +246,15 @@ function Auth() {
             />
           </div>
 
-          
+          {/* ✅ Câmpuri specifice de profesor în formular (Opțional - momentan l-am lăsat gol, dar dacă vrei să ceri ceva specific de la ei pe viitor, îl injectezi direct aici) */}
+          {isRegistering && role === 'teacher' && (
+            <div className="teacher-extra-fields" style={{ marginBottom: '15px', padding: '10px', background: 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
+                💡 Contul de profesor îți va permite să creezi clase și să monitorizezi progresul elevilor tăi.
+              </p>
+            </div>
+          )}
+
           {isRegistering && (
             <div className="terms-checkbox-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
               <input 
@@ -240,7 +286,8 @@ function Auth() {
               setPassword(""); 
               setIdentificator(""); 
               setUsername("");
-              setAgreedToTerms(false); // Resetăm starea checkbox-ului când se schimbă tab-ul
+              setRole('student'); // Resetăm înapoi la student
+              setAgreedToTerms(false);
             }} 
             style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
           >
@@ -248,7 +295,6 @@ function Auth() {
           </span>
         </p>
 
-        {/* Butonul de Resetare Parolă (îl afișăm logic doar la Login) */}
         {!isRegistering && (
           <button type="button" id="reset-password-btn" onClick={handleResetPassword} style={{ width: '100%', marginTop: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', textDecoration: 'underline', cursor: 'pointer' }}>
             Ai uitat parola? Resetează aici

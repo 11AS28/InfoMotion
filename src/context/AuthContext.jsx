@@ -151,24 +151,61 @@ export function AuthProvider({ children }) {
     return signInWithEmailAndPassword(auth, emailDeLogare, password);
   }
 
-  async function signup(email, password, username) {
+// Modificăm signup să accepte rolu
+  async function signup(email, password, username, role = 'student') {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    await setDoc(doc(db, 'users', user.uid), {
+    
+    // Obiectul de bază pentru salvare
+    const userProfile = {
       uid: user.uid,
       nume: username,
       email: user.email,
+      role: role, // ✅ AICI salvăm dacă e 'student' sau 'teacher'
       dataCrearii: new Date(),
-      progres: {},
-      codeforcesHandle: "",
-      streakCount: 0,
-      puncteTotale: 0,
-      problemeRezolvateCount: 0
-    });
+    };
+
+    // Dacă este elev, îi punem câmpurile specifice de gamificare
+    if (role === 'student') {
+      userProfile.progres = {};
+      userProfile.codeforcesHandle = "";
+      userProfile.streakCount = 0;
+      userProfile.puncteTotale = 0;
+      userProfile.problemeRezolvateCount = 0;
+    } else if (role === 'teacher') {
+      // ✅ Câmpuri inițiale specifice pentru profesor (le poți extinde ulterior)
+      userProfile.clase = []; // vector de ID-uri de clase pe care le va genera
+      userProfile.isVerifiedTeacher = false; // opțional, dacă vrei aprobare manuală
+    }
+
+    await setDoc(doc(db, 'users', user.uid), userProfile);
     await sendEmailVerification(user);
     return userCredential;
   }
 
+  // Modificăm și login-ul cu Google să pună implicit rolul de student dacă e cont nou
+  async function loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        nume: user.displayName,
+        email: user.email,
+        role: 'student', // ✅ Adăugăm rolul implicit de elev la Google Login rapid
+        photoURL: user.photoURL,
+        dataCrearii: new Date(),
+        progres: {},
+        codeforcesHandle: "",
+        puncteTotale: 0,
+        problemeRezolvateCount: 0
+      });
+    }
+    return user;
+  }
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {

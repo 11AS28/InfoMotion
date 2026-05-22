@@ -21,6 +21,9 @@ function SidebarStats({ isOpen, onClose }) {
 
   const [puncteTotale, setPuncteTotale] = useState(0);
 
+  // ✅ Verificăm rapid dacă utilizatorul curent este profesor
+  const isTeacher = currentUser?.role === 'teacher';
+
   useEffect(() => {
     async function IncarcaDateDB() {
       try {
@@ -45,9 +48,12 @@ function SidebarStats({ isOpen, onClose }) {
 
     if (isOpen) {
       IncarcaDateDB();
-      actualizeazaStreak();
+      // ✅ Actualizăm streak-ul doar dacă utilizatorul este elev
+      if (!isTeacher) {
+        actualizeazaStreak();
+      }
     }
-  }, [isOpen, currentUser, actualizeazaStreak]);
+  }, [isOpen, currentUser, actualizeazaStreak, isTeacher]);
 
   useEffect(() => {
     if (currentUser) {
@@ -84,7 +90,7 @@ function SidebarStats({ isOpen, onClose }) {
   };
 
   const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm("⚠️ Ești sigur că vrei să îți ștergi contul definitiv? \n\nToate progresele, punctele și lecțiile terminate vor fi pierdute. Acțiunea este IREVERSIBILĂ!");
+    const confirmDelete = window.confirm("⚠️ Ești sigur că vrei să îți ștergi contul definitiv? \n\nToate datele vor fi pierdute. Acțiunea este IREVERSIBILĂ!");
     if (!confirmDelete) return;
 
     try {
@@ -125,13 +131,13 @@ function SidebarStats({ isOpen, onClose }) {
   };
 
   const listaBadgeuri = [
-  { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
-  { id: 'b2', icon: '🔥', nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' }, // sau "Ucenic Curajos"
-  { id: 'b3', icon: '⚒️', nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' }, // păstrează iconița de unelte
-  { id: 'b4', icon: '⚔️', nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
-  { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
-  { id: 'b6', icon: '👑', nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' } // sau "Zeul Arenei" / "Legenda Codului"
-];
+    { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
+    { id: 'b2', icon: '🔥', nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
+    { id: 'b3', icon: '⚒️', nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
+    { id: 'b4', icon: '⚔️', nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
+    { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
+    { id: 'b6', icon: '👑', nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
+  ];
 
   return (
     <>
@@ -142,50 +148,85 @@ function SidebarStats({ isOpen, onClose }) {
         <div className="sidebar-header">
           <div className="user-avatar-placeholder">👤</div>
           <h3>{currentUser.nume || currentUser.email.split('@')[0]}</h3>
-          <span className="badge-nivel">{nivel}</span>
+          
+          {/* ✅ ROL STRUCTURAT FRUMOS SUB NUME */}
+          <div style={{ marginTop: '5px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 'bold',
+              padding: '3px 10px',
+              borderRadius: '20px',
+              backgroundColor: isTeacher ? '#e3f2fd' : '#e8f5e9',
+              color: isTeacher ? '#0d47a1' : '#1b5e20',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              {isTeacher ? '👨‍🏫 Profesor' : '👨‍🎓 Elev'}
+            </span>
+            
+            {/* Afișăm nivelul bazat pe curs doar dacă nu este profesor */}
+            {!isTeacher && <span className="badge-nivel">{nivel}</span>}
+          </div>
         </div>
 
         <div className="sidebar-content">
           <h4>Centru Statistici</h4>
 
-          <div className="stats-grid">
-            <div className="stat-box">
-              <span className="stat-label">Lecții Terminate</span>
-              <span className="stat-value">{lectiiTerminate} / {totalLectiiDB}</span>
-            </div>
+          {/* ✅ AFIȘARE CONDIȚIONATĂ: Profesorii au alt set de date în grid sau le ascundem pe cele de elevi */}
+          {!isTeacher ? (
+            <>
+              <div className="stats-grid">
+                <div className="stat-box">
+                  <span className="stat-label">Lecții Terminate</span>
+                  <span className="stat-value">{lectiiTerminate} / {totalLectiiDB}</span>
+                </div>
+                <div className="stat-box">
+                  <span className="stat-label">XP Total</span>
+                  <span className="stat-value">⭐ {puncteTotale}</span>
+                </div>
+                <div className="stat-box">
+                  <span className="stat-label">Probleme Arenă</span>
+                  <span className="stat-value">⚔️ {totalProblemeDB}</span>
+                </div>
+              </div>
 
-            
-            <div className="stat-box">
-              <span className="stat-label">XP Total</span>
-              <span className="stat-value">⭐ {puncteTotale}</span>
-            </div>
+              <div className="progress-section">
+                <div className="progress-info">
+                  <span>Progres Curs</span>
+                  <span>{Math.round(progresReal)}%</span>
+                </div>
+                <div className="progress-bar-container">
+                  <div className="progress-bar-fill" style={{ width: `${progresReal}%` }}></div>
+                </div>
+              </div>
 
-            
-            <div className="stat-box">
-              <span className="stat-label">Probleme Arenă</span>
-              <span className="stat-value">⚔️ {totalProblemeDB}</span>
+              <div className="streak-section">
+                <span>Daily LogIn Streak</span>
+                <div className="streak-display">
+                  <p className="streak-count" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                    {currentCount} zi{currentCount !== 1 ? "le" : ""}
+                    <FaFire color={streakColor(currentCount)} size={22} />
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* ✅ PANOU EXCLUSIV PENTRU PROFESORI (Unde vor veni ulterior clasele, listele etc.) */
+            <div style={{
+              padding: '15px', 
+              borderRadius: '8px', 
+              background: 'rgba(0,123,255,0.05)', 
+              border: '1px dashed var(--accent, #007bff)',
+              marginBottom: '20px',
+              fontSize: '14px'
+            }}>
+              <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#0d47a1' }}>Panou Profesor Activ</p>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                De aici vei putea administra clasele de elevi și vizualiza temele active în modulele următoare.
+              </span>
             </div>
-          </div>
-
-          <div className="progress-section">
-            <div className="progress-info">
-              <span>Progres Curs</span>
-              <span>{Math.round(progresReal)}%</span>
-            </div>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: `${progresReal}%` }}></div>
-            </div>
-          </div>
-
-          <div className="streak-section">
-            <span>Daily LogIn Streak</span>
-            <div className="streak-display">
-              <p className="streak-count" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
-                {currentCount} zi{currentCount !== 1 ? "le" : ""}
-                <FaFire color={streakColor(currentCount)} size={22} />
-              </p>
-            </div>
-          </div>
+          )}
+          
           <br />
 
           <div className="info-list">
@@ -215,80 +256,85 @@ function SidebarStats({ isOpen, onClose }) {
               <strong>{currentUser.email}</strong>
             </div>
 
-            <div className="info-item-input">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Codeforces Handle:</span>
-                {currentUser?.cfValidat ? (
-                  <small className="save-status" style={{ color: '#639922' }}>
-                    <FaCheckCircle /> VERIFICAT
-                  </small>
-                ) : (
-                  handleInput !== "" && <small style={{ color: '#ff4500', fontSize: '0.7rem' }}>NEVERIFICAT</small>
-                )}
-              </div>
-              
-              <div className="handle-input-group">
-                <input
-                  type="text"
-                  placeholder="ex: tourist"
-                  value={handleInput}
-                  onChange={(e) => setHandleInput(e.target.value)}
-                  className="sidebar-input"
-                  disabled={currentUser?.cfValidat}
-                />
-              </div>
-
-              {!currentUser?.cfValidat && handleInput !== "" && (
-                <div className="verification-container">
-                  <span className="verification-text">Pune la <b>Organization</b> pe CF:</span>
-                  <div className="verification-code-display">
-                    {generateVerificationCode()}
+            {/* ✅ ASCUNDEM SECȚIUNEA DE CODEFORCES ȘI TROFEE DACĂ ESTE PROFESOR */}
+            {!isTeacher && (
+              <>
+                <div className="info-item-input">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Codeforces Handle:</span>
+                    {currentUser?.cfValidat ? (
+                      <small className="save-status" style={{ color: '#639922' }}>
+                        <FaCheckCircle /> VERIFICAT
+                      </small>
+                    ) : (
+                      handleInput !== "" && <small style={{ color: '#ff4500', fontSize: '0.7rem' }}>NEVERIFICAT</small>
+                    )}
                   </div>
-                  <button 
-                    className="verify-btn-outline"
-                    onClick={async () => {
-                      const res = await verifyHandleOwnership(handleInput);
-                      if(res.success) alert("✅ Cont verificat!");
-                      else alert("❌ " + res.error);
-                    }}
-                  >
-                    Confirmă
-                  </button>
-                </div>
-              )}
-            </div>
+                  
+                  <div className="handle-input-group">
+                    <input
+                      type="text"
+                      placeholder="ex: tourist"
+                      value={handleInput}
+                      onChange={(e) => setHandleInput(e.target.value)}
+                      className="sidebar-input"
+                      disabled={currentUser?.cfValidat}
+                    />
+                  </div>
 
-            <br />
-
-            <div className="sidebar-badges-section">
-              <h5>Trofeele Mele (Arenă)</h5>
-              <div className="badges-flex-list">
-                {listaBadgeuri.map((badge) => {
-                  const esteDeblocat = totalProblemeDB >= badge.cerinta;
-                  const maiAreNevoie = badge.cerinta - totalProblemeDB;
-                  return (
-                    <div 
-                      key={badge.id} 
-                      className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
-                      title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
-                    >
-                      <div className="badge-icon-wrapper">
-                        <span className="badge-emoji">{badge.icon}</span>
-                        {!esteDeblocat && <FaLock className="badge-lock-icon" />}
+                  {!currentUser?.cfValidat && handleInput !== "" && (
+                    <div className="verification-container">
+                      <span className="verification-text">Pune la <b>Organization</b> pe CF:</span>
+                      <div className="verification-code-display">
+                        {generateVerificationCode()}
                       </div>
-                      <div className="badge-text-details">
-                        <span className="badge-title">{badge.nume}</span>
-                        <span className="badge-sub">
-                          {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
-                        </span>
-                      </div>
+                      <button 
+                        className="verify-btn-outline"
+                        onClick={async () => {
+                          const res = await verifyHandleOwnership(handleInput);
+                          if(res.success) alert("✅ Cont verificat!");
+                          else alert("❌ " + res.error);
+                        }}
+                      >
+                        Confirmă
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  )}
+                </div>
 
-            <div className="info-item">
+                <br />
+
+                <div className="sidebar-badges-section">
+                  <h5>Trofeele Mele (Arenă)</h5>
+                  <div className="badges-flex-list">
+                    {listaBadgeuri.map((badge) => {
+                      const esteDeblocat = totalProblemeDB >= badge.cerinta;
+                      const maiAreNevoie = badge.cerinta - totalProblemeDB;
+                      return (
+                        <div 
+                          key={badge.id} 
+                          className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
+                          title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
+                        >
+                          <div className="badge-icon-wrapper">
+                            <span className="badge-emoji">{badge.icon}</span>
+                            {!esteDeblocat && <FaLock className="badge-lock-icon" />}
+                          </div>
+                          <div className="badge-text-details">
+                            <span className="badge-title">{badge.nume}</span>
+                            <span className="badge-sub">
+                              {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="info-item" style={{ marginTop: '15px' }}>
               <span>Status Cont:</span>
               <strong className="status-online">Activ</strong>
             </div>
@@ -307,8 +353,8 @@ function SidebarStats({ isOpen, onClose }) {
               color: '#ff4d4d', border: '1px solid #ff4d4d', borderRadius: '8px', 
               cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.3s ease' 
             }}
-            onMouseOver={(e) => { e.target.style.backgroundColor = '#ff4d4d'; e.target.style.color = '#fff'; }}
-            onMouseOut={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#ff4d4d'; }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#ff4d4d'; e.currentTarget.style.color = '#fff'; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#ff4d4d'; }}
           >
             Șterge Contul Definitiv
           </button>
