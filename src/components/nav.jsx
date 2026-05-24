@@ -88,10 +88,13 @@ function Nav() {
         <li><Link to="/" onClick={() => setIsOpen(false)}>Acasă</Link></li>
         <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
         <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
-        
-        {/* ✅ OPTIONAL: Ascundem Arena dacă e profesor, ca să nu încurce */}
+        {currentUser?.role === 'teacher' && (
+          <li><Link to="/trimite-lectie" onClick={() => setIsOpen(false)}>Trimite Lecție</Link></li>
+        )}
+        {/*  OPTIONAL: Ascundem Arena dacă e profesor, ca să nu încurce */}
         {currentUser?.role !== 'teacher' && (
           <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
+          
         )}
         
         <li>
@@ -116,7 +119,7 @@ function Nav() {
               <span className="user-name-text">
                 {currentUser.nume || currentUser.email.split('@')[0]}
               </span>
-              {/* ✅ AICI injectăm badge-ul custom de rol */}
+              {/*  AICI injectăm badge-ul custom de rol */}
               {getRoleBadge()}
             </div>
           </li>
