@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import '../pages_css/admin.css';
-import { doc, setDoc, collection, getDocs, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs, deleteDoc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Toaster, toast } from 'sonner';
 
@@ -62,9 +62,14 @@ function Dashboard({ username, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [firebaseLessons, setFirebaseLessons] = useState([]);
   const [firebaseUsers, setFirebaseUsers] = useState([]); 
-  const [propuneri, setPropuneri] = useState([]); // <-- Stare pentru propuneri
+  const [propuneri, setPropuneri] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
-  const [propunereInCurs, setPropunereInCurs] = useState(null); // <-- Tine minte ce propunere lucram ca sa o stergem la final
+  const [propunereInCurs, setPropunereInCurs] = useState(null); 
+
+  // --- Stări pentru secțiunea To-Do ---
+  const [todos, setTodos] = useState([]);
+  const [newTodoText, setNewTodoText] = useState('');
+  const [todoLoading, setTodoLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -99,6 +104,11 @@ function Dashboard({ username, onLogout }) {
       const propuneriAll = querySnapshotPropuneri.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPropuneri(propuneriAll.filter(p => p.status === "in_asteptare"));
 
+      // 4. Preluare To-Do List ordonate după dată (cele mai noi primele)
+      const qTodo = query(collection(db, "admin_todo"), orderBy("createdAt", "desc"));
+      const querySnapshotTodo = await getDocs(qTodo);
+      setTodos(querySnapshotTodo.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
     } catch (e) {
       console.error("Eroare la preluare date:", e);
       toast.error("Nu s-au putut încărca datele din Firebase.");
@@ -106,6 +116,68 @@ function Dashboard({ username, onLogout }) {
   };
 
   useEffect(() => { refreshData(); }, [activeTab]);
+
+  // --- Funcții pentru To-Do-uri cu sistem de toggle + istoric ---
+  const handleAddTodo = async (e) => {
+    e.preventDefault();
+    if (!newTodoText.trim()) return toast.warning("Nu poți adăuga un task gol!");
+    setTodoLoading(true);
+
+    try {
+      await addDoc(collection(db, "admin_todo"), {
+        text: newTodoText.trim(),
+        author: username,
+        completed: false, // Starea inițială ca nerezolvată
+        createdAt: serverTimestamp()
+      });
+
+      setNewTodoText('');
+      toast.success("Task adăugat în listă!");
+      refreshData();
+    } catch (e) {
+      toast.error("Eroare la adăugare: " + e.message);
+    } finally {
+      setTodoLoading(false);
+    }
+  };
+
+  // Schimbă starea dintr-un mod în altul (Bifează / Anulează bifarea)
+  const handleToggleTodoStatus = async (id, currentStatus) => {
+    try {
+      const todoRef = doc(db, "admin_todo", id);
+      await updateDoc(todoRef, {
+        completed: !currentStatus
+      });
+      toast.success(!currentStatus ? "Task marcat ca finalizat! 🎉" : "Task redeschis.");
+      refreshData();
+    } catch (e) {
+      toast.error("Eroare la modificarea stării task-ului: " + e.message);
+    }
+  };
+
+  // Ștergere definitivă din cloud (pentru curățarea istoricului)
+  const handlePermanentDeleteTodo = async (id) => {
+    if (!window.confirm("Vrei să ștergi definitiv acest task din istoric?")) return;
+    try {
+      await deleteDoc(doc(db, "admin_todo", id));
+      toast.success("Task șters definitiv.");
+      refreshData();
+    } catch (e) {
+      toast.error("Eroare la ștergere: " + e.message);
+    }
+  };
+
+  // Funcție helper pentru formatarea elegantă a datei salvate în Firebase
+  const formatTodoDate = (timestamp) => {
+    if (!timestamp) return "Acum un moment";
+    const date = timestamp.toDate();
+    return date.toLocaleDateString('ro-RO', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const updatePb = (idx, field, val) => setPbRows(pbRows.map((r, i) => i === idx ? { ...r, [field]: val } : r));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
@@ -126,7 +198,7 @@ function Dashboard({ username, onLogout }) {
     setCfProblems(['', '']);
     setIsEditing(false);
     setSearchTerm('');
-    setPropunereInCurs(null); // resetam
+    setPropunereInCurs(null); 
   };
 
   const handleDelete = async (id) => {
@@ -140,49 +212,41 @@ function Dashboard({ username, onLogout }) {
     }
   };
 
-
   const sendUserNotification = async (userId, type, text) => {
-  if (!userId) return;
-
-  try {
-    await addDoc(collection(db, "users", userId, "notifications"), {
-      type,
-      text,
-      read: false,
-      createdAt: serverTimestamp()
-    });
-  } catch (e) {
-    console.error("Eroare la trimiterea notificării:", e);
-  }
-};
-
-  // --- Functii pentru tab-ul de Aprobari ---
-const handleRejectPropunere = async (propunere) => {
-  if (!window.confirm("Ești sigur că vrei să respingi și să ștergi această propunere?")) return;
-
-  try {
-    if (propunere.autorId) {
-      await sendUserNotification(
-        propunere.autorId,
-        "lectie_respinsa",
-        `Propunerea ta pentru lecția „${propunere.titlu}” a fost respinsă.`
-      );
+    if (!userId) return;
+    try {
+      await addDoc(collection(db, "users", userId, "notifications"), {
+        type,
+        text,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Eroare la trimiterea notificării:", e);
     }
+  };
 
-    await deleteDoc(doc(db, "propuneri_lectii", propunere.id));
-    toast.success("Propunere respinsă.");
-    refreshData();
-  } catch (e) {
-    toast.error("Eroare: " + e.message);
-  }
-};
+  const handleRejectPropunere = async (propunere) => {
+    if (!window.confirm("Ești sigur că vrei să respingi și să ștergi această propunere?")) return;
+    try {
+      if (propunere.autorId) {
+        await sendUserNotification(
+          propunere.autorId,
+          "lectie_respinsa",
+          `Propunerea ta pentru lecția „${propunere.titlu}" a fost respinsă.`
+        );
+      }
+      await deleteDoc(doc(db, "propuneri_lectii", propunere.id));
+      toast.success("Propunere respinsă.");
+      refreshData();
+    } catch (e) {
+      toast.error("Eroare: " + e.message);
+    }
+  };
 
   const handleApprovePropunere = (propunere) => {
-    // Navigam catre tab-ul "Adauga" si completam datele
-    resetForm(); // Ne asiguram ca e un form curat, NU in mod editare de lectie veche
+    resetForm(); 
     setFTitlu(propunere.titlu || '');
-    
-    // Potrivim clasa daca e posibila. Mapare: "a-IX-a" -> "clasa-9"
     if(propunere.clasa === "a-IX-a") setFClasa("clasa-9");
     else if(propunere.clasa === "a-X-a") setFClasa("clasa-10");
     else if(propunere.clasa === "a-XI-a") setFClasa("clasa-11");
@@ -193,14 +257,12 @@ const handleRejectPropunere = async (propunere) => {
     setFDescriere(
       propunere.descriere?.trim()
         ? `${propunere.descriere.trim()} — by prof. ${propunere.numeAutorDorit}`
-        : `by prof. ${propunere.numeAutorDorit }`
+        : `by prof. ${propunere.numeAutorDorit}`
     );
-    
-    setPropunereInCurs(propunere.id); // Tinem minte ID-ul propunerii ca sa il stergem dupa ce o publicam!
+    setPropunereInCurs(propunere.id); 
     setActiveTab('adauga');
     toast.info("Verifică și completează detaliile, apoi apasă Publică!");
   };
-  // ----------------------------------------
 
   const startEdit = (lectie) => {
     setFId(lectie.id); 
@@ -227,64 +289,61 @@ const handleRejectPropunere = async (propunere) => {
   };
 
   const handlePublish = async () => {
-  if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!");
-  setLoading(true);
+    if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!");
+    setLoading(true);
+    try {
+      let categorieVal = null;
+      let clasaFinala = fClasa;
 
-  try {
-    let categorieVal = null;
-    let clasaFinala = fClasa;
-
-    if (fClasa === 'olimpici') {
-      categorieVal = 'olimpiada';
-      clasaFinala = 'olimpici';
-    } else if (fClasa === 'concepte') {
-      categorieVal = 'concepte';
-      clasaFinala = 'concepte';
-    }
-
-    const lectieData = {
-      id: fId,
-      clasa: clasaFinala,
-      categorie: categorieVal,
-      ordine: Number(fOrdine),
-      titlu: fTitlu,
-      descriere: fDescriere,
-      teorie: fTeorie,
-      codCPlusPlus: fCod,
-      animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
-      problemePbinfo: pbRows.filter(r => r.id || r.titlu),
-      quiz: quiz,
-      codeforces: cfProblems,
-      dataModificarii: new Date().toISOString()
-    };
-
-    await setDoc(doc(db, "lectii", fId), lectieData);
-
-    if (propunereInCurs) {
-      const propGasita = propuneri.find((p) => p.id === propunereInCurs);
-
-      if (propGasita?.autorId) {
-        await sendUserNotification(
-          propGasita.autorId,
-          "lectie_aprobata",
-          `Propunerea ta pentru lecția „${propGasita.titlu}” a fost aprobată.`
-        );
+      if (fClasa === 'olimpici') {
+        categorieVal = 'olimpiada';
+        clasaFinala = 'olimpici';
+      } else if (fClasa === 'concepte') {
+        categorieVal = 'concepte';
+        clasaFinala = 'concepte';
       }
 
-      await deleteDoc(doc(db, "propuneri_lectii", propunereInCurs));
+      const lectieData = {
+        id: fId,
+        clasa: clasaFinala,
+        categorie: categorieVal,
+        ordine: Number(fOrdine),
+        titlu: fTitlu,
+        descriere: fDescriere,
+        teorie: fTeorie,
+        codCPlusPlus: fCod,
+        animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
+        problemePbinfo: pbRows.filter(r => r.id || r.titlu),
+        quiz: quiz,
+        codeforces: cfProblems,
+        dataModificarii: new Date().toISOString()
+      };
+
+      await setDoc(doc(db, "lectii", fId), lectieData);
+
+      if (propunereInCurs) {
+        const propGasita = propuneri.find((p) => p.id === propunereInCurs);
+        if (propGasita?.autorId) {
+          await sendUserNotification(
+            propGasita.autorId,
+            "lectie_aprobata",
+            `Propunerea ta pentru lecția „${propGasita.titlu}" a fost aprobată.`
+          );
+        }
+        await deleteDoc(doc(db, "propuneri_lectii", propunereInCurs));
+      }
+
+      toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!");
+      resetForm();
+      await refreshData();
+      setActiveTab('lectii');
+    } catch (e) {
+      toast.error("Eroare la salvare: " + e.message);
     }
+    setLoading(false);
+  };
 
-    toast.success(isEditing ? "✅ Modificări salvate în cloud!" : "🚀 Lecție publicată cu succes!");
-    resetForm();
-    await refreshData();
-    setActiveTab('lectii');
-  } catch (e) {
-    toast.error("Eroare la salvare: " + e.message);
-  }
-
-  setLoading(false);
-};
-
+  // Statistici lecții
   const totalLectii = firebaseLessons.length;
   const cuAnimatie = firebaseLessons.filter((l) => l.animatie && l.animatie !== 'null').length;
   const claseUnice = [...new Set(firebaseLessons.map((l) => l.clasa))].length;
@@ -298,6 +357,7 @@ const handleRejectPropunere = async (propunere) => {
   const maxCount = Math.max(...Object.values(countPerClasa), 1);
   const barColors = { 9: '#378ADD', 10: '#639922', 11: '#BA7517', 12: '#D4537E' };
 
+  // Statistici utilizatori
   const totalUsers = firebaseUsers.length;
   const verifiedCFUsers = firebaseUsers.filter(u => u.cfValidat).length;
   const totalPlatformXP = firebaseUsers.reduce((sum, u) => sum + (u.puncteTotale || 0), 0);
@@ -314,7 +374,10 @@ const handleRejectPropunere = async (propunere) => {
     return l.titlu?.toLowerCase().includes(search) || l.id?.toLowerCase().includes(search);
   });
 
-  const tabs = ['overview', 'utilizatori', 'aprobari', 'lectii', 'adauga'];
+  // Numărul de task-uri active (nerezolvate) pentru badge-ul din tab
+  const activeTodoCount = todos.filter(t => !t.completed).length;
+
+  const tabs = ['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga'];
 
   return (
     <div className="admin-wrapper">
@@ -342,6 +405,7 @@ const handleRejectPropunere = async (propunere) => {
             {t === 'overview' ? 'Prezentare generală'
               : t === 'utilizatori' ? '👥 Utilizatori'
               : t === 'aprobari' ? `Aprobări (${propuneri.length})`
+              : t === 'todo' ? `📋 To-Do List (${activeTodoCount} active)`
               : t === 'lectii' ? 'Lecțiile mele'
               : isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție'}
           </button>
@@ -349,6 +413,7 @@ const handleRejectPropunere = async (propunere) => {
       </div>
 
       <main className="admin-main">
+
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <>
@@ -413,68 +478,208 @@ const handleRejectPropunere = async (propunere) => {
           </>
         )}
 
-        {/* APROBARI LECTII TAB (NOU) */}
+        {/* APROBARI LECTII TAB */}
         {activeTab === 'aprobari' && (
           <div className="admin-card">
-  <div className="admin-section-title">Lecții propuse de utilizatori</div>
-
-  {propuneri.length === 0 ? (
-    <div className="admin-empty-state">
-      Nu există nicio lecție nouă în așteptare.
-    </div>
-  ) : (
-    <div className="admin-approvals-list">
-      {propuneri.map((p) => (
-        <div key={p.id} className="admin-approval-card">
-          <div className="admin-approval-top">
-            <div className="admin-approval-main">
-              <h3 className="admin-approval-title">{p.titlu}</h3>
-
-              <div className="admin-approval-meta">
-                <span className="admin-badge admin-badge-propunere">{p.clasa}</span>
+            <div className="admin-section-title">Lecții propuse de utilizatori</div>
+            {propuneri.length === 0 ? (
+              <div className="admin-empty-state">Nu există nicio lecție nouă în așteptare.</div>
+            ) : (
+              <div className="admin-approvals-list">
+                {propuneri.map((p) => (
+                  <div key={p.id} className="admin-approval-card">
+                    <div className="admin-approval-top">
+                      <div className="admin-approval-main">
+                        <h3 className="admin-approval-title">{p.titlu}</h3>
+                        <div className="admin-approval-meta">
+                          <span className="admin-badge admin-badge-propunere">{p.clasa}</span>
+                        </div>
+                        <div className="admin-approval-author">
+                          <strong>Autor:</strong> {p.numeAutorDorit || p.emailAutor || "Anonim"}<br />
+                          <strong>Email:</strong> {p.emailAutor || "Anonim"}
+                        </div>
+                      </div>
+                      <div className="admin-approval-actions">
+                        <button className="admin-btn-approve" onClick={() => handleApprovePropunere(p)}>Aprobă</button>
+                        <button className="admin-btn-reject" onClick={() => handleRejectPropunere(p)}>Respinge</button>
+                      </div>
+                    </div>
+                    <div className="admin-approval-section">
+                      <div className="admin-approval-section-title">Teorie propusă</div>
+                      <div className="admin-approval-text">{p.teorie}</div>
+                    </div>
+                    {p.codCPlusPlus && (
+                      <div className="admin-approval-section">
+                        <div className="admin-approval-section-title">Cod C++ propus</div>
+                        <pre className="admin-approval-code"><code>{p.codCPlusPlus}</code></pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
+            )}
+          </div>
+        )}
 
-              <div className="admin-approval-author">
-                <strong>Autor:</strong> {p.numeAutorDorit || p.emailAutor || "Anonim"}<br />
-                <strong>Email:</strong> {p.emailAutor || "Anonim"}
-              </div>
+        {/* TO-DO LIST TAB — cu sistem de toggle active/rezolvate + istoric */}
+        {activeTab === 'todo' && (
+          <div className="admin-card">
+            <div className="admin-section-title">📋 Organizare Echipă InfoMotion</div>
+            <p style={{ color: '#64748b', marginBottom: '20px', fontSize: '14px' }}>
+              Planurile voastre de dezvoltare. Task-urile rezolvate trec în istoric ca să urmăriți progresul echipei.
+            </p>
+
+            {/* Formular Adăugare Task */}
+            <form onSubmit={handleAddTodo} style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+              <input 
+                type="text" 
+                placeholder="Adaugă un task nou (ex: eu fac bitmasking-ul, tu ocupă-te de CSS)..." 
+                value={newTodoText}
+                onChange={(e) => setNewTodoText(e.target.value)}
+                style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', outline: 'none' }}
+                disabled={todoLoading}
+              />
+              <button 
+                type="submit" 
+                className="admin-btn-primary" 
+                style={{ marginTop: 0, padding: '0 24px' }}
+                disabled={todoLoading}
+              >
+                {todoLoading ? 'Se trimite...' : 'Adaugă'}
+              </button>
+            </form>
+
+            {/* 1. SECȚIUNEA TASK-URI ACTIVE */}
+            <div style={{ marginBottom: '35px' }}>
+              <h3 style={{ fontSize: '16px', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📌 Task-uri de făcut ({todos.filter(t => !t.completed).length})
+              </h3>
+
+              {todos.filter(t => !t.completed).length === 0 ? (
+                <div style={{ padding: '15px', background: '#f0fdf4', color: '#166534', borderRadius: '8px', fontSize: '14px', border: '1px dashed #bbf7d0' }}>
+                  🎉 Toate task-urile au fost completate! Echipa e liberă.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {todos.filter(t => !t.completed).map((todo) => (
+                    <div 
+                      key={todo.id} 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        padding: '14px 16px', 
+                        background: '#ffffff', 
+                        borderRadius: '8px', 
+                        borderLeft: '4px solid #378ADD',
+                        border: '1px solid #e2e8f0',
+                        borderLeftWidth: '4px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingRight: '15px' }}>
+                        <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500', lineHeight: '1.4' }}>
+                          {todo.text}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>
+                          ✍️ {todo.author} • 📅 {formatTodoDate(todo.createdAt)}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => handleToggleTodoStatus(todo.id, todo.completed)}
+                        style={{ 
+                          background: '#e0f2fe', 
+                          color: '#0369a1', 
+                          border: 'none', 
+                          padding: '6px 12px', 
+                          borderRadius: '6px', 
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          flexShrink: 0
+                        }}
+                      >
+                        ✓ Rezolvă
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="admin-approval-actions">
-              <button
-                className="admin-btn-approve"
-                onClick={() => handleApprovePropunere(p)}
-              >
-                 Aprobă
-              </button>
+            {/* 2. SECȚIUNEA ISTORIC / TASK-URI FINALIZATE */}
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#64748b', marginBottom: '12px' }}>
+                ✅ Istoric task-uri finalizate ({todos.filter(t => t.completed).length})
+              </h3>
 
-              <button
-                className="admin-btn-reject"
-                onClick={() => handleRejectPropunere(p)}
-              >
-                 Respinge
-              </button>
+              {todos.filter(t => t.completed).length === 0 ? (
+                <div style={{ padding: '15px', color: '#94a3b8', fontSize: '14px', textAlign: 'center' }}>
+                  Niciun task terminat până acum în această sesiune.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', opacity: 0.75 }}>
+                  {todos.filter(t => t.completed).map((todo) => (
+                    <div 
+                      key={todo.id} 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        padding: '12px 16px', 
+                        background: '#f8fafc', 
+                        borderRadius: '8px', 
+                        borderLeft: '4px solid #94a3b8',
+                        border: '1px solid #e2e8f0',
+                        borderLeftWidth: '4px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '14px', color: '#64748b', textDecoration: 'line-through' }}>
+                          {todo.text}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          Rezolvat • Adăugat de {todo.author} pe {formatTodoDate(todo.createdAt)}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => handleToggleTodoStatus(todo.id, todo.completed)}
+                          style={{ 
+                            background: '#f1f5f9', 
+                            color: '#475569', 
+                            border: 'none', 
+                            padding: '6px 10px', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer', 
+                            fontSize: '12px' 
+                          }}
+                          title="Pune înapoi în lista activă"
+                        >
+                          ↩️ Pune înapoi
+                        </button>
+                        <button 
+                          onClick={() => handlePermanentDeleteTodo(todo.id)}
+                          style={{ 
+                            background: '#fee2e2', 
+                            color: '#ef4444', 
+                            border: 'none', 
+                            padding: '6px 10px', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer', 
+                            fontSize: '12px' 
+                          }}
+                          title="Șterge definitiv"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="admin-approval-section">
-            <div className="admin-approval-section-title">Teorie propusă</div>
-            <div className="admin-approval-text">{p.teorie}</div>
-          </div>
-
-          {p.codCPlusPlus && (
-            <div className="admin-approval-section">
-              <div className="admin-approval-section-title">Cod C++ propus</div>
-              <pre className="admin-approval-code">
-                <code>{p.codCPlusPlus}</code>
-              </pre>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
         )}
 
         {/* LECTII TAB */}
@@ -502,7 +707,7 @@ const handleRejectPropunere = async (propunere) => {
                           {l.categorie === 'olimpiada' ? 'OLIMPICI' : l.categorie === 'concepte' ? 'CONCEPTE' : l.clasa?.toUpperCase()}
                         </span>
                       </td>
-                      <td className="admin-actions-cell">
+                      <td className="actions-cell">
                         <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
                         <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
                       </td>
@@ -533,14 +738,12 @@ const handleRejectPropunere = async (propunere) => {
         {activeTab === 'adauga' && (
           <div className="admin-card admin-form-card">
             <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
-            
-            {/* Mesaj de avertizare daca cream pornind de la o propunere */}
             {propunereInCurs && (
-  <div className="admin-propunere-banner">
-     <strong>Mod Aprobare Propunere:</strong> datele au fost precompletate.
-    Adaugă ID-ul lecției, verifică textul și apoi publică.
-  </div>
-)}
+              <div className="admin-propunere-banner">
+                <strong>Mod Aprobare Propunere:</strong> datele au fost precompletate.
+                Adaugă ID-ul lecției, verifică textul și apoi publică.
+              </div>
+            )}
 
             <div className="admin-form-grid">
               <div className="admin-field">
@@ -558,12 +761,10 @@ const handleRejectPropunere = async (propunere) => {
                   <option value="concepte">Concepte Generale</option>
                 </select>
               </div>
-
               <div className="admin-field">
                 <label>Număr de ordine (Poziția în Curs)</label>
                 <input type="number" value={fOrdine} onChange={(e) => setFOrdine(e.target.value)} min="1" placeholder="ex: 1 (ușor) -> 10 (greu)" />
               </div>
-
               <div className="admin-field admin-field--full">
                 <label>Titlu</label>
                 <input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} />
@@ -576,7 +777,6 @@ const handleRejectPropunere = async (propunere) => {
                 <label>Teorie</label>
                 <textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} />
               </div>
-
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>
                 <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -590,12 +790,10 @@ const handleRejectPropunere = async (propunere) => {
                   <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă React" style={{ marginTop: '10px' }} />
                 )}
               </div>
-
               <div className="admin-field admin-field--full">
                 <label>Cod C++</label>
                 <textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} />
               </div>
-
               <div className="admin-field admin-field--full">
                 <div className="admin-section-divider">Probleme Pbinfo</div>
                 {pbRows.map((row, idx) => (
@@ -608,7 +806,6 @@ const handleRejectPropunere = async (propunere) => {
                 ))}
                 <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
               </div>
-
               <div className="admin-field admin-field--full">
                 <div className="admin-section-divider">Quiz (5 Întrebări)</div>
                 {quiz.map((q, qIdx) => (
@@ -625,10 +822,7 @@ const handleRejectPropunere = async (propunere) => {
                   </div>
                 ))}
               </div>
-
-              
             </div>
-
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
               <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>
                 {loading ? 'Se procesează...' : (isEditing || propunereInCurs) ? '💾 Salvează modificările' : '🚀 Publică pe Site'}
@@ -637,6 +831,7 @@ const handleRejectPropunere = async (propunere) => {
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
