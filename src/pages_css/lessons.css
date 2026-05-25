@@ -256,7 +256,7 @@ body {
 }
 
 .finish-btn {
-  background-color: var(--accent-color);
+  background-color: var(--accent);
   color: var(--accent-color);
   border: none;
   padding: 16px 36px;

@@ -626,13 +626,7 @@ const handleRejectPropunere = async (propunere) => {
                 ))}
               </div>
 
-              <div className="admin-field admin-field--full">
-                <div className="admin-section-divider">Codeforces (2 Probleme)</div>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                  <input type="text" placeholder="Problem 1 (ex: 158/A)" value={cfProblems[0]} onChange={(e) => setCfProblems([e.target.value, cfProblems[1]])} style={{ flex: 1 }} />
-                  <input type="text" placeholder="Problem 2 (ex: 71/A)" value={cfProblems[1]} onChange={(e) => setCfProblems([cfProblems[0], e.target.value])} style={{ flex: 1 }} />
-                </div>
-              </div>
+              
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>

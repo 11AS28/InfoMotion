@@ -34,12 +34,12 @@ main,
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 8px;
-  color: #ffffff;
+  color: #f9f9f9;
   letter-spacing: -0.5px;
 }
 
 .footer-brand span {
-  color: #01696f;
+  color: var(--accent);
 }
 
 .footer-brand p {
@@ -74,8 +74,37 @@ main,
 .footer-bottom {
   padding-top: 30px;
   text-align: center;
-  color: #64748b;
+  color: var(--footer-text);
   font-size: 0.9rem;
+}
+
+#text-bottom {
+  color: var(--footer-text) !important;
+}
+
+
+.footer-legal-links {
+  margin: 12px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-legal-links a {
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 0.92rem;
+  transition: color 0.25s ease;
+}
+
+.footer-legal-links a:hover {
+  color: var(--accent);
+}
+
+.footer-separator {
+  color: #64748b;
 }
 
 @media (max-width: 600px) {

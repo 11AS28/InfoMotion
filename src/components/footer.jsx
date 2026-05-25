@@ -35,9 +35,17 @@ function Footer() {
 
                 
                 <div className="footer-bottom">
-                    <p>infomotion2026@gmail.com</p>
-                    <br />
-                    <p>&copy; {new Date().getFullYear()} InfoMotion. Toate drepturile rezervate.</p>
+                <p className="text-bottom">infomotion2026@gmail.com</p>
+
+                <div className="footer-legal-links">
+                    <a href="/confidentialitate" className="text-bottom">Politica de confidențialitate</a>
+                    <span className="footer-separator">•</span>
+                    <a href="/termeni" className="text-bottom">Termeni și condiții</a>
+                </div>
+
+                <p className="text-bottom">
+                    &copy; {new Date().getFullYear()} InfoMotion. Toate drepturile rezervate.
+                </p>
                 </div>
                 
             </div>

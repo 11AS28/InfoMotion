@@ -206,7 +206,7 @@ function LessonPage() {
               <div className="finish-container">
                 <p>Ești gata să testezi ce ai învățat?</p>
                 <button className="finish-btn" onClick={() => setIsQuizOpen(true)}>
-                  Finalizează Lecția (Quiz + Codeforces)
+                  Finalizează Lecția (Quiz)
                 </button>
               </div>
             )}

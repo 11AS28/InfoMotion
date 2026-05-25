@@ -38,7 +38,7 @@ function Intro() {
             <div className="feature-card">
               <span className="feature-icon">💻</span>
               <h3>Cod Explicat</h3>
-              <p>Fragmente de cod C++ gata de copiat, cu comentarii logice la fiecare pas.</p>
+              <p>Fragmente de cod C++ gata de copiat, ce conțin comentarii logice la fiecare pas.</p>
             </div>
             <div className="feature-card">
               <span className="feature-icon">⚡</span>
