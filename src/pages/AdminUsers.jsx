@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import '../pages_css/adminusers.css';
 
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
@@ -10,11 +11,11 @@ const ADMINS = [
 ];
 
 const mascheazaEmail = (email) => {
+  if (!email) return "-";
   const parts = email.split("@");
   const nume = parts[0];
   const domeniu = parts[1];
 
-  if (!email)  return "-";
   if (parts.length !== 2) return email;
   if (nume.length <= 3) return `${nume[0]}***@${domeniu}`;
   
@@ -31,6 +32,14 @@ function AdminUsers() {
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  useEffect(() => {
+    document.body.classList.add('admin-layout-activ');
+    
+    return () => {
+      document.body.classList.remove('admin-layout-activ');
+    };
+  }, []);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -56,11 +65,10 @@ function AdminUsers() {
     else setLoginError("Utilizator sau parolă incorectă!");
   };
 
-  // ✅ Inițializează formularul cu absolutamente toate câmpurile din document
   const handleEditClick = (user, e) => {
-    e.stopPropagation(); // Previne deschiderea/închiderea tab-ului de detalii la click pe buton
+    e.stopPropagation(); 
     setEditUserId(user.id);
-    setEditFormData({ ...user }); // Copiază absolut tot obiectul din Firestore
+    setEditFormData({ ...user }); 
   };
 
   const handleInputChange = (e) => {
@@ -71,7 +79,6 @@ function AdminUsers() {
     }));
   };
 
-  // ✅ Permite modificarea directă a textului JSON brut pentru array-uri / obiecte (ex: lectiiTerminate)
   const handleComplexDataChange = (name, rawValue) => {
     setEditFormData(prev => ({
       ...prev,
@@ -84,7 +91,6 @@ function AdminUsers() {
     try {
       let finalData = { ...editFormData };
       
-      // ✅ Încercăm să parsăm câmpurile care ar putea fi salvate ca text-JSON în interfață (ex: array-uri de lecții parcurse)
       if (typeof finalData.lectiiTerminate === 'string') {
         try { finalData.lectiiTerminate = JSON.parse(finalData.lectiiTerminate); } catch(e) {}
       }
@@ -109,11 +115,11 @@ function AdminUsers() {
 
   if (!isAuthorized) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', fontFamily: 'sans-serif', padding: '20px' }}>
-        <form onSubmit={handleLoginSubmit} style={{ background: '#1a1a20', padding: '30px', borderRadius: '12px', border: '1px solid #333', width: '100%', maxWidth: '340px', boxSizing: 'border-box', textAlign: 'center' }}>
+      <div className="admin-login-overlay">
+        <form onSubmit={handleLoginSubmit} className="admin-login-form">
           <h3 style={{ color: '#378ADD', marginBottom: '20px' }}>🔒 Restricționat Admin</h3>
-          <input type="text" placeholder="Username Admin" value={loginUser} onChange={(e) => setLoginUser(e.target.value)} style={{ ...inputStyle, width: '100%', marginBottom: '15px', boxSizing: 'border-box' }} required />
-          <input type="password" placeholder="Parolă" value={loginPass} onChange={(e) => setLoginPass(e.target.value)} style={{ ...inputStyle, width: '100%', marginBottom: '20px', boxSizing: 'border-box' }} required />
+          <input type="text" placeholder="Username Admin" value={loginUser} onChange={(e) => setLoginUser(e.target.value)} style={inputStyle} required />
+          <input type="password" placeholder="Parolă" value={loginPass} onChange={(e) => setLoginPass(e.target.value)} style={{ ...inputStyle, marginTop: '15px', marginBottom: '20px' }} required />
           {loginError && <p style={{ color: '#ff4500', fontSize: '0.85rem', margin: '0 0 15px 0' }}>{loginError}</p>}
           <button type="submit" style={{ ...btnStyle, background: '#378ADD', width: '100%', padding: '12px' }}>Autentificare</button>
         </form>
@@ -124,30 +130,9 @@ function AdminUsers() {
   if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Se încarcă baza de date...</div>;
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '20px auto', padding: '15px', color: 'white', fontFamily: 'sans-serif' }}>
+    <div className="admin-panel-container">
       
-      <style>{`
-        .desktop-table { display: table; width: 100%; border-collapse: collapse; margin-top: 20px; background: #1a1a20; border-radius: 8px; overflow: hidden; }
-        .mobile-cards { display: none; }
-        .clickable-row { cursor: pointer; transition: background 0.2s; }
-        .clickable-row:hover { background: rgba(255,255,255,0.03) !important; }
-        .expanded-zone { background: #15151a; padding: 20px; border-bottom: 2px solid #378ADD; }
-        .grid-detalii { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-        .detaliu-field { background: #1e1e24; padding: 10px; borderRadius: 6px; border: 1px solid #2d2d35; display: flex; flex-direction: column; gap: 5px; }
-        .detaliu-label { color: #378ADD; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
-        
-        @media (max-width: 950px) {
-          .desktop-table { display: none; }
-          .mobile-cards { display: block; margin-top: 20px; }
-          .user-card { background: #1a1a20; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 15px; cursor: pointer; }
-          .card-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #25252d; padding-bottom: 4px; align-items: center; }
-          .card-label { color: #378ADD; font-weight: bold; }
-          .card-actions { display: flex; gap: 10px; margin-top: 15px; }
-          .header-container { flex-direction: column; gap: 15px; align-items: flex-start !important; }
-        }
-      `}</style>
-
-      <div className="header-container" style={{ display: 'flex', justify: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
+      <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.5rem' }}>🛠️ Panou Admin Suprem - Gestiune Utilizatori</h2>
           <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
@@ -201,7 +186,7 @@ function AdminUsers() {
                   </td>
                 </tr>
 
-                {/* ✅ ZONA EXTINSĂ: SE DESCHIDE LA CLICK PE RÂND ȘI TOATE INFORMAȚIILE SUNT MODIFICABILE */}
+                {/* ZONA EXTINSĂ */}
                 {isExpanded && (
                   <tr>
                     <td colSpan="9" className="expanded-zone">
@@ -211,7 +196,6 @@ function AdminUsers() {
                       </h4>
                       
                       <div className="grid-detalii">
-                        
                         <div className="detaliu-field">
                           <span className="detaliu-label">Nume Complet / Username</span>
                           {isEditing ? <input type="text" name="nume" value={editFormData.nume || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.nume || "-"}</span>}
@@ -257,12 +241,11 @@ function AdminUsers() {
                           {isEditing ? <input type="text" name="lastLoginDate" value={editFormData.lastLoginDate || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.lastLoginDate || "-"}</span>}
                         </div>
 
-                        {/* ✅ CASETE SPECIALE PENTRU STRUCTURI DE DATE COMPLEXE (Lecții / Statistici brute) */}
                         <div className="detaliu-field" style={{ gridColumn: '1 / -1' }}>
                           <span className="detaliu-label">Lecții terminate / Istoric parcurs (Format Brut JSON sau Array)</span>
                           {isEditing ? (
                             <textarea 
-                              style={{ ...inputStyle, width: '100%', height: '80px', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                              style={{ ...inputStyle, height: '80px', fontFamily: 'monospace', fontSize: '0.85rem' }}
                               value={typeof editFormData.lectiiTerminate === 'object' ? JSON.stringify(editFormData.lectiiTerminate) : editFormData.lectiiTerminate || "[]"}
                               onChange={(e) => handleComplexDataChange('lectiiTerminate', e.target.value)}
                               placeholder='Ex: ["lectia1", "lectia2"]'
@@ -273,7 +256,6 @@ function AdminUsers() {
                             </pre>
                           )}
                         </div>
-
                       </div>
 
                       {isEditing && (
@@ -311,7 +293,6 @@ function AdminUsers() {
                 <span>{mascheazaEmail(user.email)}</span>
               </div>
 
-              {/* Detalii extinse pe mobil */}
               {isExpanded && (
                 <div style={{ marginTop: '10px', padding: '10px', background: '#111', borderRadius: '6px', fontSize: '0.85rem' }} onClick={(e) => e.stopPropagation()}>
                   <div className="card-row">
@@ -325,15 +306,6 @@ function AdminUsers() {
                   <div className="card-row">
                     <span className="card-label">Streak:</span>
                     {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.streakCount || 0}</span>}
-                  </div>
-                  <div className="card-row">
-                    <span className="card-label">Rol text:</span>
-                    {isEditing ? (
-                      <select name="role" value={editFormData.role || "student"} onChange={handleInputChange} style={inputStyleMobile}>
-                        <option value="student">student</option>
-                        <option value="teacher">teacher</option>
-                      </select>
-                    ) : <span>{user.role || "student"}</span>}
                   </div>
                   
                   <div style={{ marginTop: '10px' }}>
@@ -356,7 +328,7 @@ function AdminUsers() {
                         <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#555', flex: 1 }}>Anulează</button>
                       </>
                     ) : (
-                      <button onClick={(e) => handleEditClick(user, e)} style={{ ...btnStyle, background: '#378ADD', width: '100%' }}>Editează Toate Datele</button>
+                      <button onClick={(e) => handleEditClick(user, e)} style={{ ...btnStyle, background: '#378ADD', width: '100%' }}>Editează Datele</button>
                     )}
                   </div>
                 </div>
@@ -365,7 +337,6 @@ function AdminUsers() {
           );
         })}
       </div>
-
     </div>
   );
 }
