@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'; 
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, onSnapshot, orderBy } from 'firebase/firestore';
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
@@ -21,8 +21,13 @@ function SidebarStats({ isOpen, onClose }) {
 
   const [puncteTotale, setPuncteTotale] = useState(0);
 
-  // ✅ Verificăm rapid dacă utilizatorul curent este profesor
+  const [notifications, setNotifications] = useState([]);
+
+  const [showNotifications, setShowNotifications] = useState(false);
+ 
   const isTeacher = currentUser?.role === 'teacher';
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     async function IncarcaDateDB() {
@@ -61,6 +66,26 @@ function SidebarStats({ isOpen, onClose }) {
       setUsernameInput(currentUser.nume || "");
     }
   }, [currentUser, isOpen]);
+
+
+  useEffect(() => {
+  if (!currentUser?.uid) return;
+
+  const q = query(
+    collection(db, "users", currentUser.uid, "notifications"),
+    orderBy("createdAt", "desc")
+  );
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const notifList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setNotifications(notifList);
+  });
+
+  return () => unsubscribe();
+}, [currentUser]);
 
   const handleUpdateProfile = async () => {
     if (!currentUser) return;
@@ -110,6 +135,35 @@ function SidebarStats({ isOpen, onClose }) {
     }
   };
 
+
+  const markNotificationAsRead = async (notifId) => {
+  if (!currentUser?.uid) return;
+
+  try {
+    await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), {
+      read: true
+    });
+  } catch (e) {
+    console.error("Eroare la marcarea notificării:", e);
+  }
+};
+
+const markAllNotificationsAsRead = async () => {
+  if (!currentUser?.uid) return;
+
+  try {
+    const unreadNotifications = notifications.filter((n) => !n.read);
+
+    for (const notif of unreadNotifications) {
+      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notif.id), {
+        read: true
+      });
+    }
+  } catch (e) {
+    console.error("Eroare la marcarea tuturor notificărilor:", e);
+  }
+};
+
   if (!currentUser) return null;
 
   const stats = getStatistici();
@@ -138,6 +192,7 @@ function SidebarStats({ isOpen, onClose }) {
     { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
     { id: 'b6', icon: '👑', nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
+  
 
   return (
     <>
@@ -171,6 +226,141 @@ function SidebarStats({ isOpen, onClose }) {
 
         <div className="sidebar-content">
           <h4>Centru Statistici</h4>
+        
+            <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setShowNotifications((v) => !v)}
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  padding: '6px 12px',
+                  borderRadius: '999px',
+                  background: unreadCount > 0 ? '#fef2f2' : '#ecfdf5',
+                  color: unreadCount > 0 ? '#dc2626' : '#166534',
+                  border: unreadCount > 0 ? '1px solid #fecaca' : '1px solid #bbf7d0',
+                  cursor: 'pointer'
+                }}
+              >
+                {unreadCount > 0 ? ` ${unreadCount} notificări noi` : ' Nicio notificare nouă'}
+              </button>
+            </div>
+
+            {showNotifications && (
+            <div
+              style={{
+                marginBottom: '18px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '14px',
+                padding: '10px',
+                background: theme === 'dark' ? '#111827' : '#ffffff',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.06)'
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '10px'
+              }}>
+                <strong style={{ fontSize: '14px' }}>Notificările tale</strong>
+
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllNotificationsAsRead}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#01696f',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Marchează toate ca citite
+                  </button>
+                )}
+              </div>
+
+              {notifications.length === 0 ? (
+                <div style={{
+                  fontSize: '13px',
+                  color: '#94a3b8',
+                  padding: '8px 4px'
+                }}>
+                  Nu ai notificări momentan.
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  maxHeight: '220px',
+                  overflowY: 'auto'
+                }}>
+                  {notifications.slice(0, 8).map((notif) => (
+                    <button
+                      key={notif.id}
+                      type="button"
+                      onClick={() => markNotificationAsRead(notif.id)}
+                      style={{
+                        textAlign: 'left',
+                        width: '100%',
+                        border: notif.read ? '1px solid #e5e7eb' : '1px solid #fecaca',
+                        background: theme === 'dark' ? (notif.read ? 'transparent' : '#917878') : (notif.read ? 'transparent' : '#fef2f2'),
+                        borderRadius: '12px',
+                        padding: '10px 12px',
+                        cursor: 'pointer',
+                        
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '10px'
+                      }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontSize: '13px',
+                            fontWeight: notif.read ? '600' : '700',
+                            color: theme === 'dark' ? '#f3f4f6' : '#0f172a',
+                            marginBottom: '4px'
+                          }}>
+                            {notif.type === 'lectie_aprobata'
+                              ? ' Lecție aprobată'
+                              : notif.type === 'lectie_respinsa'
+                              ? ' Lecție respinsă'
+                              : ' Notificare'}
+                          </div>
+
+                          <div style={{
+                            fontSize: '12px',
+                            lineHeight: '1.5',
+                            color: theme === 'dark' ? '#f3f4f6' : '#475569'
+                          }}>
+                            {notif.text}
+                          </div>
+                        </div>
+
+                        {!notif.read && (
+                          <span style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: '#dc2626',
+                            flexShrink: 0,
+                            marginTop: '4px'
+                          }} />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/*  AFIȘARE CONDIȚIONATĂ: Profesorii au alt set de date în grid sau le ascundem pe cele de elevi */}
           {!isTeacher ? (

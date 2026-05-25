@@ -160,7 +160,7 @@ function Lectii() {
           </div>
         )}
       </main>
-      <Footer />
+      
     </div>
   );
 }
