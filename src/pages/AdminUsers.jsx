@@ -10,12 +10,14 @@ const ADMINS = [
 ];
 
 const mascheazaEmail = (email) => {
-  if (!email) return "-";
   const parts = email.split("@");
-  if (parts.length !== 2) return email;
   const nume = parts[0];
   const domeniu = parts[1];
+
+  if (!email)  return "-";
+  if (parts.length !== 2) return email;
   if (nume.length <= 3) return `${nume[0]}***@${domeniu}`;
+  
   return `${nume[0]}***${nume[nume.length - 1]}@${domeniu}`;
 };
 
@@ -24,8 +26,7 @@ function AdminUsers() {
   const [loading, setLoading] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  const [expandedUserId, setExpandedUserId] = useState(null); // ✅ Reține ce utilizator are detaliile deschise
-
+  const [expandedUserId, setExpandedUserId] = useState(null); 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
