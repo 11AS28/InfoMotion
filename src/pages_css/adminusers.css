@@ -158,136 +158,146 @@ body.admin-layout-activ {
 
 
 
-/* ==========================================
-   INFOMOTION - PREMIUM MINIMALIST LOGIN 
-   ========================================== */
 
-/* Fundalul general - se întinde pe tot ecranul */
+
+
+/* Stil curat pentru containerul paginii de admin */
+.admin-panel-container {
+  max-width: 1400px; 
+  margin: 0 auto; 
+  padding: 30px 15px; 
+  color: white; 
+  font-family: sans-serif; 
+  min-height: 100vh; 
+  box-sizing: border-box;
+}
+
+/* Ecranul de Login Admin */
 .admin-login-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #0b0f17; /* Bleumarinul profund mat din site */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  z-index: 9999;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh; 
+  background-color: #0b0b0e; 
+  font-family: sans-serif; 
+  padding: 20px; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  z-index: 99999;
 }
 
-/* Cardul formularului - stilul panel-ului de vizualizare */
 .admin-login-form {
-  background: #111622; /* Griul mat din carduri */
-  padding: 40px;
-  border-radius: 16px;
-  border: 1px solid #1e2638; /* Marginea fină a cardului */
-  width: 100%;
-  max-width: 400px;
-  box-sizing: border-box;
+  background: #1a1a20; 
+  padding: 30px; 
+  border-radius: 12px; 
+  border: 1px solid #333; 
+  width: 100%; 
+  max-width: 340px; 
+  box-sizing: border-box; 
+  text-align: center;
 }
 
-/* Header-ul (Titlu + Subtitlu) */
-.login-header {
-  text-align: left;
-  margin-bottom: 32px;
+/* Tabel Desktop */
+.desktop-table { 
+  display: table; 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-top: 20px; 
+  background: #1a1a20; 
+  border-radius: 8px; 
+  overflow: hidden; 
 }
 
-.login-title {
-  color: #ffffff;
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0;
-  display: inline-block;
-  letter-spacing: -0.04em;
+.clickable-row { 
+  cursor: pointer; 
+  transition: background 0.2s; 
 }
 
-.login-title span {
-  color: #38bdf8; /* Punctul cyan exact din branding */
+.clickable-row:hover { 
+  background: rgba(255, 255, 255, 0.03) !important; 
 }
 
-.login-subtitle {
-  color: #64748b; 
-  font-size: 0.95rem;
-  font-weight: 400;
-  margin-top: 6px;
-  margin-bottom: 0;
+.expanded-zone { 
+  background: #15151a; 
+  padding: 20px; 
+  border-bottom: 2px solid #378ADD; 
 }
 
-/* Gruparea pentru label + input */
-.input-group {
-  margin-bottom: 20px;
-  text-align: left;
+.grid-detalii { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 15px; 
+  margin-top: 10px; 
 }
 
-.input-group label {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 8px;
+.detaliu-field { 
+  background: #1e1e24; 
+  padding: 10px; 
+  border-radius: 6px; 
+  border: 1px solid #2d2d35; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 5px; 
 }
 
-/* CÂMPURILE INPUT (REPARATE COMPLET PENTRU VIZIBILITATE) */
-.login-input {
-  width: 100%;
-  padding: 12px 16px;
-  background: #0055ff; /* Efect de adâncitură în card */
-  
-  /* Am pus un gri-slate mai deschis pentru a decupa clar forma pe fundal închis */
-  border: 1px solid #006aff; 
-  
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.95rem;
-  box-sizing: border-box;
-  transition: all 0.15s ease-in-out;
-}
-
-/* Când pui mouse-ul pe input-uri */
-.login-input:hover {
-  border-color: #64748b; /* Se luminează puțin marginea */
-}
-
-/* Când dai click în interiorul input-ului */
-.login-input:focus {
-  border-color: #00a8af; /* Se aprinde turcoazul InfoMotion */
-  box-shadow: 0 0 0 3px rgba(0, 168, 175, 0.15); /* Glow fin */
-}
-
-/* Textul ajutător din interior (Placeholder) */
-.login-input::placeholder {
-  color: #64748b; 
-  font-size: 0.95rem;
-}
-
-/* Textul de eroare în caz de login greșit */
-.login-error-text {
-  color: #f87171;
-  font-size: 0.85rem;
-  margin: -10px 0 20px 0;
-  text-align: left;
-  font-weight: 500;
-}
-
-/* BUTONUL DE SUBMIT - corelat cu "Începe să înveți" */
-.login-submit-btn {
-  background: #00666b; 
-  color: #ffffff;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #00a8af; 
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+.detaliu-label { 
+  color: #378ADD; 
+  font-size: 0.8rem; 
+  font-weight: bold; 
   text-transform: uppercase; 
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
 }
 
-.login-submit-btn:hover {
-  background: #007c82;
-  border-color: #00c2cb;
+/* Carduri Mobile */
+.mobile-cards { 
+  display: none; 
+}
+
+/* Responsive Styles */
+@media (max-width: 950px) {
+  .desktop-table { 
+    display: none; 
+  }
+  
+  .mobile-cards { 
+    display: block; 
+    margin-top: 20px; 
+  }
+  
+  .user-card { 
+    background: #1a1a20; 
+    border: 1px solid #333; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 15px; 
+    cursor: pointer; 
+  }
+  
+  .card-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 8px; 
+    font-size: 0.9rem; 
+    border-bottom: 1px solid #25252d; 
+    padding-bottom: 4px; 
+    align-items: center; 
+  }
+  
+  .card-label { 
+    color: #378ADD; 
+    font-weight: bold; 
+  }
+  
+  .card-actions { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 15px; 
+  }
+  
+  .header-container { 
+    flex-direction: column; 
+    gap: 15px; 
+    align-items: flex-start !important; 
+  }
 }
