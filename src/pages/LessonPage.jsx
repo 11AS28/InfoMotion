@@ -5,7 +5,7 @@ import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-
+import Markdown from 'react-markdown';
 
 const BubbleSortAnim = React.lazy(() => import('../components/animatii/BubbleSortAnim'));
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -49,7 +49,7 @@ function LessonPage() {
       setEsteGata(false);
 
       try {
-      
+
         const docRef = doc(db, "lectii", idLectie);
         const docSnap = await getDoc(docRef);
 
@@ -57,7 +57,7 @@ function LessonPage() {
           const dateLectie = docSnap.data();
           setLectie(dateLectie);
 
-          
+
           if (dateLectie.clasa) {
             const q = query(
               collection(db, "lectii"),
@@ -71,7 +71,7 @@ function LessonPage() {
             setToateLectiileDinClasa(lista);
           }
 
-          
+
           if (currentUser) {
             const userRef = doc(db, 'users', currentUser.uid);
             const userSnap = await getDoc(userRef);
@@ -99,7 +99,7 @@ function LessonPage() {
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
-    const ComponentaAnimatie = () => {
+  const ComponentaAnimatie = () => {
     switch (lectie.animatie) {
       case "BubbleSortAnim": return <BubbleSortAnim />;
       case "CautareBinaraAnim": return <CautareBinaraAnim />;
@@ -108,22 +108,22 @@ function LessonPage() {
       case "InterclasareAnim": return <InterclasareAnim />;
       case "AflareMaximAnim": return <AflareMaximAnim />;
       case "VariabileAnim": return <VariabileAnim />;
-      case "SirurideCaractere": return <SirurideCaractere/>;
-      case "Prim": return <Prim/>;
-      case "DescomPrim": return <DescomPrim/>;
-      case "CifreNr": return <CifreNr/>;
-      case "Siruri": return <Siruri/>;
-      case "SumePartiale1D": return <SumePartiale1D/>;
-      case "SumePartiale2D": return <SumePartiale2D/>;
-      case "SmenulMars": return <SmenulMars/>;
-      case "SlindingWindow": return <SlindingWindow/>;
-      case "MergeSort": return <MergeSort/>;
-      case "QuickSort": return <QuickSort/>;
-      case "StivaMonotona": return <StivaMonotona/>;
-      case "StructuriNeomogene": return <StructuriNeomogene/>;
-      case "Matrici": return <Matrici/>;
-      case "OperatoriAnim": return <OperatoriAnim/>;
-      case "CombinatoricaAnim": return <CombinatoricaAnim/>;
+      case "SirurideCaractere": return <SirurideCaractere />;
+      case "Prim": return <Prim />;
+      case "DescomPrim": return <DescomPrim />;
+      case "CifreNr": return <CifreNr />;
+      case "Siruri": return <Siruri />;
+      case "SumePartiale1D": return <SumePartiale1D />;
+      case "SumePartiale2D": return <SumePartiale2D />;
+      case "SmenulMars": return <SmenulMars />;
+      case "SlindingWindow": return <SlindingWindow />;
+      case "MergeSort": return <MergeSort />;
+      case "QuickSort": return <QuickSort />;
+      case "StivaMonotona": return <StivaMonotona />;
+      case "StructuriNeomogene": return <StructuriNeomogene />;
+      case "Matrici": return <Matrici />;
+      case "OperatoriAnim": return <OperatoriAnim />;
+      case "CombinatoricaAnim": return <CombinatoricaAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
@@ -152,7 +152,7 @@ function LessonPage() {
         </aside>
 
         <main className="lesson-container">
-          
+
           <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
           <header className="lesson-header">
             <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
@@ -162,16 +162,18 @@ function LessonPage() {
           <section className="lesson-content">
             <div className="lesson-theory">
               <h2>📖 Teorie</h2>
-              <p style={{ whiteSpace: "pre-wrap" }}>{lectie.teorie}</p>
+              <div className="lesson-theory-content">
+                <Markdown>{lectie.teorie}</Markdown>
+              </div>
             </div>
 
             <div className="lesson-animation">
               <h2>🎮 Animație Interactivă</h2>
-              
+
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? <ComponentaAnimatie /> : <div className="animation-placeholder">Animația va fi disponibilă curând.</div>}
               </Suspense>
-          </div>
+            </div>
           </section>
 
           {lectie.codCPlusPlus && (
