@@ -149,8 +149,8 @@ function SidebarStats({ isOpen, onClose }) {
           <div className="user-avatar-placeholder">👤</div>
           <h3>{currentUser.nume || currentUser.email.split('@')[0]}</h3>
           
-          {/* ✅ ROL STRUCTURAT FRUMOS SUB NUME */}
-          <div style={{ marginTop: '5px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
+          {/*  ROL STRUCTURAT FRUMOS SUB NUME */}
+          <div style={{ marginTop: '0 px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
             <span style={{
               fontSize: '11px',
               fontWeight: 'bold',
@@ -172,7 +172,7 @@ function SidebarStats({ isOpen, onClose }) {
         <div className="sidebar-content">
           <h4>Centru Statistici</h4>
 
-          {/* ✅ AFIȘARE CONDIȚIONATĂ: Profesorii au alt set de date în grid sau le ascundem pe cele de elevi */}
+          {/*  AFIȘARE CONDIȚIONATĂ: Profesorii au alt set de date în grid sau le ascundem pe cele de elevi */}
           {!isTeacher ? (
             <>
               <div className="stats-grid">
@@ -211,7 +211,7 @@ function SidebarStats({ isOpen, onClose }) {
               </div>
             </>
           ) : (
-            /* ✅ PANOU EXCLUSIV PENTRU PROFESORI (Unde vor veni ulterior clasele, listele etc.) */
+           
             <div style={{
               padding: '15px', 
               borderRadius: '8px', 
@@ -221,9 +221,6 @@ function SidebarStats({ isOpen, onClose }) {
               fontSize: '14px'
             }}>
               <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#0d47a1' }}>Panou Profesor Activ</p>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                De aici vei putea administra clasele de elevi și vizualiza temele active în modulele următoare.
-              </span>
             </div>
           )}
           
@@ -256,7 +253,7 @@ function SidebarStats({ isOpen, onClose }) {
               <strong>{currentUser.email}</strong>
             </div>
 
-            {/* ✅ ASCUNDEM SECȚIUNEA DE CODEFORCES ȘI TROFEE DACĂ ESTE PROFESOR */}
+            {/*  ASCUNDEM SECȚIUNEA DE CODEFORCES ȘI TROFEE DACĂ ESTE PROFESOR */}
             {!isTeacher && (
               <>
                 <div className="info-item-input">

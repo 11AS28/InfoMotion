@@ -1,0 +1,223 @@
+/* Containerul principal al paginii */
+.trimite-lectii-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 0 20px;
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Header-ul paginii (Titlu si Subtitlu) */
+.trimite-lectii-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.trimite-lectii-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+}
+
+
+
+.trimite-lectii-header h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+/* Sectiunea de continut si explicatii */
+.trimite-lectii-content {
+    background: var(--background-secondary); 
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.trimite-lectii-content p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+/* Stilizarea formularului */
+.trimite-lectii-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.trimite-lectii-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    gap: 8px;
+}
+
+/* Input-uri de tip text, Select si Textarea */
+.trimite-lectii-form input[type="text"],
+.trimite-lectii-form select,
+.trimite-lectii-form textarea {
+    width: 100%;
+    background-color: var(--background-secondary) !important;
+    border: 1px solid #475569;
+    color: var(--text-primary, #f8fafc) !important;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+/* Stilizare pentru Select-ul principal */
+.trimite-lectii-form select {
+    cursor: pointer;
+    /* Ascundem săgeata default */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Adăugăm săgeata SVG albă/gri custom */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23cbd5e1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px top 50%;
+    background-size: 12px auto;
+}
+
+/* Fix pentru fundalul optiunilor (fortam culorile) */
+.trimite-lectii-form select option {
+    background-color: var(--background-secondary ) !important;
+    color: var(--text-primary, #ffffff) !important;
+    padding: 10px;
+}
+
+/* Dacă un input este read-only (ex: Numele blocat pe utilizatorul curent) */
+.trimite-lectii-form input[type="text"]:read-only {
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    border-color: #334155;
+}
+
+/* Stil focus pe campuri */
+.trimite-lectii-form input[type="text"]:focus:not(:read-only),
+.trimite-lectii-form select:focus,
+.trimite-lectii-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6; 
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.trimite-lectii-form input::placeholder,
+.trimite-lectii-form textarea::placeholder {
+    color: #64748b;
+    opacity: 1;
+}
+
+/* Cod C++ */
+.trimite-lectii-form textarea[name="codCPlusPlus"] {
+    background: #0b1120 !important;
+    color: #a7f3d0 !important; 
+    line-height: 1.5;
+}
+
+/* Containerul special pentru Checkbox si Termeni */
+.termeni-container {
+    display: flex;
+    flex-direction: row;        /* Fortam orizontala absolut sigur */
+    align-items: center;        /* Centram pe verticala */
+    gap: 12px;                  /* Spatiu intre checkbox si text */
+    background: none;
+    padding: 15px;
+    border-radius: 8px;
+   
+    margin-top: 10px;
+}
+
+/* Redimensionare și stilizare input checkbox */
+.termeni-container input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important; 
+    cursor: pointer;
+    accent-color: #3b82f6;
+    flex-shrink: 0;             /* Nu ii dam voie sa se micescoreze */
+}
+
+/* Stilizare text din label-ul pentru termeni */
+.termeni-container label {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 500;
+    cursor: pointer;
+    /* Foarte important: anulam "flex-direction: column" setat mai sus pe toate label-urile */
+    flex-direction: row !important; 
+}
+
+/* Stilizare Link-ul de Termeni */
+.termeni-container a {
+    color: #60a5fa; 
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.termeni-container a:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+/* Butonul de trimitere */
+.trimite-lectii-form button[type="submit"] {
+    margin-top: 15px;
+    background: var(--accent);
+    color: #f9f9f9;
+    border: none;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.trimite-lectii-form button[type="submit"]:hover:not(:disabled) {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+}
+
+.trimite-lectii-form button[type="submit"]:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Responsive - pentru telefoane */
+@media (max-width: 768px) {
+    .trimite-lectii-container {
+        margin: 40px auto;
+    }
+
+    .trimite-lectii-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .trimite-lectii-content {
+        padding: 25px 20px;
+    }
+
+    .trimite-lectii-form button[type="submit"] {
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+}

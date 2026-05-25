@@ -21,6 +21,7 @@ import Clasament from './pages/Clasament';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminUsers from './pages/AdminUsers';
+import TrimiteLectii from './pages/TrimiteLectii';
 
 import './theme.css';
 
@@ -86,6 +87,15 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/trimite-lectie"
+              element={
+                <PrivateRoute requiredRole="teacher">
+                  <TrimiteLectii />
+                </PrivateRoute>
+              }
+            />
+
           </Routes>
         </main>
 
