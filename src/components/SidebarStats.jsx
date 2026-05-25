@@ -21,7 +21,6 @@ function SidebarStats({ isOpen, onClose }) {
 
   const [puncteTotale, setPuncteTotale] = useState(0);
 
-  // ✅ Verificăm rapid dacă utilizatorul curent este profesor
   const isTeacher = currentUser?.role === 'teacher';
 
   useEffect(() => {

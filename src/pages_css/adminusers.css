@@ -1,0 +1,158 @@
+/* ⚠️ MAGIC TRICK: Ascundem elementele globale DOAR când clasa specială 
+   este injectată pe body-ul paginii!
+*/
+body.admin-layout-activ nav, 
+body.admin-layout-activ .nav-container, 
+body.admin-layout-activ header, 
+body.admin-layout-activ footer, 
+body.admin-layout-activ .footer-container { 
+  display: none !important; 
+}
+
+/* Stil pentru body când suntem pe admin, ca să nu strice restul site-ului */
+body.admin-layout-activ { 
+  background-color: #0b0b0e !important; 
+  margin: 0; 
+  padding: 0; 
+}
+
+/* Ecranul de Login Admin */
+.admin-login-overlay {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh; 
+  background-color: #0b0b0e; 
+  font-family: sans-serif; 
+  padding: 20px; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  z-index: 99999;
+}
+
+.admin-login-form {
+  background: #1a1a20; 
+  padding: 30px; 
+  border-radius: 12px; 
+  border: 1px solid #333; 
+  width: 100%; 
+  max-width: 340px; 
+  box-sizing: border-box; 
+  text-align: center;
+}
+
+/* Structura Container Principală */
+.admin-panel-container {
+  max-width: 1400px; 
+  margin: 0 auto; 
+  padding: 30px 15px; 
+  color: white; 
+  font-family: sans-serif; 
+  min-height: 100vh; 
+  box-sizing: border-box;
+}
+
+/* Tabel Desktop */
+.desktop-table { 
+  display: table; 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-top: 20px; 
+  background: #1a1a20; 
+  border-radius: 8px; 
+  overflow: hidden; 
+}
+
+.clickable-row { 
+  cursor: pointer; 
+  transition: background 0.2s; 
+}
+
+.clickable-row:hover { 
+  background: rgba(255, 255, 255, 0.03) !important; 
+}
+
+.expanded-zone { 
+  background: #15151a; 
+  padding: 20px; 
+  border-bottom: 2px solid #378ADD; 
+}
+
+.grid-detalii { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 15px; 
+  margin-top: 10px; 
+}
+
+.detaliu-field { 
+  background: #1e1e24; 
+  padding: 10px; 
+  border-radius: 6px; 
+  border: 1px solid #2d2d35; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 5px; 
+}
+
+.detaliu-label { 
+  color: #378ADD; 
+  font-size: 0.8rem; 
+  font-weight: bold; 
+  text-transform: uppercase; 
+}
+
+/* Carduri Mobile */
+.mobile-cards { 
+  display: none; 
+}
+
+/* Responsive Styles */
+@media (max-width: 950px) {
+  .desktop-table { 
+    display: none; 
+  }
+  
+  .mobile-cards { 
+    display: block; 
+    margin-top: 20px; 
+  }
+  
+  .user-card { 
+    background: #1a1a20; 
+    border: 1px solid #333; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 15px; 
+    cursor: pointer; 
+  }
+  
+  .card-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 8px; 
+    font-size: 0.9rem; 
+    border-bottom: 1px solid #25252d; 
+    padding-bottom: 4px; 
+    align-items: center; 
+  }
+  
+  .card-label { 
+    color: #378ADD; 
+    font-weight: bold; 
+  }
+  
+  .card-actions { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 15px; 
+  }
+  
+  .header-container { 
+    flex-direction: column; 
+    gap: 15px; 
+    align-items: flex-start !important; 
+  }
+}

@@ -20,7 +20,7 @@ function Lectii() {
         const lectiiDinDB = querySnapshot.docs.map(doc => {
           const data = doc.data();
           
-          // Verificăm dacă e lecție specială, altfel extragem clasa numerică
+          
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
           
@@ -63,9 +63,9 @@ function Lectii() {
       } else if (activeFilter === 'concepte') {
         matchesFilter = lectie.esteConcept;
       } else {
-        // Filtrele standard: clasa-9, clasa-10, clasa-11
+
         const clasaTinta = parseInt(activeFilter.split('-')[1]);
-        // Ne asigurăm că nu prindem lecțiile speciale când filtrăm o clasă numerică
+        
         matchesFilter = lectie.clasaNumerica === clasaTinta && !lectie.esteOlimpiada && !lectie.esteConcept;
       }
       
@@ -86,8 +86,8 @@ function Lectii() {
   // Funcție helper ca să returneze textul potrivit pe buton
   const getFilterLabel = (filter) => {
     if (filter === 'toate') return 'Toate';
-    if (filter === 'olimpici') return '🏆 Olimpici';
-    if (filter === 'concepte') return '💡 Concepte (TLE, Structuri)';
+    if (filter === 'olimpici') return 'Olimpici';
+    if (filter === 'concepte') return 'Termeni';
     return `Clasa ${filter.split('-')[1]}`;
   };
 
@@ -112,7 +112,7 @@ function Lectii() {
           </div>
           
           <div className="class-filters">
-            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte'].map((f) => (
+            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'termeni'].map((f) => (
               <button 
                 key={f}
                 className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 
