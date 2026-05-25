@@ -33,14 +33,6 @@ function AdminUsers() {
   const [loginPass, setLoginPass] = useState("");
   const [loginError, setLoginError] = useState("");
 
-  useEffect(() => {
-    document.body.classList.add('admin-layout-activ');
-    
-    return () => {
-      document.body.classList.remove('admin-layout-activ');
-    };
-  }, []);
-
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -114,19 +106,56 @@ function AdminUsers() {
   };
 
   if (!isAuthorized) {
-    return (
-      <div className="admin-login-overlay">
-        <form onSubmit={handleLoginSubmit} className="admin-login-form">
-          <h3 style={{ color: '#378ADD', marginBottom: '20px' }}>🔒 Restricționat Admin</h3>
-          <input type="text" placeholder="Username Admin" value={loginUser} onChange={(e) => setLoginUser(e.target.value)} style={inputStyle} required />
-          <input type="password" placeholder="Parolă" value={loginPass} onChange={(e) => setLoginPass(e.target.value)} style={{ ...inputStyle, marginTop: '15px', marginBottom: '20px' }} required />
-          {loginError && <p style={{ color: '#ff4500', fontSize: '0.85rem', margin: '0 0 15px 0' }}>{loginError}</p>}
-          <button type="submit" style={{ ...btnStyle, background: '#378ADD', width: '100%', padding: '12px' }}>Autentificare</button>
-        </form>
-      </div>
-    );
-  }
+  return (
+    <div className="admin-login-overlay">
+      <form onSubmit={handleLoginSubmit} className="admin-login-form">
+        
+        {/* Header-ul cu branding */}
+        <div className="login-header">
+          <h2 className="login-title">
+            InfoMotion<span>.</span>
+          </h2>
+          <h3 className="login-subtitle">Panou de administrare</h3>
+        </div>
 
+        {/* Câmp utilizator */}
+        <div className="input-group">
+          <label>Utilizator</label>
+          <input 
+            type="text" 
+            className="login-input"
+            placeholder="username" 
+            value={loginUser} 
+            onChange={(e) => setLoginUser(e.target.value)} 
+            required 
+          />
+        </div>
+
+        {/* Câmp parolă */}
+        <div className="input-group">
+          <label>Parolă</label>
+          <input 
+            type="password" 
+            className="login-input"
+            placeholder="••••••••" 
+            value={loginPass} 
+            onChange={(e) => setLoginPass(e.target.value)} 
+            required 
+          />
+        </div>
+
+        {/* Afișare eroare */}
+        {loginError && <p className="login-error-text">{loginError}</p>}
+
+        {/* Buton trimitere */}
+        <button type="submit" className="login-submit-btn">
+         Intra in cont
+        </button>
+        
+      </form>
+    </div>
+  );
+}
   if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Se încarcă baza de date...</div>;
 
   return (

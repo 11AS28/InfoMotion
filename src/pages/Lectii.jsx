@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import Nav from '../components/nav';
-import Footer from '../components/footer';
 import '../pages_css/Lectii.css';
 
 function Lectii() {
@@ -93,7 +91,6 @@ function Lectii() {
 
   return (
     <div className="page-wrapper">
-      <Nav />
       <main className="lectii-container">
         <div className="lectii-header">
           <h1>Module de <span>Învățare</span></h1>

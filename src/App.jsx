@@ -31,13 +31,14 @@ function App() {
 
  
   const isAdminPage = location.pathname === '/admin';
-
+  const epagadmin = location.pathname ==='/adminusers';
   return (
 
     <ThemeProvider>
       <AuthProvider>
         
-        {!isAdminPage && <Nav />}
+        {!isAdminPage && !epagadmin && <Nav />}
+        
         <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
           <Routes>
             
@@ -100,7 +101,7 @@ function App() {
         </main>
 
        
-        {!isAdminPage &&<Footer />}
+        {!isAdminPage && !epagadmin &&<Footer />}
         
       </AuthProvider>
       <SpeedInsights />
