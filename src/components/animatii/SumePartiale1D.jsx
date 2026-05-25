@@ -101,6 +101,7 @@ export default function SumePartiale1DAnim() {
               let bg = 'var(--bg-subtle)';
               let border = '1px solid #4a5568';
               
+              
               // Evidențiere în faza de construire
               if (cur.activeV.includes(idx) && step < 6) {
                 bg = '#3b82f6';
@@ -183,7 +184,7 @@ export default function SumePartiale1DAnim() {
           <div style={{ 
             marginTop: '30px', 
             padding: '15px', 
-            background: '#1e293b', 
+            background: 'var(--bg-subtle)', 
             borderRadius: '8px', 
             textAlign: 'center', 
             fontFamily: 'monospace', 

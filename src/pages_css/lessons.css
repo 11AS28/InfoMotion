@@ -356,8 +356,8 @@ body {
 }
 
 .sidebar-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: var(--accent-bg);
+    color: var(--accent-hover);
 }
 
 .sidebar-item.active {

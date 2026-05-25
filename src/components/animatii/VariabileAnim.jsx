@@ -12,13 +12,14 @@ export default function VariabileAnim() {
       cutieTitlu: "",
       cutieContinut: "Goală",
       tip: "none",
-      boxColor: 'var(--bg-subtle)'
+      boxColor: 'var(--bg-subtle)',
+      color: 'var(--text-primary)'
     },
     { 
       desc: "2. DECLARAREA: Calculatorul fabrică o cutie (spațiu în memorie) numită 'a', capabilă să țină doar numere întregi (int).", 
       cod: "int a;",
       cutieTitlu: "Variabila 'a' (int)",
-      cutieContinut: "? (Gunoi)",
+      cutieContinut: "? (Nimic)",
       tip: "int",
       boxColor: '#378ADD' // Albastru pt int
     },
@@ -104,12 +105,13 @@ export default function VariabileAnim() {
             width: '120px', 
             height: '120px', 
             backgroundColor: currentStage.boxColor, 
-            border: '3px dashed #fff',
+            border: '3px dashed var(--text-muted)',
             borderRadius: '12px',
             fontSize: '2rem',
             transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Efect de "bounce"
             transform: step === 0 ? 'scale(0.8)' : 'scale(1)',
-            opacity: step === 0 ? 0.3 : 1
+            opacity: step === 0 ? 0.3 : 1,
+            color: currentStage.color
           }}>
             {currentStage.cutieContinut}
           </div>
