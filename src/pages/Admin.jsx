@@ -68,8 +68,8 @@ function Dashboard({ username, onLogout }) {
 
   // Stările pentru formularul lecției
   const [fId, setFId] = useState('');
-  const [fClasa, setFClasa] = useState('clasa-9');
-  const [fOrdine, setFOrdine] = useState(1); // STARE NOUĂ ADAUGATĂ CORECT
+  const [fClasa, setFClasa] = useState('clasa-9'); // Poate fi: clasa-9, clasa-10, clasa-11, olimpici, concepte
+  const [fOrdine, setFOrdine] = useState(1);
   const [fTitlu, setFTitlu] = useState('');
   const [fDescriere, setFDescriere] = useState('');
   const [fTeorie, setFTeorie] = useState('');
@@ -131,7 +131,16 @@ function Dashboard({ username, onLogout }) {
 
   const startEdit = (lectie) => {
     setFId(lectie.id); 
-    setFClasa(lectie.clasa || 'clasa-9'); 
+    
+    // Sincronizăm clasa selectată în funcție de ce avem salvat (categorie sau textul din clasa)
+    if (lectie.categorie === 'olimpiada' || lectie.clasa === 'olimpici') {
+      setFClasa('olimpici');
+    } else if (lectie.categorie === 'concepte' || lectie.clasa === 'concepte') {
+      setFClasa('concepte');
+    } else {
+      setFClasa(lectie.clasa || 'clasa-9'); 
+    }
+
     setFOrdine(lectie.ordine || 1); 
     setFTitlu(lectie.titlu || '');
     setFDescriere(lectie.descriere || ''); 
@@ -150,13 +159,26 @@ function Dashboard({ username, onLogout }) {
     toast.info(`Editare lecție: ${lectie.titlu}`); 
   };
 
-const handlePublish = async () => {
+  const handlePublish = async () => {
     if (!fId || !fTitlu) return toast.warning("Completează ID și Titlu!");
     setLoading(true);
     try {
+      // Determinăm câmpurile noi în funcție de dropdown
+      let categorieVal = null;
+      let clasaFinala = fClasa;
+
+      if (fClasa === 'olimpici') {
+        categorieVal = 'olimpiada';
+        clasaFinala = 'olimpici';
+      } else if (fClasa === 'concepte') {
+        categorieVal = 'concepte';
+        clasaFinala = 'concepte';
+      }
+
       const lectieData = {
         id: fId, 
-        clasa: fClasa, 
+        clasa: clasaFinala,
+        categorie: categorieVal, // Adăugat corect în documentul din Firestore
         ordine: Number(fOrdine), 
         titlu: fTitlu, 
         descriere: fDescriere, 
@@ -373,7 +395,7 @@ const handlePublish = async () => {
 
             <div className="admin-table-wrap desktop-only">
               <table className="admin-table">
-                <thead><tr><th>ID</th><th>Titlu</th><th>Clasă</th><th>Acțiuni</th></tr></thead>
+                <thead><tr><th>ID</th><th>Titlu</th><th>Clasă / Tip</th><th>Acțiuni</th></tr></thead>
                 <tbody>
                   {filteredLessons.length === 0 ? (
                     <tr><td colSpan="4" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>Nicio lecție găsită.</td></tr>
@@ -382,7 +404,11 @@ const handlePublish = async () => {
                       <tr key={l.id}>
                         <td><code className="admin-route-code">{l.id}</code></td>
                         <td className="admin-td-titlu">{l.titlu}</td>
-                        <td><span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span></td>
+                        <td>
+                          <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1] || l.clasa}`}>
+                            {l.categorie === 'olimpiada' ? 'OLIMPICI' : l.categorie === 'concepte' ? 'CONCEPTE' : l.clasa?.toUpperCase()}
+                          </span>
+                        </td>
                         <td className="admin-actions-cell">
                           <button className="admin-btn-edit" onClick={() => startEdit(l)}>Editează</button>
                           <button className="admin-btn-delete" onClick={() => handleDelete(l.id)}>Șterge</button>
@@ -401,7 +427,7 @@ const handlePublish = async () => {
                 filteredLessons.map((l) => (
                   <div key={l.id} className="admin-lesson-mobile-card">
                     <div className="mobile-card-header">
-                      <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1]}`}>{l.clasa?.toUpperCase()}</span>
+                      <span className={`admin-badge admin-badge-${l.clasa?.split('-')[1] || l.clasa}`}>{l.categorie ? l.categorie.toUpperCase() : l.clasa?.toUpperCase()}</span>
                       <code className="admin-route-code">{l.id.substring(0, 15)}{l.id.length > 15 ? '...' : ''}</code>
                     </div>
                     <div className="mobile-card-title">{l.titlu}</div>
@@ -427,15 +453,16 @@ const handlePublish = async () => {
                 {isEditing && <small>ID-ul nu poate fi schimbat după publicare.</small>}
               </div>
               <div className="admin-field">
-                <label>Clasă</label>
+                <label>Clasă / Secțiune specială</label>
                 <select value={fClasa} onChange={(e) => setFClasa(e.target.value)}>
                   <option value="clasa-9">Clasa 9</option>
                   <option value="clasa-10">Clasa 10</option>
                   <option value="clasa-11">Clasa 11</option>
+                  <option value="olimpici"> Olimpici</option>
+                  <option value="concepte">Concepte Generale</option>
                 </select>
               </div>
 
-              {/* INPUT NOU CORECT INTEGRAT PENTRU SARTARE */}
               <div className="admin-field">
                 <label>Număr de ordine (Poziția în Curs)</label>
                 <input 

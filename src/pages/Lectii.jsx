@@ -20,13 +20,21 @@ function Lectii() {
         const lectiiDinDB = querySnapshot.docs.map(doc => {
           const data = doc.data();
           
-         
-          const extrasClasa = data.clasa ? parseInt(data.clasa.toString().replace(/^\D+/g, '')) : 9;
+          // Verificăm dacă e lecție specială, altfel extragem clasa numerică
+          const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
+          const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
+          
+          let extrasClasa = 9;
+          if (!esteOlimpiada && !esteConcept) {
+            extrasClasa = data.clasa ? parseInt(data.clasa.toString().replace(/^\D+/g, '')) : 9;
+          }
 
           return {
             id: doc.id,
             ...data,
-            clasaNumerica: extrasClasa 
+            clasaNumerica: extrasClasa,
+            esteOlimpiada,
+            esteConcept
           };
         });
         setLessonsData(lectiiDinDB);
@@ -39,33 +47,49 @@ function Lectii() {
     fetchLectii();
   }, []);
 
-
   const filteredLessons = lessonsData
     .filter((lectie) => {
+      // 1. Filtrare după Search
       const matchesSearch = 
         (lectie.titlu?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (lectie.descriere?.toLowerCase() || "").includes(searchTerm.toLowerCase());
      
-      let clasaTinta = null;
-      if (activeFilter === 'clasa-9') clasaTinta = 9;
-      if (activeFilter === 'clasa-10') clasaTinta = 10;
-      if (activeFilter === 'clasa-11') clasaTinta = 11;
-
-      const matchesClass = activeFilter === 'toate' || lectie.clasaNumerica === clasaTinta;
+      // 2. Filtrare după Categorie / Clasă
+      let matchesFilter = false;
+      if (activeFilter === 'toate') {
+        matchesFilter = true;
+      } else if (activeFilter === 'olimpici') {
+        matchesFilter = lectie.esteOlimpiada;
+      } else if (activeFilter === 'concepte') {
+        matchesFilter = lectie.esteConcept;
+      } else {
+        // Filtrele standard: clasa-9, clasa-10, clasa-11
+        const clasaTinta = parseInt(activeFilter.split('-')[1]);
+        // Ne asigurăm că nu prindem lecțiile speciale când filtrăm o clasă numerică
+        matchesFilter = lectie.clasaNumerica === clasaTinta && !lectie.esteOlimpiada && !lectie.esteConcept;
+      }
       
-      return matchesSearch && matchesClass;
+      return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
+      // Prioritizăm sortarea: dacă ambele sunt de clasă numerică, le sortăm normal
+      if (a.clasaNumerica !== b.clasaNumerica) {
+        return a.clasaNumerica - b.clasaNumerica;
+      }
+      
+      const ordineA = a.ordine !== undefined && a.ordine !== null ? a.ordine : 999;
+      const ordineB = b.ordine !== undefined && b.ordine !== null ? b.ordine : 999;
+      
+      return ordineA - ordineB;
+    });
 
-  if (a.clasaNumerica !== b.clasaNumerica) {
-    return a.clasaNumerica - b.clasaNumerica;
-  }
-  
-  const ordineA = a.ordine !== undefined && a.ordine !== null ? a.ordine : 999;
-  const ordineB = b.ordine !== undefined && b.ordine !== null ? b.ordine : 999;
-  
-  return ordineA - ordineB;
-});
+  // Funcție helper ca să returneze textul potrivit pe buton
+  const getFilterLabel = (filter) => {
+    if (filter === 'toate') return 'Toate';
+    if (filter === 'olimpici') return '🏆 Olimpici';
+    if (filter === 'concepte') return '💡 Concepte (TLE, Structuri)';
+    return `Clasa ${filter.split('-')[1]}`;
+  };
 
   return (
     <div className="page-wrapper">
@@ -88,13 +112,13 @@ function Lectii() {
           </div>
           
           <div className="class-filters">
-            {['toate', 'clasa-9', 'clasa-10', 'clasa-11'].map((f) => (
+            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte'].map((f) => (
               <button 
                 key={f}
                 className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 
                 onClick={() => setActiveFilter(f)}
               >
-                {f === 'toate' ? 'Toate' : `Clasa ${f.split('-')[1]}`}
+                {getFilterLabel(f)}
               </button>
             ))}
           </div>
@@ -109,9 +133,12 @@ function Lectii() {
           <div className="lectii-grid">
             {filteredLessons.map((lectie) => (
               <Link to={`/lectie/${lectie.id}`} key={lectie.id} className="lectie-card">
-                <div className="lectie-badge">
-                  
-                  {lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`}
+                <div className={`lectie-badge ${lectie.esteOlimpiada ? 'badge-olimpiada' : lectie.esteConcept ? 'badge-concepte' : ''}`}>
+                  {lectie.esteOlimpiada 
+                    ? 'OLIMPIADĂ' 
+                    : lectie.esteConcept 
+                    ? 'CONCEPTE & TLE' 
+                    : (lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`)}
                   {lectie.ordine ? ` • Modulul ${lectie.ordine}` : ''}
                 </div>
                 <h3 className="lectie-titlu">{lectie.titlu}</h3>
@@ -133,7 +160,7 @@ function Lectii() {
           </div>
         )}
       </main>
-      
+      <Footer />
     </div>
   );
 }
