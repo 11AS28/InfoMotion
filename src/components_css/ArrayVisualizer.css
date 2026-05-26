@@ -1,0 +1,97 @@
+/* src/components_css/ArrayVisualizer.css */
+
+.visualizer-container {
+  padding: 20px;
+  background-color: #1e293b;
+  border-radius: 12px;
+  margin-top: 20px;
+  border: 2px solid #334155;
+  color: #ffffff;
+}
+
+.visualizer-explanation {
+  min-height: 50px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #0f172a;
+  border-radius: 8px;
+  border-left: 4px solid #00f2fe;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.visualizer-bars-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 15px;
+  height: 240px;
+  border-bottom: 2px solid #475569;
+  padding-bottom: 30px;
+  margin: 20px 0;
+}
+
+.visualizer-bar {
+  width: 50px;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Culorile baretelor le vom lăsa dinamic în React, deoarece se schimbă la fiecare pas */
+
+.bar-value {
+  position: absolute;
+  top: -28px;
+  font-weight: bold;
+  color: #f8fafc;
+  font-size: 16px;
+}
+
+.bar-index {
+  position: absolute;
+  bottom: -25px;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.visualizer-controls {
+  text-align: center;
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* Stiluri pentru butoane */
+.visualizer-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #475569;
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.visualizer-btn:disabled {
+  background-color: #334155;
+  cursor: not-allowed;
+  color: #64748b;
+}
+
+.visualizer-btn.play-btn {
+  background-color: #00f2fe;
+  color: #0f172a;
+  font-weight: bold;
+}
+
+.visualizer-btn.pause-btn {
+  background-color: #ea580c;
+  color: #fff;
+  font-weight: bold;
+}
