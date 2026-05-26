@@ -6,6 +6,7 @@ import QuizModal from '../components/QuizModal';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import Markdown from 'react-markdown';
+import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
 
 const BubbleSortAnim = React.lazy(() => import('../components/animatii/BubbleSortAnim'));
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -161,14 +162,14 @@ function LessonPage() {
 
           <section className="lesson-content">
             <div className="lesson-theory">
-              <h2>📖 Teorie</h2>
+              <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
               <div className="lesson-theory-content">
                 <Markdown>{lectie.teorie}</Markdown>
               </div>
             </div>
 
             <div className="lesson-animation">
-              <h2>🎮 Animație Interactivă</h2>
+              <h2><Gamepad2 size={60} color="#1fe0f9" strokeWidth={0.75} /> Animație Interactivă</h2>
 
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? <ComponentaAnimatie /> : <div className="animation-placeholder">Animația va fi disponibilă curând.</div>}
@@ -178,13 +179,13 @@ function LessonPage() {
 
           {lectie.codCPlusPlus && (
             <section className="lesson-code">
-              <h2>💻 Cod C++</h2>
+              <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
               <pre><code>{lectie.codCPlusPlus}</code></pre>
             </section>
           )}
 
           <section className="lesson-problems">
-            <h2>📝 Probleme Pbinfo recomandate</h2>
+            <h2><NotebookPen size={40} color="#1fe0f9" strokeWidth={0.75} /> Probleme Pbinfo recomandate</h2>
             <div className="problems-grid">
               {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
                 lectie.problemePbinfo.map((prob, index) => (
@@ -202,7 +203,7 @@ function LessonPage() {
           <section className="lesson-finish-action">
             {esteGata ? (
               <div className="lesson-completed-success-msg">
-                <span className="check-icon">✔</span> <br />Lecție finalizată! Ai stăpânit acest concept.
+                <span className="check-icon"><Check size={60} color="#030303" strokeWidth={2} /></span> <br />Lecție finalizată! Ai stăpânit acest concept.
               </div>
             ) : (
               <div className="finish-container">

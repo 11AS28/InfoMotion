@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import '../pages_css/Lectii.css';
+import { Search } from 'lucide-react';
 
 function Lectii() {
   const [lessonsData, setLessonsData] = useState([]); 
@@ -99,7 +100,7 @@ function Lectii() {
 
         <div className="filters-section">
           <div className="search-bar">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={22} color="#23a9b3" strokeWidth={3} /></span>
             <input 
               type="text" 
               placeholder="Caută o lecție (ex: Bubble Sort, vectori...)" 

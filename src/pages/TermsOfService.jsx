@@ -1,10 +1,11 @@
 import React from 'react';
 import '../pages_css/mainPage.css';
+import { Handshake } from 'lucide-react';
 
 const TermsOfService = () => {
   return (
     <div className="terms-container" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#fff' }}>
-      <h1>📜 Termeni și Condiții de Utilizare (ToS)</h1>
+      <h1><Handshake size={60} color="#1fe0f9" strokeWidth={0.75} /> Termeni și Condiții de Utilizare (ToS)</h1>
       <br />
       <p><strong>Ultima actualizare:</strong> Mai 2026</p>
     <br />  

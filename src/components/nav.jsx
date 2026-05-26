@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext'; 
 import SidebarStats from './SidebarStats'; 
 import '../components_css/nav.css';
+import { UserRound } from 'lucide-react';
 
 function Nav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ function Nav() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  // ✅ FUNCȚIE PENTRU CONFIGURAREA BADGE-ULUI (Text și Culori discrete)
+  //  FUNCȚIE PENTRU CONFIGURAREA BADGE-ULUI (Text și Culori discrete)
   const getRoleBadge = () => {
     if (!currentUser) return null;
     
@@ -115,7 +116,7 @@ function Nav() {
           <li className="nav-user-info">
             {/* Adăugat display: flex și alignItems ca să stea badge-ul perfect pe mijloc la aliniere */}
             <div className="nav-user-badge" onClick={() => setIsSidebarOpen(true)} style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="user-icon-mini">👤</span> 
+              <span className="user-icon-mini"><UserRound size={16} color="#8f4ebb" strokeWidth={2.5} /></span> 
               <span className="user-name-text">
                 {currentUser.nume || currentUser.email.split('@')[0]}
               </span>

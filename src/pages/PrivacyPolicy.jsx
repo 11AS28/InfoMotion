@@ -1,10 +1,11 @@
 import React from 'react';
 import '../pages_css/mainPage.css';
+import { Cookie } from 'lucide-react';
 
 const PrivacyPolicy = () => {
   return (
     <div className="policy-container" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#fff' }}>
-      <h1>🛡️ Politica de Confidențialitate (Privacy Policy)</h1>
+      <h1><Cookie size={60} color="#1fe0f9" strokeWidth={0.75} /> Politica de Confidențialitate (Privacy Policy)</h1>
       <p><strong>Ultima actualizare:</strong> Mai 2026</p>
       <br />
       <p>Bine ai venit pe platforma noastră! Ne luăm angajamentul să îți protejăm datele personale. Această pagină explică simplu și clar ce informații colectăm, cum le folosim și care sunt drepturile tale.</p>
