@@ -5,6 +5,7 @@ const cors = require('cors');
 // Importăm simulatoarele create mai sus
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
+const { simulateQuickSortJS } = require('./simulators/quickSortSim');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,11 +30,13 @@ app.post('/api/simulate', async (req, res) => {
     switch (algorithmType) {
       case 'bubbleSort':
       case 'BubbleSortAnim':
-        // Aici pui funcția ta existentă care simulează Bubble Sort
-        // Presupun că se folosește de simulateBubbleSort importat de tine sus
         steps = simulateBubbleSort(inputData);
         break;
         
+      case 'quick_sort_dinamic':
+        steps = simulateQuickSortJS(inputData);
+        break;
+
       case 'strlen_dinamic':
         // 1. Transformăm array-ul de coduri ASCII înapoi în cuvânt text (ex: [105, 110] -> "in")
         const cuvantStrlen = inputData.map(ascii => String.fromCharCode(ascii)).join('');
