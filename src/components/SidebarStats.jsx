@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, o
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
+import { Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound } from 'lucide-react';
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
@@ -53,7 +54,7 @@ function SidebarStats({ isOpen, onClose }) {
 
     if (isOpen) {
       IncarcaDateDB();
-      // ✅ Actualizăm streak-ul doar dacă utilizatorul este elev
+      // Actualizăm streak-ul doar dacă utilizatorul este elev
       if (!isTeacher) {
         actualizeazaStreak();
       }
@@ -185,12 +186,12 @@ const markAllNotificationsAsRead = async () => {
   };
 
   const listaBadgeuri = [
-    { id: 'b1', icon: '🌱', nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
-    { id: 'b2', icon: '🔥', nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
-    { id: 'b3', icon: '⚒️', nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
-    { id: 'b4', icon: '⚔️', nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
-    { id: 'b5', icon: '🧙‍♂️', nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
-    { id: 'b6', icon: '👑', nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
+    { id: 'b1', icon: <Leaf size={16} color="#7dc931" strokeWidth={2.5} />, nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
+    { id: 'b2', icon: <Flame size={16} color="#f2ae1c" strokeWidth={2.5} />, nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
+    { id: 'b3', icon: <HandFist size={16} color="#af0e0e" strokeWidth={2.5} />, nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
+    { id: 'b4', icon: <Swords size={16} color="#adadad" strokeWidth={2.5} />, nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
+    { id: 'b5', icon: <WandSparkles size={16} color="#acc91d" strokeWidth={2.5} />, nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
+    { id: 'b6', icon: <Crown size={16} color="#fff700" strokeWidth={2.5} />, nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
   
 
@@ -201,7 +202,7 @@ const markAllNotificationsAsRead = async () => {
         <button className="close-btn" onClick={onClose}>&times;</button>
 
         <div className="sidebar-header">
-          <div className="user-avatar-placeholder">👤</div>
+          <div className="user-avatar-placeholder"><UserRound size={30} color="#8f4ebb" strokeWidth={2.5} /></div>
           <h3>{currentUser.nume || currentUser.email.split('@')[0]}</h3>
           
           {/*  ROL STRUCTURAT FRUMOS SUB NUME */}
@@ -216,7 +217,17 @@ const markAllNotificationsAsRead = async () => {
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}>
-              {isTeacher ? '👨‍🏫 Profesor' : '👨‍🎓 Elev'}
+                {isTeacher ? (
+                  <>
+                    <Coffee size={16} color="#23a9b3" strokeWidth={2.5} />
+                    {" "}Profesor
+                  </>
+                ) : (
+                  <>
+                    <GraduationCap size={16} color="#23a9b3" strokeWidth={2.5} />
+                    {" "}Elev
+                  </>
+                )}
             </span>
             
             {/* Afișăm nivelul bazat pe curs doar dacă nu este profesor */}
@@ -372,11 +383,11 @@ const markAllNotificationsAsRead = async () => {
                 </div>
                 <div className="stat-box">
                   <span className="stat-label">XP Total</span>
-                  <span className="stat-value">⭐ {puncteTotale}</span>
+                  <span className="stat-value"><Star size={16} color="#f4e00b" strokeWidth={2.5} /> {puncteTotale}</span>
                 </div>
                 <div className="stat-box">
                   <span className="stat-label">Probleme Arenă</span>
-                  <span className="stat-value">⚔️ {totalProblemeDB}</span>
+                  <span className="stat-value"><Swords size={16} color="#adadad" strokeWidth={2.5} /> {totalProblemeDB}</span>
                 </div>
               </div>
 
@@ -510,7 +521,7 @@ const markAllNotificationsAsRead = async () => {
                           <div className="badge-text-details">
                             <span className="badge-title">{badge.nume}</span>
                             <span className="badge-sub">
-                              {esteDeblocat ? 'Validat ✅' : `${totalProblemeDB}/${badge.cerinta} pbm`}
+                              {esteDeblocat ? 'Validat ' : `${totalProblemeDB}/${badge.cerinta} pbm`}
                             </span>
                           </div>
                         </div>

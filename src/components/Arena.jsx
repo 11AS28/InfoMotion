@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 import { Toaster, toast } from 'sonner';
+import { Circle, Rocket, TriangleAlert, Flame, TestTubeDiagonal } from 'lucide-react';
 
 function Arena() {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
@@ -190,13 +191,13 @@ const handleSolve = async (dificultateTinta) => {
           await acordaPuncte(puncteDeAcordat);
           
       
-          toast.success(`🎉 Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
+          toast.success( ` Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
             id: idValidare,
             description: "Problema a fost salvată și adăugată la scorul tău global!"
           });
         } else {
           
-          toast.info("✅ Antrenament privat validat!", {
+          toast.info( " Antrenament privat validat!", {
             id: idValidare,
             description: "0 XP adăugat (ai încasat deja punctele pe o altă problemă astăzi)."
           });
@@ -252,17 +253,17 @@ const handleSolve = async (dificultateTinta) => {
     <div className="arena-wrapper">
       <div className="arena-container">
         
-        <h2>🚀 Arena Problemelor</h2>
+        <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>
 
         <div className="arena-mobile-tabs">
           <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>
-            🟢 Easy
+            Easy
           </button>
           <button className={activeTab === 'medium' ? 'active' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>
-            🟡 Medie
+            Medie
           </button>
           <button className={activeTab === 'hard' ? 'active' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>
-            🔴 Grea
+            Grea
           </button>
         </div>
 
@@ -270,7 +271,7 @@ const handleSolve = async (dificultateTinta) => {
         
           <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-easy">🟢 Easy</span>
+              <span className="card-tag tag-easy"> Easy</span>
               <h3>{problems.easy.titlu}</h3>
               <p className="card-xp">20 XP | 40 XP în primii 3</p>
             </div>
@@ -288,7 +289,7 @@ const handleSolve = async (dificultateTinta) => {
         
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-medium">🟡 Medie</span>
+              <span className="card-tag tag-medium"> Medie</span>
               <h3>{problems.medium.titlu}</h3>
               <p className="card-xp">40 XP | 50 XP în primii 3</p>
             </div>
@@ -306,7 +307,7 @@ const handleSolve = async (dificultateTinta) => {
         
           <div className={`arena-custom-card card-hard ${activeTab === 'hard' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-hard">🔴 Grea</span>
+              <span className="card-tag tag-hard"> Grea</span>
               <h3>{problems.hard.titlu}</h3>
               <p className="card-xp">50 XP | 65 XP în primii 3</p>
             </div>
@@ -324,13 +325,13 @@ const handleSolve = async (dificultateTinta) => {
 
         {utilizatorulAAlesPuncteAzi && (
           <p className="arena-warning-text">
-            ⚠️ Ai încasat deja XP-ul pe azi. Restul problemelor se validează ca antrenament (0 XP).
+            {<TriangleAlert size={30} color="#e3ad16" strokeWidth={1} />}   Ai încasat deja XP-ul pe azi. Restul problemelor se validează ca antrenament (0 XP).
           </p>
         )}
 
         <div className="solvers-list">
           <div className="solvers-list-header">
-            <h3>Top Solveri - {activeTab === 'easy' ? '🟢 Easy' : activeTab === 'medium' ? '🟡 Medie' : '🔴 Grea'}</h3>
+            <h3>Top Solveri - {activeTab === 'easy' ?  " Easy" : activeTab === 'medium' ?  " Medie" : " Grea"}</h3>
             <div className="desktop-rank-switch">
               <button className={activeTab === 'easy' ? 'active-mini' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
               <button className={activeTab === 'medium' ? 'active-mini' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
@@ -355,7 +356,7 @@ const handleSolve = async (dificultateTinta) => {
                     <span className="username">
                       {s.nume} 
                       {afiseazaInsignaUtilizator(totalProblemeUser)}
-                      {s.aPrimitPuncte ? " 🚀" : " 🧪 (Antrenament)"}
+                      {s.aPrimitPuncte ? <Rocket size={20} color="#832211" strokeWidth={2} /> : <TestTubeDiagonal size={64} color="#5ff261" strokeWidth={1} /> + "(Antrenament)"}
                     </span>
                     <span className="value">{s.ora}</span>
                   </div>
@@ -375,7 +376,7 @@ const handleSolve = async (dificultateTinta) => {
               )}
             </>
           ) : (
-            <p className="empty-solvers">Fii primul care sparge gheața la această categorie! 🔥</p>
+            <p className="empty-solvers">Fii primul care sparge gheața la această categorie!</p>
           )}
         </div>
 

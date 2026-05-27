@@ -7,6 +7,7 @@ import { CgMail } from "react-icons/cg";
 import { db } from "../firebase"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
+
 const FAQ_ITEMS = [
     {
         question: "Platforma este gratuită?",
@@ -119,7 +120,8 @@ function Contact() {
                 </section>
                 {/* FAQ */}
                 <section className="faq-section">
-                    <h2 className="section-title">❓ Întrebări frecvente</h2>
+                    
+                    <h2 className="section-title"> Întrebări frecvente</h2>
                     <div className="faq-list">
                         {FAQ_ITEMS.map((item, index) => (
                             <FaqItem key={index} question={item.question} answer={item.answer} />

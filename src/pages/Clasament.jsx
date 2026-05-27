@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import Arena from '../components/Arena';
 
 import '../pages_css/clasament.css';
+import { Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf } from 'lucide-react';
 
 function Clasament() {
   const { theme } = useTheme();
@@ -62,12 +63,12 @@ function Clasament() {
   }, []);
 
   function getBadge(count) {
-    if (count >= 100) return '👑';
-    if (count >= 50) return '🧙‍♂️';
-    if (count >= 30) return '⚔️';
-    if (count >= 15) return '⚒️';
-    if (count >= 5) return '🔥';
-    if (count >= 1) return '🌱';
+    if (count >= 100) return <Crown size={16} color="#fff700" strokeWidth={2.5} />;
+    if (count >= 50) return <WandSparkles size={16} color="#acc91d" strokeWidth={2.5} />;
+    if (count >= 30) return <Swords size={16} color="#adadad" strokeWidth={2.5} />;
+    if (count >= 15) return <HandFist size={16} color="#af0e0e" strokeWidth={2.5} />;
+    if (count >= 5) return <Flame size={16} color="#f2ae1c" strokeWidth={2.5} />;
+    if (count >= 1) return <Leaf size={16} color="#7dc931" strokeWidth={2.5} />;
 
     return '';
   }
@@ -101,7 +102,7 @@ function Clasament() {
       <div className="topuri-container">
         <section className="top-section">
           <div className="leaderboard-card">
-            <h2>🌟 Top General</h2>
+            <h2><Sparkles size={16} color="#ffe224" strokeWidth={2.5} /> Top General</h2>
 
             {getUsers(topXP, paginaXP).map((user, index) => {
               const pozitie =
@@ -157,7 +158,7 @@ function Clasament() {
 
         <section className="top-section">
           <div className="leaderboard-card">
-            <h2>🛠️ The Grinders</h2>
+            <h2><PencilRuler size={16} color="#23a9b3" strokeWidth={2.5} /> The Grinders</h2>
 
             {getUsers(topProbleme, paginaProbleme).map((user, index) => {
               const pozitie =
