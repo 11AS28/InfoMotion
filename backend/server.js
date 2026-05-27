@@ -55,11 +55,10 @@ app.post('/api/simulate', async (req, res) => {
         break;
 
       case 'cautare_binara_div_imp': {
-  // Alegem o țintă (de exemplu, un element din mijloc sau primul element, 
-  // ori poți face ca utilizatorul să caute un element implicit)
-  // Ca să fie interactiv, luăm valoarea din mijlocul vectorului introdus ca țintă, sau poți pune un număr fix de test (ex: 8)
-  const targetTest = inputData[Math.floor(inputData.length / 2)];
-  steps = simulateCautareBinaraDivImpJS(inputData, targetTest);
+  // Prindem target-ul trimis din frontend. Dacă cumva lipsește, punem fallback primul element
+  const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : inputData[0];
+  
+  steps = simulateCautareBinaraDivImpJS(inputData, targetCautat);
   break;
 }
 

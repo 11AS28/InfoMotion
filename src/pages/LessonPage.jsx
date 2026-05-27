@@ -135,14 +135,27 @@ function LessonPage() {
         return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid!");
       }
 
-      const response = await fetch('https://infomotion.onrender.com/api/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          algorithmType: lectie.animatie,
-          inputData: parsedData
-        })
-      });
+        // În interiorul funcției handleGenerateAnimation, chiar înainte de fetch:
+let targetVal = null;
+if (lectie.animatie === "cautare_binara_div_imp") {
+  const targetInput = document.getElementById("target-search-input");
+  targetVal = targetInput ? parseInt(targetInput.value) : null;
+  
+  if (isNaN(targetVal)) {
+    return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
+  }
+}
+
+// Acum modificăm fetch-ul să trimită și acest target:
+const response = await fetch('https://infomotion.onrender.com/api/simulate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    algorithmType: lectie.animatie,
+    inputData: parsedData,
+    target: targetVal // 🌟 Îl trimitem curat către backend!
+  })
+});
 
       const data = await response.json();
 
@@ -282,6 +295,23 @@ function LessonPage() {
                             onChange={(e) => setCustomInput(e.target.value)}
                             disabled={loadingAnim}
                           />
+
+                            {lectie.animatie === "cautare_binara_div_imp" && (
+      <div style={{ width: '100%', marginTop: '5px' }}>
+        <label className="input-zone-label" style={{ display: 'block', marginBottom: '5px', fontSize: '13px', color: '#1fe0f9' }}>
+          🎯 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
+        </label>
+        <input
+          type="number"
+          id="target-search-input"
+          className="custom-array-input"
+          placeholder="Ex: 32"
+          style={{ width: '200px' }}
+          disabled={loadingAnim}
+        />
+      </div>
+    )}
+
                           <button
                             className="generate-anim-btn"
                             onClick={handleGenerateAnimation}
