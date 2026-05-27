@@ -144,15 +144,16 @@ function LessonPage() {
       }
 
       // Conexiune locală (Modifică în URL-ul de Render când urci pe live)
-      const response = await fetch('https://infomotion.onrender.com/api/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          algorithmType: lectie.animatie,
-          inputData: parsedData,
-          target: targetVal 
-        })
-      });
+      // Adresa corectă pentru serverul tău live
+const response = await fetch('https://infomotion.onrender.com/api/simulate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    algorithmType: lectie.animatie,
+    inputData: parsedData,
+    target: targetVal 
+  })
+});
 
       const data = await response.json();
 
