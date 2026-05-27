@@ -8,6 +8,7 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { db } from '../firebase';
 import Markdown from 'react-markdown';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
+import TreeVisualizer from '../components/TreeVisualizer';
 
 // Importuri lazy pentru animațiile vechi din frontend
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -312,6 +313,8 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
       </div>
     )}
 
+
+
                           <button
                             className="generate-anim-btn"
                             onClick={handleGenerateAnimation}
@@ -321,7 +324,14 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
                           </button>
                         </div>
                       </div>
-
+    {/* Zone în care afișezi vizualizatorul */}
+<div className="animation-render-zone">
+  {lectie.animatie === "cautare_binara_div_imp" ? (
+    <TreeVisualizer steps={animationSteps} />
+  ) : (
+    <ArrayVisualizer steps={animationSteps} />
+  )}
+</div>
                       {animationSteps.length > 0 ? (
                         <ArrayVisualizer steps={animationSteps} />
                       ) : (

@@ -1,0 +1,87 @@
+/* src/components/TreeVisualizer.css */
+
+.tree-visualizer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background: #070a13;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.tree-canvas {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: auto;
+  padding: 40px 10px;
+}
+
+/* Flexbox Magic pentru structura arborescentă */
+.tr-tree-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.tr-tree-children {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  margin-top: 25px;
+  position: relative;
+}
+
+/* Stilul Nodurilor */
+.tr-tree-node {
+  background: #111625;
+  border: 2px solid #263558;
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 180px;
+  max-width: 240px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tr-node-label {
+  font-family: 'monospace';
+  font-weight: bold;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.tr-node-desc {
+  font-size: 11px;
+  color: #8fa0c4;
+}
+
+/* Culori dinamice neon în funcție de starea recursivității */
+.tr-node-active {
+  border-color: #1fe0f9;
+  background: #0c2435;
+  box-shadow: 0 0 15px rgba(31, 224, 249, 0.4);
+}
+
+.tr-node-parent {
+  border-color: #53658d;
+  background: #161c2e;
+  opacity: 0.85;
+}
+
+.tr-node-success {
+  border-color: #10b981;
+  background: #082d24;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.tr-node-failed {
+  border-color: #ef4444;
+  background: #2a1414;
+}

@@ -1,6 +1,6 @@
 // src/components/ArrayVisualizer.jsx
 import React, { useState, useEffect } from 'react';
-import '../components_css/ArrayVisualizer.css'; // <-- Importăm CSS-ul proaspăt creat
+import '../components_css/ArrayVisualizer.css'; 
 
 function ArrayVisualizer({ steps }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -47,9 +47,8 @@ function ArrayVisualizer({ steps }) {
         {currentData.array.map((value, index) => {
           const calculatedHeight = (value / maxVal) * 160 + 20;
 
-          // Culorile rămân dinamice în codul JS
           let bgColor = '#00f2fe'; 
-          if (currentData.highlights.includes(index)) {
+          if (currentData.highlights && currentData.highlights.includes(index)) {
             bgColor = '#f43f5e'; 
           } else if (currentData.done) {
             bgColor = '#10b981'; 
@@ -70,42 +69,42 @@ function ArrayVisualizer({ steps }) {
             </div>
           );
         })}
-
-        // 1. Căută unde randezi zona cu bare și explicația.
-// 2. Adaugă această secțiune chiar sub bare sau lângă ele, acolo unde îți place design-ul:
-
-{steps[currentStepIdx]?.apelCurent && (
-  <div className="recursion-stack-zone" style={{
-    marginTop: '20px',
-    padding: '15px',
-    background: '#0d1117',
-    border: '1px solid #1fe0f9',
-    borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(31, 224, 249, 0.2)'
-  }}>
-    <h4 style={{ color: '#1fe0f9', margin: '0 0 10px 0', fontSize: '14px', letterSpacing: '1px' }}>
-      🥞 STIVA DE APELURI RECURSIVE (DIVIDE ET IMPERA)
-    </h4>
-    <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: '5px' }}>
-      {/* Generăm o stivă vizuală: apelurile anterioare dedesubt, cel curent deasupra */}
-      <div className="stack-frame active" style={{
-        background: 'rgba(31, 224, 249, 0.2)',
-        color: '#fff',
-        padding: '8px 12px',
-        borderRadius: '4px',
-        borderLeft: '4px solid #1fe0f9',
-        fontFamily: 'monospace',
-        fontWeight: 'bold'
-      }}>
-        ➡️ {steps[currentStepIdx].apelCurent}
-      </div>
-    </div>
-  </div>
-)}
-
       </div>
 
-      {/* 3. Butoanele de Control */}
+      {/* 🌟 3. Zona pentru Stiva de Apeluri Recursive (Așezată curat sub bare) */}
+      {steps[currentStep]?.apelCurent && (
+        <div className="recursion-stack-zone" style={{
+          marginTop: '25px',
+          marginBottom: '15px',
+          padding: '15px',
+          background: '#0d1117',
+          border: '1px solid #1fe0f9',
+          borderRadius: '8px',
+          boxShadow: '0 0 10px rgba(31, 224, 249, 0.2)',
+          textAlign: 'left',
+          width: '100%'
+        }}>
+          <h4 style={{ color: '#1fe0f9', margin: '0 0 10px 0', fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            🥞 Stiva de Apeluri Recursive (Divide et Impera)
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: '5px' }}>
+            <div className="stack-frame active" style={{
+              background: 'rgba(31, 224, 249, 0.15)',
+              color: '#fff',
+              padding: '10px 14px',
+              borderRadius: '5px',
+              borderLeft: '4px solid #1fe0f9',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}>
+              ➡️ {steps[currentStep].apelCurent}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Butoanele de Control */}
       <div className="visualizer-controls">
         <button 
           className="visualizer-btn"
