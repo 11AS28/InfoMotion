@@ -133,7 +133,7 @@ function LessonPage() {
         return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid!");
       }
 
-      const response = await fetch('http://localhost:5000/api/simulate', {
+      const response = await fetch('https://infomotion.onrender.com/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
