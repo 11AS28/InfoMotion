@@ -749,7 +749,7 @@ setFCodSimulatorCPP(lectie.codSimulatorCPP || '');
               </div>
             )}
 
-            <div className="admin-field" style={{ border: '2px dashed #00f2fe', padding: '20px', borderRadius: '8px', background: '#0f172a', marginBottom: '25px' }}>
+           {/* <div className="admin-field" style={{ border: '2px dashed #00f2fe', padding: '20px', borderRadius: '8px', background: '#0f172a', marginBottom: '25px' }}>
   <label style={{ color: '#00f2fe', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
     🤖 COD SIMULATOR C++ (ASCUNS - PENTRU ENGINE ANIMAȚII NEON)
   </label>
@@ -770,7 +770,7 @@ setFCodSimulatorCPP(lectie.codSimulatorCPP || '');
       lineHeight: '1.5'
     }}
   />
-</div>
+</div>*/}
             <div className="admin-form-grid">
               <div className="admin-field">
                 <label>ID (Slug)</label>
