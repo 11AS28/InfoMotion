@@ -532,3 +532,85 @@ body {
 }
 
 
+
+
+/* Containerul gri-închis din jurul căsuței de input */
+.input-control-zone {
+  margin-bottom: 25px;
+  background-color: #1e293b; /* Fundal asortat cu restul playerului */
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #334155;
+}
+
+/* Textul de etichetă (Introdu datele tale...) */
+.input-zone-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #94a3b8; /* Gri fin, nu obositor pentru ochi */
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* Flexbox-ul care ține inputul și butonul aliniate perfect */
+.input-action-flex {
+  display: flex;
+  gap: 12px;
+}
+
+/* Căsuța de input complet stilizată pentru Dark Mode */
+.custom-array-input {
+  padding: 12px 16px;
+  flex: 1;
+  background-color: #0f172a; /* Fundal foarte închis, ca o consolă */
+  border: 2px solid #334155;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #f8fafc; /* Text alb-curat la scriere */
+  font-family: 'Courier New', Courier, monospace; /* Font de cod */
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+}
+
+/* Efectul de glow când utilizatorul dă click să scrie numerele */
+.custom-array-input:focus {
+  outline: none;
+  border-color: #00f2fe; /* Schimbăm marginea în cyan neon */
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2); /* Glow subtil */
+}
+
+/* Placeholder-ul (textul ajutător din interior înainte să scrii) */
+.custom-array-input::placeholder {
+  color: #475569;
+  font-weight: normal;
+}
+
+/* Butonul de generare îmbrăcat în tema InfoMotion */
+.generate-anim-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.15);
+}
+
+.generate-anim-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-sizing: border-box;
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.3);
+}
+
+.generate-anim-btn:disabled {
+  background: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

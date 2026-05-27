@@ -65,7 +65,7 @@ function Dashboard({ username, onLogout }) {
   const [propuneri, setPropuneri] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
   const [propunereInCurs, setPropunereInCurs] = useState(null); 
-
+  const [fCodSimulatorCPP, setFCodSimulatorCPP] = useState('');
   // --- Stări pentru secțiunea To-Do ---
   const [todos, setTodos] = useState([]);
   const [newTodoText, setNewTodoText] = useState('');
@@ -194,6 +194,7 @@ function Dashboard({ username, onLogout }) {
     setFId(''); setFClasa('clasa-9'); setFOrdine(1); setFTitlu(''); setFDescriere('');
     setFTeorie(''); setFCod(''); setFAnim('null'); setFAnimCustom('');
     setPbRows([{ id: '', titlu: '', url: '' }]);
+    setFCodSimulatorCPP('');
     setQuiz(Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })));
     setCfProblems(['', '']);
     setIsEditing(false);
@@ -286,6 +287,8 @@ function Dashboard({ username, onLogout }) {
     setIsEditing(true);
     setActiveTab('adauga');
     toast.info(`Editare lecție: ${lectie.titlu}`); 
+    
+setFCodSimulatorCPP(lectie.codSimulatorCPP || '');
   };
 
   const handlePublish = async () => {
@@ -312,6 +315,7 @@ function Dashboard({ username, onLogout }) {
         descriere: fDescriere,
         teorie: fTeorie,
         codCPlusPlus: fCod,
+        codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : (fAnim === 'custom' ? fAnimCustom : fAnim),
         problemePbinfo: pbRows.filter(r => r.id || r.titlu),
         quiz: quiz,
@@ -745,6 +749,28 @@ function Dashboard({ username, onLogout }) {
               </div>
             )}
 
+            <div className="admin-field" style={{ border: '2px dashed #00f2fe', padding: '20px', borderRadius: '8px', background: '#0f172a', marginBottom: '25px' }}>
+  <label style={{ color: '#00f2fe', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+    🤖 COD SIMULATOR C++ (ASCUNS - PENTRU ENGINE ANIMAȚII NEON)
+  </label>
+  <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '2px', marginBottom: '12px' }}>
+    Acest cod C++ rulează în secret pe serverul Linux (Docker). Trebuie să citească datele din <code>cin</code> și să dea <code>cout</code> la pașii structurați în JSON.
+  </p>
+  <textarea 
+    rows="12" 
+    value={fCodSimulatorCPP} 
+    onChange={(e) => setFCodSimulatorCPP(e.target.value)} 
+    placeholder="#include <iostream>&#10;using namespace std;&#10;&#10;// Scrie aici algoritmul cu functia speciala trimitePas()..." 
+    style={{ 
+      fontFamily: "'Courier New', Courier, monospace", 
+      background: '#090d16', 
+      color: '#38bdf8', 
+      padding: '15px',
+      border: '1px solid #1e293b',
+      lineHeight: '1.5'
+    }}
+  />
+</div>
             <div className="admin-form-grid">
               <div className="admin-field">
                 <label>ID (Slug)</label>
