@@ -3,13 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
-import ArrayVisualizer from '../components/ArrayVisualizer'; // Playerul cel nou
+import ArrayVisualizer from '../components/ArrayVisualizer'; // Playerul universal
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import Markdown from 'react-markdown';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
 
-// Păstrăm importurile lazy pentru animațiile vechi din frontend
+// Importuri lazy pentru animațiile vechi din frontend
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
 const DivideAnim = React.lazy(() => import('../components/animatii/DivideAnim'));
 const GreedyAnim = React.lazy(() => import('../components/animatii/greedyAnim'));
@@ -48,11 +48,21 @@ function LessonPage() {
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
 
+  // 🌟 CONFIGURARE TIPURI ANIMAȚII (AICI ADAUGI CHEILE DIN PROIECT)
+  // Adaugă aici numele animației din baza de date DOAR dacă vrei să ruleze dinamic prin Backend C++
+  const algoritmiBackend = [
+    "bubbleSort", 
+    "BubbleSortAnim", 
+    "strlen_dinamic", 
+    "strcpy_dinamic"
+    // text_cautare_binara, smenul_mars_dinamic etc...
+  ];
+
   useEffect(() => {
     async function incarcaDatePagina() {
       setLoading(true);
       setEsteGata(false);
-      setAnimationSteps([]); // Resetăm pașii vechi la schimbarea lecției
+      setAnimationSteps([]); 
       setCustomInput("");
 
       try {
@@ -102,22 +112,17 @@ function LessonPage() {
 
   // Funcția care cere simularea de la backend
   const handleGenerateAnimation = async () => {
-    if (!customInput) return alert("Te rog introdu niște numere separate prin virgulă!");
+    if (!customInput) return alert("Te rog introdu datele de test!");
 
     setLoadingAnim(true);
     try {
-      // Verificăm dacă suntem pe o lecție de șiruri de caractere
       const esteLectieSiruri = lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic";
-
       let parsedData;
 
       if (esteLectieSiruri) {
-        // Dacă e șir, utilizatorul scrie normal (ex: "info") sau cu virgulă (ex: "i,n,f,o")
-        // Eliminăm virgulele dacă a pus, apoi transformăm fiecare literă în codul ei ASCII numeric
         const textCurat = customInput.replace(/,/g, '').trim();
         parsedData = textCurat.split('').map(litera => litera.charCodeAt(0));
       } else {
-        // Rămâne logica ta veche, neatinsă, pentru restul lecțiilor (sortări etc.)
         parsedData = customInput
           .split(',')
           .map(num => parseInt(num.trim()))
@@ -125,7 +130,7 @@ function LessonPage() {
       }
 
       if (parsedData.length === 0) {
-        return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid! Folosește cifre separate prin virgulă.");
+        return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid!");
       }
 
       const response = await fetch('http://localhost:5000/api/simulate', {
@@ -139,41 +144,34 @@ function LessonPage() {
 
       const data = await response.json();
 
-    if (data.steps) {
-  console.log("=== PAȘI PRIMIȚI DE LA BACKEND ===", data.steps);
-  
-  const esteLectieSiruri = lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic";
+      if (data.steps) {
+        console.log("=== PAȘI PRIMIȚI DE LA BACKEND ===", data.steps);
+        
+        let pasiCuratatiPentruVisualizer;
 
-  let pasiCuratatiPentruVisualizer;
+        if (esteLectieSiruri) {
+          const textCurat = customInput.replace(/,/g, '').trim();
+          const asciiArrayComplet = textCurat.split('').map(l => l.charCodeAt(0));
+          asciiArrayComplet.push(0); // '\0' la final
 
-  if (esteLectieSiruri) {
-    const textCurat = customInput.replace(/,/g, '').trim();
-    const asciiArrayComplet = textCurat.split('').map(l => l.charCodeAt(0));
-    asciiArrayComplet.push(0); // '\0' la final
+          pasiCuratatiPentruVisualizer = data.steps.map((pas) => {
+            return {
+              array: asciiArrayComplet, 
+              highlights: pas.currentIndex !== undefined ? [pas.currentIndex] : [],
+              explanation: pas.explanation || "",
+              status: pas.status || "active"
+            };
+          });
+        } else {
+          // Pentru sortări sau alte structuri numerice din backend
+          pasiCuratatiPentruVisualizer = data.steps;
+        }
 
-    // Mapăm fiecare pas primit din backend la structura internă cerută de ArrayVisualizer
-    pasiCuratatiPentruVisualizer = data.steps.map((pas) => {
-      return {
-        // Trimitem vectorul de caractere sub formă de coduri ASCII
-        array: asciiArrayComplet, 
-        // Indexul curent trimis de C++ îl punem în array-ul de highlights pentru ca playerul să poată schimba culoarea barei parcurse
-        highlights: pas.currentIndex !== undefined ? [pas.currentIndex] : [],
-        // Explicația generată din backend text
-        explanation: pas.explanation || "",
-        // Statusul pasului (active / final)
-        status: pas.status || "active"
-      };
-    });
-  } else {
-    // Logica ta veche pentru sortări
-    pasiCuratatiPentruVisualizer = data.steps;
-  }
-
-  console.log("=== PAȘI CURĂȚAȚI PENTRU VISUALIZER ===", pasiCuratatiPentruVisualizer);
-  setAnimationSteps(pasiCuratatiPentruVisualizer);
-} else {
-  alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
-}
+        console.log("=== PAȘI CURĂȚAȚI PENTRU VISUALIZER ===", pasiCuratatiPentruVisualizer);
+        setAnimationSteps(pasiCuratatiPentruVisualizer);
+      } else {
+        alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+      }
     } catch (error) {
       console.error("Eroare conexiune backend:", error);
       alert("Nu s-a putut contacta serverul din backend.");
@@ -185,11 +183,7 @@ function LessonPage() {
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
-  // Lista algoritmilor mutați DEJA în backend. 
-  // Când adaugi un algoritm nou în Node.js (ex: 'selectionSort'), doar îl pui în lista asta!
-  const algoritmiBackend = ["bubbleSort", "BubbleSortAnim", "palindrom_dinamic", "strlen_dinamic", "strcpy_dinamic"];
-
-  // Verificăm dacă animația curentă trebuie luată din backend sau e din cele vechi hardcodate
+  // Verificăm dinamic unde trimitem randarea
   const esteAnimatieNoua = algoritmiBackend.includes(lectie.animatie);
 
   // Switch-ul vechi pentru componentele hardcodate din frontend
@@ -264,7 +258,7 @@ function LessonPage() {
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? (
                   esteAnimatieNoua ? (
-                    /* ---------------- COD NOU VIRTUAL/DINAMIC ---------------- */
+                    /* ---------------- INTEGRARE HIBRIDĂ: VARIANTĂ DINAMICĂ BACKEND ---------------- */
                     <>
                       <div className="input-control-zone">
                         <label className="input-zone-label">
@@ -305,6 +299,7 @@ function LessonPage() {
                       )}
                     </>
                   ) : (
+                    /* ---------------- INTEGRARE HIBRIDĂ: VARIANTĂ STATICĂ JSX FRONTEND ---------------- */
                     <ComponentaAnimatieVeche />
                   )
                 ) : (
