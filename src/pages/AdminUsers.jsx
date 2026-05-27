@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { ToastContainer, toast } from 'sonner'; // Importăm Toast-ul
+import {toast } from 'sonner'; // Importăm Toast-ul
 import '../pages_css/adminusers.css';
 
 const ADMINS = [
