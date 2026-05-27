@@ -55,7 +55,8 @@ function LessonPage() {
     "BubbleSortAnim", 
     "strlen_dinamic", 
     "strcpy_dinamic",
-    "quick_sort_dinamic"
+    "quick_sort_dinamic",
+    "cautare_binara_div_imp",
     // text_cautare_binara, smenul_mars_dinamic etc...
   ];
 

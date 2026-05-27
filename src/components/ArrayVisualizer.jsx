@@ -70,6 +70,39 @@ function ArrayVisualizer({ steps }) {
             </div>
           );
         })}
+
+        // 1. Căută unde randezi zona cu bare și explicația.
+// 2. Adaugă această secțiune chiar sub bare sau lângă ele, acolo unde îți place design-ul:
+
+{steps[currentStepIdx]?.apelCurent && (
+  <div className="recursion-stack-zone" style={{
+    marginTop: '20px',
+    padding: '15px',
+    background: '#0d1117',
+    border: '1px solid #1fe0f9',
+    borderRadius: '8px',
+    boxShadow: '0 0 10px rgba(31, 224, 249, 0.2)'
+  }}>
+    <h4 style={{ color: '#1fe0f9', margin: '0 0 10px 0', fontSize: '14px', letterSpacing: '1px' }}>
+      🥞 STIVA DE APELURI RECURSIVE (DIVIDE ET IMPERA)
+    </h4>
+    <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: '5px' }}>
+      {/* Generăm o stivă vizuală: apelurile anterioare dedesubt, cel curent deasupra */}
+      <div className="stack-frame active" style={{
+        background: 'rgba(31, 224, 249, 0.2)',
+        color: '#fff',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        borderLeft: '4px solid #1fe0f9',
+        fontFamily: 'monospace',
+        fontWeight: 'bold'
+      }}>
+        ➡️ {steps[currentStepIdx].apelCurent}
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
 
       {/* 3. Butoanele de Control */}

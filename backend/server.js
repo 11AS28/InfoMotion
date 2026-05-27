@@ -6,6 +6,7 @@ const cors = require('cors');
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
+const { simulateCautareBinaraDivImpJS } = require('./simulators/cautareBinaraDivImpSim');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,6 +53,15 @@ app.post('/api/simulate', async (req, res) => {
         // Dacă simulateStrlen se ocupă de ambele, o pui tot pe ea:
         steps = await simulateStrlen(cuvantStrcpy); 
         break;
+
+      case 'cautare_binara_div_imp': {
+  // Alegem o țintă (de exemplu, un element din mijloc sau primul element, 
+  // ori poți face ca utilizatorul să caute un element implicit)
+  // Ca să fie interactiv, luăm valoarea din mijlocul vectorului introdus ca țintă, sau poți pune un număr fix de test (ex: 8)
+  const targetTest = inputData[Math.floor(inputData.length / 2)];
+  steps = simulateCautareBinaraDivImpJS(inputData, targetTest);
+  break;
+}
 
       default:
         return res.status(400).json({ error: "Algoritm neimplementat" });
