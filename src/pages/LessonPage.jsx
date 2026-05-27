@@ -49,16 +49,14 @@ function LessonPage() {
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
 
-  // 🌟 CONFIGURARE TIPURI ANIMAȚII (AICI ADAUGI CHEILE DIN PROIECT)
-  // Adaugă aici numele animației din baza de date DOAR dacă vrei să ruleze dinamic prin Backend C++
+  // 🌟 CONFIGURARE TIPURI ANIMAȚII
   const algoritmiBackend = [
     "bubbleSort", 
     "BubbleSortAnim", 
     "strlen_dinamic", 
     "strcpy_dinamic",
     "quick_sort_dinamic",
-    "cautare_binara_div_imp",
-    // text_cautare_binara, smenul_mars_dinamic etc...
+    "cautare_binara_div_imp"
   ];
 
   useEffect(() => {
@@ -113,7 +111,6 @@ function LessonPage() {
     incarcaDatePagina();
   }, [idLectie, currentUser]);
 
-  // Funcția care cere simularea de la backend
   const handleGenerateAnimation = async () => {
     if (!customInput) return alert("Te rog introdu datele de test!");
 
@@ -136,27 +133,26 @@ function LessonPage() {
         return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid!");
       }
 
-        // În interiorul funcției handleGenerateAnimation, chiar înainte de fetch:
-let targetVal = null;
-if (lectie.animatie === "cautare_binara_div_imp") {
-  const targetInput = document.getElementById("target-search-input");
-  targetVal = targetInput ? parseInt(targetInput.value) : null;
-  
-  if (isNaN(targetVal)) {
-    return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
-  }
-}
+      let targetVal = null;
+      if (lectie.animatie === "cautare_binara_div_imp") {
+        const targetInput = document.getElementById("target-search-input");
+        targetVal = targetInput ? parseInt(targetInput.value) : null;
+        
+        if (isNaN(targetVal)) {
+          return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
+        }
+      }
 
-// Acum modificăm fetch-ul să trimită și acest target:
-const response = await fetch('https://infomotion.onrender.com/api/simulate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    algorithmType: lectie.animatie,
-    inputData: parsedData,
-    target: targetVal // 🌟 Îl trimitem curat către backend!
-  })
-});
+      // Conexiune locală (Modifică în URL-ul de Render când urci pe live)
+      const response = await fetch('http://localhost:5000/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          algorithmType: lectie.animatie,
+          inputData: parsedData,
+          target: targetVal 
+        })
+      });
 
       const data = await response.json();
 
@@ -168,7 +164,7 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
         if (esteLectieSiruri) {
           const textCurat = customInput.replace(/,/g, '').trim();
           const asciiArrayComplet = textCurat.split('').map(l => l.charCodeAt(0));
-          asciiArrayComplet.push(0); // '\0' la final
+          asciiArrayComplet.push(0); 
 
           pasiCuratatiPentruVisualizer = data.steps.map((pas) => {
             return {
@@ -179,7 +175,6 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
             };
           });
         } else {
-          // Pentru sortări sau alte structuri numerice din backend
           pasiCuratatiPentruVisualizer = data.steps;
         }
 
@@ -199,10 +194,8 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
   if (loading) return <div className="page-wrapper"><div className="loader">Se încarcă teoria...</div></div>;
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
-  // Verificăm dinamic unde trimitem randarea
   const esteAnimatieNoua = algoritmiBackend.includes(lectie.animatie);
 
-  // Switch-ul vechi pentru componentele hardcodate din frontend
   const ComponentaAnimatieVeche = () => {
     switch (lectie.animatie) {
       case "CautareBinaraAnim": return <CautareBinaraAnim />;
@@ -274,7 +267,6 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? (
                   esteAnimatieNoua ? (
-                    /* ---------------- INTEGRARE HIBRIDĂ: VARIANTĂ DINAMICĂ BACKEND ---------------- */
                     <>
                       <div className="input-control-zone">
                         <label className="input-zone-label">
@@ -283,7 +275,7 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
                             : "🚀 INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
                         </label>
 
-                        <div className="input-action-flex">
+                        <div className="input-action-flex" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
                           <input
                             type="text"
                             className="custom-array-input"
@@ -295,53 +287,52 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
                             value={customInput}
                             onChange={(e) => setCustomInput(e.target.value)}
                             disabled={loadingAnim}
+                            style={{ width: '100%' }}
                           />
 
-                            {lectie.animatie === "cautare_binara_div_imp" && (
-      <div style={{ width: '100%', marginTop: '5px' }}>
-        <label className="input-zone-label" style={{ display: 'block', marginBottom: '5px', fontSize: '13px', color: '#1fe0f9' }}>
-          🎯 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
-        </label>
-        <input
-          type="number"
-          id="target-search-input"
-          className="custom-array-input"
-          placeholder="Ex: 32"
-          style={{ width: '200px' }}
-          disabled={loadingAnim}
-        />
-      </div>
-    )}
-
-
+                          {lectie.animatie === "cautare_binara_div_imp" && (
+                            <div style={{ width: '100%' }}>
+                              <label className="input-zone-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#1fe0f9' }}>
+                                🎯 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
+                              </label>
+                              <input
+                                type="number"
+                                id="target-search-input"
+                                className="custom-array-input"
+                                placeholder="Ex: 32"
+                                style={{ width: '200px' }}
+                                disabled={loadingAnim}
+                              />
+                            </div>
+                          )}
 
                           <button
                             className="generate-anim-btn"
                             onClick={handleGenerateAnimation}
                             disabled={loadingAnim}
+                            style={{ marginTop: '5px' }}
                           >
                             {loadingAnim ? "Se calculează..." : "Generează Animație"}
                           </button>
                         </div>
                       </div>
-    {/* Zone în care afișezi vizualizatorul */}
-<div className="animation-render-zone">
-  {lectie.animatie === "cautare_binara_div_imp" ? (
-    <TreeVisualizer steps={animationSteps} />
-  ) : (
-    <ArrayVisualizer steps={animationSteps} />
-  )}
-</div>
-                      {animationSteps.length > 0 ? (
-                        <ArrayVisualizer steps={animationSteps} />
-                      ) : (
-                        <div className="animation-placeholder">
-                          💡 Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
-                        </div>
-                      )}
+
+                      {/* Zone în care afișezi vizualizatorul potrivit */}
+                      <div className="animation-render-zone" style={{ marginTop: '20px', width: '100%' }}>
+                        {animationSteps && animationSteps.length > 0 ? (
+                          lectie.animatie === "cautare_binara_div_imp" ? (
+                            <TreeVisualizer steps={animationSteps} />
+                          ) : (
+                            <ArrayVisualizer steps={animationSteps} />
+                          )
+                        ) : (
+                          <div className="animation-placeholder">
+                            💡 Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
+                          </div>
+                        )}
+                      </div>
                     </>
                   ) : (
-                    /* ---------------- INTEGRARE HIBRIDĂ: VARIANTĂ STATICĂ JSX FRONTEND ---------------- */
                     <ComponentaAnimatieVeche />
                   )
                 ) : (

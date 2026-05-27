@@ -1,6 +1,6 @@
 // src/components/TreeVisualizer.jsx
 import React, { useState, useEffect } from 'react';
-import '../components_css/TreeVisualizer.css'; // O să facem și CSS-ul imediat
+import '../components_css/TreeVisualizer.css';
 
 // Componentă recursivă pentru randarea fiecărui nod din arbore
 function TreeNode({ node }) {
@@ -8,10 +8,10 @@ function TreeNode({ node }) {
 
   const getNodeClass = (status) => {
     switch (status) {
-      case 'active': return 'tr-node-active';     // Neon/Cyan strălucitor (se execută acum)
-      case 'processed': return 'tr-node-parent';  // Gri închis (a apelat copii și așteaptă)
-      case 'solved': return 'tr-node-success';    // Verde intens (Aici s-a oprit/Găsit)
-      case 'failed': return 'tr-node-failed';      // Roșu șters (Ramură eșuată)
+      case 'active': return 'tr-node-active';     // Cyan strălucitor (pasul curent)
+      case 'processed': return 'tr-node-parent';  // Părinte care a generat apeluri
+      case 'solved': return 'tr-node-success';    // Verde (Aici s-a găsit elementul)
+      case 'failed': return 'tr-node-failed';     // Roșu (Ramură eșuată/vidă)
       default: return '';
     }
   };
@@ -19,14 +19,14 @@ function TreeNode({ node }) {
   return (
     <div className="tr-tree-branch">
       <div className={`tr-tree-node ${getNodeClass(node.status)}`}>
-        <div className="tr-node-label">{node.label}</div>
-        <div className="tr-node-desc">{node.explanation}</div>
+        <div className="tr-node-label">{node.label || "Nod Recursiv"}</div>
+        {node.explanation && <div className="tr-node-desc">{node.explanation}</div>}
       </div>
 
       {node.children && node.children.length > 0 && (
         <div className="tr-tree-children">
-          {node.children.map((child) => (
-            <TreeNode key={child.id} node={child} />
+          {node.children.map((child, idx) => (
+            <TreeNode key={child.id || idx} node={child} />
           ))}
         </div>
       )}
@@ -54,28 +54,43 @@ function TreeVisualizer({ steps }) {
           }
           return prev + 1;
         });
-      }, 1500); // 1.5 secunde ca să poată citi arborele
+      }, 1500);
     } else {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
   }, [isPlaying, steps]);
 
-  if (!steps || steps.length === 0) return <p style={{color: '#fff'}}>Introduceți datele și apăsați butonul de generare.</p>;
+  if (!steps || steps.length === 0) return <p style={{color: '#fff', padding: '20px'}}>Fără pași disponibili.</p>;
 
   const currentData = steps[currentStep];
 
+  // 🔍 DETECTARE AUTOMATĂ A STRUCTURII DE ARBORE
+  // Încercăm să luăm structura din treeStructure, direct din rădăcina pasului sau din proprietatea .tree
+  const validTreeNode = currentData.treeStructure || currentData.tree || (currentData.children ? currentData : null);
+
   return (
-    <div className="tree-visualizer-container">
-      <div className="visualizer-explanation">
-        💡 <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation}
+    <div className="tree-visualizer-container" style={{ width: '100%', background: '#070a13', padding: '20px', borderRadius: '12px' }}>
+      
+      {/* Caseta de Explicații */}
+      <div className="visualizer-explanation" style={{ background: '#111625', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#fff', borderLeft: '4px solid #1fe0f9' }}>
+        💡 <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation || "Se execută pasul algoritmului..."}
       </div>
 
-      <div className="tree-canvas">
-        <TreeNode node={currentData.treeStructure} />
+      {/* Spațiul de desenare al Arborelui */}
+      <div className="tree-canvas" style={{ display: 'flex', justifyContent: 'center', width: '100%', overflowX: 'auto', padding: '30px 0', minHeight: '200px' }}>
+        {validTreeNode ? (
+          <TreeNode node={validTreeNode} />
+        ) : (
+          <div style={{ color: '#ffb703', textAlign: 'center', padding: '20px', border: '1px dashed #ffb703', borderRadius: '8px', background: 'rgba(255,183,3,0.05)' }}>
+            ⚠️ Pașii primiți nu conțin o structură de arbore validă.<br />
+            <span style={{ fontSize: '12px', color: '#8fa0c4' }}>Asigură-te că simulatorul din backend returnează noduri cu 'children'.</span>
+          </div>
+        )}
       </div>
 
-      <div className="visualizer-controls" style={{marginTop: '30px'}}>
+      {/* Butoanele de Control */}
+      <div className="visualizer-controls" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
         <button 
           className="visualizer-btn"
           onClick={() => setCurrentStep(p => p - 1)} 
