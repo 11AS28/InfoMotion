@@ -6,7 +6,7 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, o
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
-import { Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound } from 'lucide-react';
+import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound } from 'lucide-react';
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();

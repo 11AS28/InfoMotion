@@ -150,7 +150,6 @@ function AdminUsers() {
     return (
       <div className="admin-login-overlay">
         {/* Containerul de Toasts trebuie să existe și pe pagina de login ca să vedem eroarea de parolă */}
-        <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         
         <form onSubmit={handleLoginSubmit} className="admin-login-form">
           <div className="login-header">
@@ -176,8 +175,6 @@ function AdminUsers() {
   return (
     <div className="admin-panel-container">
       {/* Componenta care randează efectiv pop-up-urile în pagină */}
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
-
       <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.5rem' }}>🛠️ Panou Admin Suprem - Gestiune Utilizatori</h2>
