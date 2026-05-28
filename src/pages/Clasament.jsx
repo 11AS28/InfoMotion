@@ -22,45 +22,49 @@ function Clasament() {
 
   const USERS_PER_PAGE = 10;
 
-  useEffect(() => {
-    const loadClasament = async () => {
-      try {
-        const xpQuery = query(
-          collection(db, 'users'),
-          orderBy('puncteTotale', 'desc'),
-          limit(200)
-        );
+useEffect(() => {
+  const loadClasament = async () => {
+    try {
+      const xpQuery = query(
+        collection(db, 'users'),
+        orderBy('puncteTotale', 'desc'),
+        limit(200)
+      );
 
-        const problemeQuery = query(
-          collection(db, 'users'),
-          orderBy('problemeRezolvateCount', 'desc'),
-          limit(200)
-        );
+      const problemeQuery = query(
+        collection(db, 'users'),
+        orderBy('problemeRezolvateCount', 'desc'),
+        limit(200)
+      );
 
-        const xpSnapshot = await getDocs(xpQuery);
-        const problemeSnapshot = await getDocs(problemeQuery);
+      const xpSnapshot = await getDocs(xpQuery);
+      const problemeSnapshot = await getDocs(problemeQuery);
 
-        const xpData = xpSnapshot.docs.map((doc) => ({
+      const xpData = xpSnapshot.docs
+        .map((doc) => ({
           id: doc.id,
           ...doc.data()
-        }));
+        }))
+        .filter((user) => user.role !== 'teacher');
 
-        const problemeData = problemeSnapshot.docs.map((doc) => ({
+      const problemeData = problemeSnapshot.docs
+        .map((doc) => ({
           id: doc.id,
           ...doc.data()
-        }));
+        }))
+        .filter((user) => user.role !== 'teacher');
 
-        setTopXP(xpData);
-        setTopProbleme(problemeData);
-      } catch (err) {
-        console.log(err);
-      }
+      setTopXP(xpData);
+      setTopProbleme(problemeData);
+    } catch (err) {
+      console.log(err);
+    }
 
-      setLoading(false);
-    };
+    setLoading(false);
+  };
 
-    loadClasament();
-  }, []);
+  loadClasament();
+}, []);
 
   function getBadge(count) {
     if (count >= 100) return <Crown size={16} color="#fff700" strokeWidth={2.5} />;

@@ -4,42 +4,164 @@ import { Cookie } from 'lucide-react';
 
 const PrivacyPolicy = () => {
   return (
-    <div className="policy-container" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#fff' }}>
-      <h1><Cookie size={60} color="#1fe0f9" strokeWidth={0.75} /> Politica de Confidențialitate (Privacy Policy)</h1>
-      <p><strong>Ultima actualizare:</strong> Mai 2026</p>
+    <div
+      className="policy-container"
+      style={{
+        padding: '40px',
+        maxWidth: '900px',
+        margin: '0 auto',
+        color: '#fff',
+        lineHeight: '1.8'
+      }}
+    >
+      <h1
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          flexWrap: 'wrap',
+          marginBottom: '10px'
+        }}
+      >
+        <Cookie size={52} color="#1fe0f9" strokeWidth={1.5} />
+        Politica de Confidențialitate
+      </h1>
+
+      <p>
+        <strong>Ultima actualizare:</strong> Mai 2026
+      </p>
+
       <br />
-      <p>Bine ai venit pe platforma noastră! Ne luăm angajamentul să îți protejăm datele personale. Această pagină explică simplu și clar ce informații colectăm, cum le folosim și care sunt drepturile tale.</p>
-        <br />
+
+      <p>
+        Bine ai venit pe platforma noastră! Ne angajăm să îți protejăm datele
+        personale și să le folosim într-un mod responsabil, clar și corect.
+        Această pagină explică pe scurt ce informații colectăm, cum le folosim
+        și care sunt drepturile tale.
+      </p>
+
+      <br />
+
       <h2>1. Ce date colectăm?</h2>
       <p>Când folosești platforma noastră, putem colecta:</p>
       <ul>
-        <li><strong>Informații pe care ni le oferi direct:</strong> Numele de utilizator, adresa de e-mail și parolele (criptate în siguranță).</li>
-        <li><strong>Date despre progresul tău:</strong> Rezultatele testelor grilă, lecțiile finalizate și punctajul obținut.</li>
-        <li><strong>Date tehnice (automat):</strong> Informații standard oferite de browser pentru a asigura buna funcționare a site-ului.</li>
-      </ul>
-        <br />
-      <h2>2. Cum folosim datele tale?</h2>
-      <p>Folosim datele strict pentru a-ți oferi cea mai bună experiență educațională:</p>
-      <ul>
-        <li>Pentru a-ți salva progresul la lecții și scorurile la teste.</li>
-        <li>Pentru a-ți permite conectarea și securizarea contului.</li>
-        <li>Pentru a remedia posibile erori (bug-uri) ale platformei.</li>
-      </ul>
-      <br />
-      <p><em>*Nu vom vinde, închiria sau distribui NICIODATĂ datele tale personale unor companii de marketing.</em></p>
-        <br />
-      <h2>3. Cum protejăm datele?</h2>
-      <p>Datele tale sunt stocate pe servere securizate. Contul tău este protejat de o parolă (te rugăm să alegi una puternică). Doar administratorii platformei pot accesa baza de date, exclusiv pentru mentenanță tehnică.</p>
-        <br />
-      <h2>4. Drepturile tale (GDPR)</h2>
-      <p>Dacă ești din Uniunea Europeană, ai dreptul să:</p>
-      <ul>
-        <li>Ne ceri o copie a datelor pe care le avem despre tine.</li>
-        <li>Corectezi orice dată greșită.</li>
-        <li>Ne ceri ștergerea definitivă a contului tău și a tuturor datelor asociate ("Dreptul de a fi uitat").</li>
+        <li>
+          <strong>Informații oferite direct de tine:</strong> numele de
+          utilizator, adresa de e-mail și datele necesare autentificării în cont.
+        </li>
+        <li>
+          <strong>Date despre progresul tău:</strong> lecțiile finalizate,
+          rezultatele testelor, punctajele și alte informații legate de
+          activitatea ta educațională pe platformă.
+        </li>
+        <li>
+          <strong>Date tehnice colectate automat:</strong> informații standard
+          transmise de browser sau dispozitiv, necesare pentru funcționarea
+          corectă a site-ului, securitate și diagnosticarea eventualelor erori.
+        </li>
       </ul>
 
-      <p>Pentru orice cerere legată de datele tale, ne poți contacta la adresa: <strong>infomotion2026@gmail.com</strong></p>
+      <br />
+
+      <h2>2. Cum folosim datele tale?</h2>
+      <p>Folosim aceste date strict pentru funcționarea și îmbunătățirea platformei:</p>
+      <ul>
+        <li>Pentru a-ți permite autentificarea și securizarea contului.</li>
+        <li>Pentru a-ți salva progresul la lecții și rezultatele la teste.</li>
+        <li>
+          Pentru a personaliza experiența educațională și pentru a remedia
+          eventuale probleme tehnice.
+        </li>
+      </ul>
+
+      <p>
+        <em>
+          Nu vom vinde, închiria sau distribui niciodată datele tale personale
+          către companii de marketing.
+        </em>
+      </p>
+
+      <br />
+
+      <h2>3. Lecții trimise de profesori</h2>
+      <p>
+        Dacă un profesor trimite o lecție, un fișier, un exemplu de cod sau alt
+        material educațional prin platformă, putem stoca atât conținutul trimis,
+        cât și datele asociate trimiterii, cum ar fi numele autorului, adresa de
+        e-mail și data trimiterii.
+      </p>
+      <p>
+        Aceste informații sunt folosite exclusiv pentru evaluarea, organizarea,
+        revizuirea, publicarea și administrarea materialelor educaționale
+        trimise către platformă.
+      </p>
+      <p>
+        Dacă materialul este publicat, numele autorului sau forma de creditare
+        stabilită poate deveni vizibilă public pe site.
+      </p>
+
+      <br />
+
+      <h2>4. Cum protejăm datele?</h2>
+      <p>
+        Datele sunt stocate pe infrastructură securizată, iar accesul la ele
+        este limitat la persoanele care au nevoie de acces pentru administrarea
+        și mentenanța platformei. Te rugăm și pe tine să alegi o parolă puternică
+        și să nu o comunici altor persoane.
+      </p>
+
+      <br />
+
+      <h2>5. Drepturile tale (GDPR)</h2>
+      <p>
+        Dacă te afli în Uniunea Europeană, ai dreptul să:
+      </p>
+      <ul>
+        <li>soliciți acces la datele tale personale;</li>
+        <li>ceri corectarea datelor incorecte;</li>
+        <li>soliciți ștergerea contului și a datelor asociate;</li>
+        <li>ceri restricționarea sau opoziția față de anumite prelucrări;</li>
+        <li>soliciți, acolo unde este cazul, portabilitatea datelor.</li>
+      </ul>
+
+      <br />
+
+      <h2>6. Perioada de păstrare</h2>
+      <p>
+        Păstrăm datele personale doar atât timp cât este necesar pentru
+        funcționarea platformei, pentru scopuri educaționale și administrative
+        legitime sau pentru respectarea obligațiilor legale.
+      </p>
+      <p>
+        Materialele trimise de profesori pot rămâne arhivate intern chiar dacă
+        nu sunt publicate imediat, iar conținutul deja publicat poate rămâne pe
+        platformă atât timp cât este relevant pentru scopul educațional, cu
+        excepția situațiilor în care legea sau o cerere validă impune eliminarea lui.
+      </p>
+
+      <br />
+
+      <h2>7. Contact</h2>
+      <p>
+        Pentru orice întrebare legată de datele tale personale sau de conținutul
+        trimis către platformă, ne poți contacta la adresa:{' '}
+        <a
+          href="mailto:infomotion2026@gmail.com"
+          style={{ color: '#1fe0f9', fontWeight: 'bold' }}
+        >
+          infomotion2026@gmail.com
+        </a>
+      </p>
+
+      <br />
+
+      <h2>8. Confirmare pentru profesori</h2>
+      <p>
+        În formularul de trimitere a lecțiilor, profesorii pot fi rugați să
+        confirme că materialul le aparține sau că au dreptul să îl trimită și că
+        sunt de acord ca InfoMotion să îl revizuiască, adapteze și publice cu
+        creditarea autorului.
+      </p>
     </div>
   );
 };
