@@ -1028,3 +1028,10 @@ body {
     max-height: 220px;
   }
 }
+
+.admin-help-text{
+  font-size:  1 rem;
+  color: #000000;
+  margin-top: 6px;
+  font-style: italic;
+}

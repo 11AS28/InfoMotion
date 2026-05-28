@@ -841,8 +841,14 @@ setFCodSimulatorCPP(lectie.codSimulatorCPP || '');
     <BtnClearFormatting />
   </Toolbar>
 </Editor>
+
+
+              
+
                 </div>
+                <p className="admin-help-text">Pentru a stiliza lectia poti baga in chenar albastru un titlu/inceput de paragraf punand ### la inceputul liniei</p>
               </div>
+              
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>
                 <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
