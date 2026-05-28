@@ -3,12 +3,32 @@ import '../pages_css/admin.css';
 import { doc, setDoc, collection, getDocs, deleteDoc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Toaster, toast } from 'sonner';
+import Editor, { BtnBold, BtnItalic, BtnUnderline, BtnStrikeThrough, 
+  BtnNumberedList, BtnBulletList, BtnLink, BtnClearFormatting, 
+  Toolbar } from 'react-simple-wysiwyg';
 
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
   { username: import.meta.env.VITE_ADMIN_2_USER, password: import.meta.env.VITE_ADMIN_2_PASS },
   { username: import.meta.env.VITE_ADMIN_3_USER, password: import.meta.env.VITE_ADMIN_3_PASS },
   { username: import.meta.env.VITE_ADMIN_4_USER, password: import.meta.env.VITE_ADMIN_4_PASS }
+];
+
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['code-block'],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'code-block'
 ];
 
 function LoginScreen({ onLogin }) {
@@ -799,9 +819,29 @@ setFCodSimulatorCPP(lectie.codSimulatorCPP || '');
                 <label>Descriere scurtă</label>
                 <input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} />
               </div>
-              <div className="admin-field admin-field--full">
-                <label>Teorie</label>
-                <textarea value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} rows={6} />
+              <div className="admin-field admin-field--full" style={{ marginBottom: '40px' }}>
+                <label style={{ marginBottom: '8px', display: 'block' }}>Teorie lecție (Rich Text Editor)</label>
+                <div style={{ background: '#fff', color: '#333', borderRadius: '8px' }}>
+                  {/* --- RICH TEXT EDITOR CU TOOLBAR COMPLET --- */}
+<Editor
+  value={fTeorie}
+  onChange={(e) => setFTeorie(e.target.value)}
+  style={{ minHeight: '250px' }}
+>
+  <Toolbar>
+    <BtnBold />
+    <BtnItalic />
+    <BtnUnderline />
+    <BtnStrikeThrough />
+    <span style={{ borderLeft: '1px solid #ccc', margin: '0 8px' }}></span>
+    <BtnNumberedList />
+    <BtnBulletList />
+    <span style={{ borderLeft: '1px solid #ccc', margin: '0 8px' }}></span>
+    <BtnLink />
+    <BtnClearFormatting />
+  </Toolbar>
+</Editor>
+                </div>
               </div>
               <div className="admin-field admin-field--full">
                 <label>Animație Interactivă</label>

@@ -58,7 +58,30 @@ function LessonPage() {
     "quick_sort_dinamic",
     "cautare_binara_div_imp"
   ];
-
+  
+ // const proceseazaTeorie = (html) => {
+  //if (!html) return '';
+  //return html
+    //.split('\n')
+    //.map(linie => {
+      //if (linie.trim().startsWith('###')) {
+        //const text = linie.trim().replace(/^###\s*/, '');
+        //return `<div class="theory-highlight-box">${text}</div>`;
+      //}
+      //return linie;
+   // })
+    //.join('\n');
+//};
+const proceseazaTeorie = (html) => {
+  if (!html) return '';
+  return html.replace(
+    /###\s*(.+?)(?=<|\n|$)/g,
+    (match, text) => {
+      const textCurat = text.trim().replace(/:$/, ''); // scoate : de la final dacă există
+      return `<span class="theory-highlight-box">${textCurat}:</span>`;
+    }
+  );
+};
   useEffect(() => {
     async function incarcaDatePagina() {
       setLoading(true);
@@ -257,9 +280,10 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
           <section className="lesson-content">
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
-              <div className="lesson-theory-content">
-                <Markdown>{lectie.teorie}</Markdown>
-              </div>
+              <div 
+  className="lesson-theory-content"
+  dangerouslySetInnerHTML={{ __html: proceseazaTeorie(lectie.teorie) }} 
+/>
             </div>
 
             <div className="lesson-animation">

@@ -22,6 +22,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://info-motion.vercel.app/lectie/analiza-combinatorica</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://info-motion.vercel.app/lectie/bubble-sort</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -57,7 +62,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://info-motion.vercel.app/lectie/merge-sort</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://info-motion.vercel.app/lectie/metoda-greedy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/operatori-si-expresii</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/parcurgere-strlen</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -67,12 +87,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://info-motion.vercel.app/lectie/quick-sort</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://info-motion.vercel.app/lectie/siruri-de-caractere</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://info-motion.vercel.app/lectie/siruri-functii-cautare</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/siruri-strcat-strtok</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/siruri-strcmp-strrev</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/siruri-strlen-strcpy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/sliding-window-deque</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/smenul-lui-mars</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/stiva-monotona</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://info-motion.vercel.app/lectie/structuri-de-date-neomogene</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/sume-partiale-1d</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://info-motion.vercel.app/lectie/sume-partiale-2d</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

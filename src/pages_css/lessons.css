@@ -614,3 +614,24 @@ body {
   transform: none;
   box-shadow: none;
 }
+
+.theory-highlight-box {
+  display: inline-block;
+  background-color: #1fe0f9;
+  color: #0a0f1a;
+  border-radius: 6px;
+  padding: 5px 14px;
+  margin: 16px 0 8px 0;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.lesson-theory-content div,
+.lesson-theory-content span:not(.theory-highlight-box) {
+  color: inherit !important;
+}
+
+.theory-highlight-box {
+  color: #0a0f1a !important; /* forțează negru pe bulă */
+}
