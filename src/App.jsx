@@ -39,7 +39,7 @@ function App() {
         
         {!isAdminPage && !epagadmin && <Nav />}
         
-        <main style={{ minHeight: '80vh', paddingTop: '85px' }}>
+        <main style={{ minHeight: '80vh', paddingTop: isAdminPage || epagadmin ? '0' : '85px' }}>
           <Routes>
             
             <Route path="/" element={<MainPage />} />
