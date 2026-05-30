@@ -5,7 +5,6 @@ import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/
 import '../components_css/arena.css';
 import { Toaster, toast } from 'sonner';
 import { Circle, Rocket, TriangleAlert, Flame, TestTubeDiagonal } from 'lucide-react';
-
 function Arena() {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   
@@ -25,14 +24,11 @@ function Arena() {
 
   const getSafeDateString = () => {
     const now = new Date();
-    
-   
     if (now.getHours() < 10) {
       const ieri = new Date(now);
       ieri.setDate(ieri.getDate() - 1);
       return `${ieri.getDate()}_${ieri.getMonth() + 1}_${ieri.getFullYear()}`;
     }
-    
     return `${now.getDate()}_${now.getMonth() + 1}_${now.getFullYear()}`;
   };
 
@@ -46,6 +42,9 @@ function Arena() {
     return null;
   };
 
+  // =========================================================
+  // EFFECT OPTIMIZAT: Citesște datele dintr-un singur document!
+  // =========================================================
   useEffect(() => {
     const fetchArena = async () => {
       const dataAzi = getSafeDateString();
@@ -116,21 +115,12 @@ function Arena() {
           }
         }
 
+        // OPTIMIZARE: Construim harta de insigne direct din snapshot-urile stocate în array-ul de solveri!
         if (activeSolvers.length > 0) {
-          const uniqueUids = [...new Set(activeSolvers.map(s => s.uid))];
           const badgeMap = {};
-          
-          await Promise.all(uniqueUids.map(async (uid) => {
-            try {
-              const uSnap = await getDoc(doc(db, 'users', uid));
-              if (uSnap.exists()) {
-                badgeMap[uid] = uSnap.data().problemeRezolvateCount || 0;
-              }
-            } catch (err) {
-              console.error("Eroare la tragerea insignelor pentru user:", uid, err);
-            }
-          }));
-          
+          activeSolvers.forEach(s => {
+            badgeMap[s.uid] = s.problemeRezolvateCount || 0;
+          });
           setUserBadgesMap(badgeMap);
         }
 
@@ -143,10 +133,10 @@ function Arena() {
     fetchArena();
   }, []);
 
-const handleSolve = async (dificultateTinta) => {
-    console.log("--- START VERIFICARE ARENA (CORECȚIE DUPLICARE) ---");
-   
-
+  // =========================================================
+  // HANDLE SOLVE OPTIMIZAT: Salvează snapshot-ul de probleme
+  // =========================================================
+  const handleSolve = async (dificultateTinta) => {
     if (!currentUser || !currentUser.uid) {
       toast.error("Eroare de autentificare! Asigură-te că ești logat.");
       return;
@@ -157,8 +147,6 @@ const handleSolve = async (dificultateTinta) => {
       console.log("Problema nu a fost găsită în state.");
       return;
     }
-
-    // console.log("ID-ul problemei pe Codeforces:", currentProblem.idCF);
 
     const hasSolvedThisOne = solvers.some(s => s.uid === currentUser.uid && s.dificultate === dificultateTinta);
     if (hasSolvedThisOne) {
@@ -172,9 +160,7 @@ const handleSolve = async (dificultateTinta) => {
     const idValidare = toast.loading("Se verifică statusul pe Codeforces...");
 
     try {
-      // console.log("Se apelează verificaProblemaCodeforces...");
       const isGata = await verificaProblemaCodeforces(currentProblem.idCF);
-      // console.log("Rezultat primit de la Codeforces API (isGata):", isGata);
       
       if (isGata) {
         const dataAzi = getSafeDateString();
@@ -190,29 +176,32 @@ const handleSolve = async (dificultateTinta) => {
           
           await acordaPuncte(puncteDeAcordat);
           
-      
-          toast.success( ` Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
+          toast.success(`Felicitări! Ai primit +${puncteDeAcordat} XP!`, {
             id: idValidare,
             description: "Problema a fost salvată și adăugată la scorul tău global!"
           });
         } else {
-          
-          toast.info( " Antrenament privat validat!", {
+          toast.info("Antrenament privat validat!", {
             id: idValidare,
             description: "0 XP adăugat (ai încasat deja punctele pe o altă problemă astăzi)."
           });
         }
         
+        // Luăm valoarea din context din prezent și adăugăm 1 pentru noul obiect salvat local
+        const numarCurentProbleme = (currentUser.problemeRezolvateCount || 0) + 1;
+
         const userDocRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userDocRef, {
           problemeRezolvateCount: increment(1) 
         });
 
+        // OPTIMIZARE DETALII SOLVER: Salvăm problemeRezolvateCount direct în obiect
         const nouSolver = { 
           nume: currentUser.nume || "Utilizator", 
           uid: currentUser.uid, 
           dificultate: dificultateTinta,
           aPrimitPuncte: !hasAnyPointsToday,
+          problemeRezolvateCount: numarCurentProbleme, // Snapshot-ul salvat direct în documentul dailyChallenges
           ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) 
         };
 
@@ -220,24 +209,19 @@ const handleSolve = async (dificultateTinta) => {
           solvers: arrayUnion(nouSolver)
         });
 
-        const curentCountLocal = userBadgesMap[currentUser.uid] || 0;
-        setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: curentCountLocal + 1 }));
-
+        setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: numarCurentProbleme }));
         setSolvers(prev => [...prev, nouSolver]);
       } else {
-        
         toast.error("Submisie neidentificată!", {
           id: idValidare,
           description: `Nu s-a găsit statusul 'Accepted' pe Codeforces pentru problema ${currentProblem.idCF}.`
         });
       }
     } catch (error) {
-      console.error("Eroare gravă prinsă în catch la verificare:", error);
-     
+      console.error("Eroare gravă în catch la verificare:", error);
       toast.error("Eroare de sistem la procesarea submisiei.", { id: idValidare });
     } finally {
       setIsChecking(false);
-      // console.log("--- FINAL VERIFICARE ARENA ---");
     }
   };
 
@@ -248,7 +232,7 @@ const handleSolve = async (dificultateTinta) => {
   const totalPages = Math.ceil(solversFiltrati.length / solversPerPage);
   
   const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
-
+  
   return (
     <div className="arena-wrapper">
       <div className="arena-container">
