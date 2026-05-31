@@ -635,3 +635,45 @@ body {
 .theory-highlight-box {
   color: #0a0f1a !important; /* forțează negru pe bulă */
 }
+
+
+.lesson-theory-content {
+  font-size: 1.15rem !important; 
+  line-height: 1.75 !important;  
+  color: #e2e8f0 !important;    
+}
+
+
+.lesson-theory-content p {
+  font-size: 1.15rem !important;
+  margin-bottom: 16px !important;
+  color: #e2e8f0 !important;
+}
+
+
+.lesson-theory-content ul, 
+.lesson-theory-content ol {
+  margin-top: 10px !important;
+  margin-bottom: 20px !important;
+  padding-left: 25px !important;
+}
+
+.lesson-theory-content li {
+  font-size: 1.15rem !important; 
+  margin-bottom: 8px !important;
+  line-height: 1.6 !important;
+  color: #e2e8f0 !important;
+}
+
+.theory-highlight-box {
+  display: inline-block;
+  background-color: #1fe0f9;
+  color: #0a0f1a !important;
+  border-radius: 6px;
+  padding: 6px 14px;
+  margin: 20px 0 10px 0;
+  font-weight: 700;
+  font-size: 13px; 
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

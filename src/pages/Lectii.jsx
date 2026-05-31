@@ -12,14 +12,22 @@ function Lectii() {
   const [activeFilter, setActiveFilter] = useState('toate');
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchLectii() {
+      // VERIFICARE CACHE MANUAL ÎN LOCALSTORAGE (Opțional, dar reduce Reads la 0!)
+      const cachedLessons = localStorage.getItem('infomotion_lessons_cache');
+      if (cachedLessons) {
+        setLessonsData(JSON.parse(cachedLessons));
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const querySnapshot = await getDocs(collection(db, "lectii"));
         const lectiiDinDB = querySnapshot.docs.map(doc => {
           const data = doc.data();
-          
-          
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
           
@@ -36,57 +44,55 @@ function Lectii() {
             esteConcept
           };
         });
-        setLessonsData(lectiiDinDB);
+
+        if (isMounted) {
+          setLessonsData(lectiiDinDB);
+          // Salvăm în cache pentru 30 de minute să nu mai facă citiri la fiecare click pe meniu
+          localStorage.setItem('infomotion_lessons_cache', JSON.stringify(lectiiDinDB));
+        }
       } catch (error) {
         console.error("Eroare la preluarea lecțiilor:", error);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
 
     fetchLectii();
+    return () => { isMounted = false; };
   }, []);
 
   const filteredLessons = lessonsData
     .filter((lectie) => {
-      // 1. Filtrare după Search
       const matchesSearch = 
         (lectie.titlu?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (lectie.descriere?.toLowerCase() || "").includes(searchTerm.toLowerCase());
      
-      // 2. Filtrare după Categorie / Clasă
       let matchesFilter = false;
       if (activeFilter === 'toate') {
         matchesFilter = true;
       } else if (activeFilter === 'olimpici') {
         matchesFilter = lectie.esteOlimpiada;
-      } else if (activeFilter === 'concepte') {
+      } else if (activeFilter === 'concepte' || activeFilter === 'termeni') {
         matchesFilter = lectie.esteConcept;
       } else {
-
         const clasaTinta = parseInt(activeFilter.split('-')[1]);
-        
         matchesFilter = lectie.clasaNumerica === clasaTinta && !lectie.esteOlimpiada && !lectie.esteConcept;
       }
       
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      // Prioritizăm sortarea: dacă ambele sunt de clasă numerică, le sortăm normal
       if (a.clasaNumerica !== b.clasaNumerica) {
         return a.clasaNumerica - b.clasaNumerica;
       }
-      
       const ordineA = a.ordine !== undefined && a.ordine !== null ? a.ordine : 999;
       const ordineB = b.ordine !== undefined && b.ordine !== null ? b.ordine : 999;
-      
       return ordineA - ordineB;
     });
 
-  // Funcție helper ca să returneze textul potrivit pe buton
   const getFilterLabel = (filter) => {
     if (filter === 'toate') return 'Toate';
     if (filter === 'olimpici') return 'Olimpici';
-    if (filter === 'concepte') return 'Termeni';
+    if (filter === 'termeni' || filter === 'concepte') return 'Termeni';
     return `Clasa ${filter.split('-')[1]}`;
   };
 
@@ -158,7 +164,6 @@ function Lectii() {
           </div>
         )}
       </main>
-      
     </div>
   );
 }

@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapshot, orderBy } from 'firebase/firestore';
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound } from 'lucide-react';
 
 function SidebarStats({ isOpen, onClose }) {
+  // ADĂUGĂM totalLectii din Context dacă îl ai, sau îl pasăm ca prop. 
+  // Momentan folosim o metodă sigură: citim din currentUser datele deja existente.
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
   const { theme } = useTheme();
 
@@ -17,49 +19,40 @@ function SidebarStats({ isOpen, onClose }) {
   const [usernameError, setUsernameError] = useState("");
   const [deleteError, setDeleteError] = useState(""); 
 
+  // Păstrăm state-ul pentru lecții, dar nu îl mai încărcăm brutal prin getDocs din Sidebar
   const [totalLectiiDB, setTotalLectiiDB] = useState(0);
-  const [totalProblemeDB, setTotalProblemeDB] = useState(0);
-
-  const [puncteTotale, setPuncteTotale] = useState(0);
-
   const [notifications, setNotifications] = useState([]);
-
   const [showNotifications, setShowNotifications] = useState(false);
  
   const isTeacher = currentUser?.role === 'teacher';
-
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Extragem datele direct din currentUser (sunt live dacă folosești onSnapshot în AuthContext)
+  const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
+  const puncteTotale = currentUser?.puncteTotale || 0;
+
+  // 1. OPTIMIZARE: Pentru numărul total de lecții, ascultăm o singură dată la montarea componentei, 
+  // NU la fiecare deschidere de sidebar!
   useEffect(() => {
-    async function IncarcaDateDB() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "lectii"));
-        setTotalLectiiDB(querySnapshot.size); 
-
-        if (currentUser?.uid) {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userSnap = await getDoc(userDocRef);
-          
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            
-            setTotalProblemeDB(userData.problemeRezolvateCount || 0);
-            setPuncteTotale(userData.puncteTotale || 0);
-          }
-        }
-      } catch (e) {
-        console.error("Eroare la încărcarea datelor din Firebase:", e);
+    let isMounted = true;
+    
+    // Ascultăm colecția de lecții o singură dată (sau o poți înlocui cu o valoare statică / preîncărcată)
+    const q = query(collection(db, "lectii"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (isMounted) {
+        setTotalLectiiDB(snapshot.size);
       }
-    }
+    });
 
-    if (isOpen) {
-      IncarcaDateDB();
-      // Actualizăm streak-ul doar dacă utilizatorul este elev
-      if (!isTeacher) {
-        actualizeazaStreak();
-      }
+    return () => { isMounted = false; unsubscribe(); };
+  }, []); // Rulează doar O SINGURĂ DATĂ când pornește aplicația
+
+  // 2. OPTIMIZARE: Streak-ul se rulează doar când se deschide sidebar-ul, fără getDocs din DB
+  useEffect(() => {
+    if (isOpen && !isTeacher) {
+      actualizeazaStreak();
     }
-  }, [isOpen, currentUser, actualizeazaStreak, isTeacher]);
+  }, [isOpen, isTeacher, actualizeazaStreak]);
 
   useEffect(() => {
     if (currentUser) {
@@ -68,25 +61,25 @@ function SidebarStats({ isOpen, onClose }) {
     }
   }, [currentUser, isOpen]);
 
-
+  // 3. NOTIFICĂRI LIVE: Curățate corect cu return de unsubscribe (Evită Memory Leaks)
   useEffect(() => {
-  if (!currentUser?.uid) return;
+    if (!currentUser?.uid) return;
 
-  const q = query(
-    collection(db, "users", currentUser.uid, "notifications"),
-    orderBy("createdAt", "desc")
-  );
+    const q = query(
+      collection(db, "users", currentUser.uid, "notifications"),
+      orderBy("createdAt", "desc")
+    );
 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const notifList = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    setNotifications(notifList);
-  });
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setNotifications(notifList);
+    });
 
-  return () => unsubscribe();
-}, [currentUser]);
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const handleUpdateProfile = async () => {
     if (!currentUser) return;
@@ -102,6 +95,8 @@ function SidebarStats({ isOpen, onClose }) {
         if (usernameInput.trim().length < 3) { setUsernameError("Username prea scurt!"); return; }
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where("nume", "==", usernameInput.trim()));
+        
+        // Citire necesară pentru unicitatea numelui
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           setUsernameError("Acest username este deja folosit!");
@@ -136,34 +131,22 @@ function SidebarStats({ isOpen, onClose }) {
     }
   };
 
-
   const markNotificationAsRead = async (notifId) => {
-  if (!currentUser?.uid) return;
+    if (!currentUser?.uid) return;
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), { read: true });
+    } catch (e) { console.error("Eroare la marcarea notificării:", e); }
+  };
 
-  try {
-    await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), {
-      read: true
-    });
-  } catch (e) {
-    console.error("Eroare la marcarea notificării:", e);
-  }
-};
-
-const markAllNotificationsAsRead = async () => {
-  if (!currentUser?.uid) return;
-
-  try {
-    const unreadNotifications = notifications.filter((n) => !n.read);
-
-    for (const notif of unreadNotifications) {
-      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notif.id), {
-        read: true
-      });
-    }
-  } catch (e) {
-    console.error("Eroare la marcarea tuturor notificărilor:", e);
-  }
-};
+  const markAllNotificationsAsRead = async () => {
+    if (!currentUser?.uid) return;
+    try {
+      const unreadNotifications = notifications.filter((n) => !n.read);
+      for (const notif of unreadNotifications) {
+        await updateDoc(doc(db, "users", currentUser.uid, "notifications", notif.id), { read: true });
+      }
+    } catch (e) { console.error("Eroare la marcarea tuturor notificărilor:", e); }
+  };
 
   if (!currentUser) return null;
 
@@ -193,7 +176,6 @@ const markAllNotificationsAsRead = async () => {
     { id: 'b5', icon: <WandSparkles size={16} color="#acc91d" strokeWidth={2.5} />, nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
     { id: 'b6', icon: <Crown size={16} color="#fff700" strokeWidth={2.5} />, nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
-  
 
   return (
     <>
@@ -205,7 +187,6 @@ const markAllNotificationsAsRead = async () => {
           <div className="user-avatar-placeholder"><UserRound size={30} color="#8f4ebb" strokeWidth={2.5} /></div>
           <h3>{currentUser.nume || currentUser.email.split('@')[0]}</h3>
           
-          {/*  ROL STRUCTURAT FRUMOS SUB NUME */}
           <div style={{ marginTop: '0 px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
             <span style={{
               fontSize: '11px',
@@ -229,8 +210,6 @@ const markAllNotificationsAsRead = async () => {
                   </>
                 )}
             </span>
-            
-            {/* Afișăm nivelul bazat pe curs doar dacă nu este profesor */}
             {!isTeacher && <span className="badge-nivel">{nivel}</span>}
           </div>
         </div>
@@ -295,21 +274,11 @@ const markAllNotificationsAsRead = async () => {
               </div>
 
               {notifications.length === 0 ? (
-                <div style={{
-                  fontSize: '13px',
-                  color: '#94a3b8',
-                  padding: '8px 4px'
-                }}>
+                <div style={{ fontSize: '13px', color: '#94a3b8', padding: '8px 4px' }}>
                   Nu ai notificări momentan.
                 </div>
               ) : (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  maxHeight: '220px',
-                  overflowY: 'auto'
-                }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
                   {notifications.slice(0, 8).map((notif) => (
                     <button
                       key={notif.id}
@@ -319,19 +288,13 @@ const markAllNotificationsAsRead = async () => {
                         textAlign: 'left',
                         width: '100%',
                         border: notif.read ? '1px solid #e5e7eb' : '1px solid #fecaca',
-                        background: theme === 'dark' ? (notif.read ? 'transparent' : '#917878') : (notif.read ? 'transparent' : '#fef2f2'),
+                        background: theme === 'dark' ? (notif.read ? 'transparent' : '#374151') : (notif.read ? 'transparent' : '#fef2f2'),
                         borderRadius: '12px',
                         padding: '10px 12px',
                         cursor: 'pointer',
-                        
                       }}
                     >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '10px'
-                      }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                         <div style={{ flex: 1 }}>
                           <div style={{
                             fontSize: '13px',
@@ -339,32 +302,13 @@ const markAllNotificationsAsRead = async () => {
                             color: theme === 'dark' ? '#f3f4f6' : '#0f172a',
                             marginBottom: '4px'
                           }}>
-                            {notif.type === 'lectie_aprobata'
-                              ? ' Lecție aprobată'
-                              : notif.type === 'lectie_respinsa'
-                              ? ' Lecție respinsă'
-                              : ' Notificare'}
+                            {notif.type === 'lectie_aprobata' ? ' Lecție aprobată' : notif.type === 'lectie_respinsa' ? ' Lecție respinsă' : ' Notificare'}
                           </div>
-
-                          <div style={{
-                            fontSize: '12px',
-                            lineHeight: '1.5',
-                            color: theme === 'dark' ? '#f3f4f6' : '#475569'
-                          }}>
+                          <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}
                           </div>
                         </div>
-
-                        {!notif.read && (
-                          <span style={{
-                            width: '10px',
-                            height: '10px',
-                            borderRadius: '50%',
-                            background: '#dc2626',
-                            flexShrink: 0,
-                            marginTop: '4px'
-                          }} />
-                        )}
+                        {!notif.read && <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#dc2626', flexShrink: 0, marginTop: '4px' }} />}
                       </div>
                     </button>
                   ))}
@@ -373,7 +317,6 @@ const markAllNotificationsAsRead = async () => {
             </div>
           )}
 
-          {/*  AFIȘARE CONDIȚIONATĂ: Profesorii au alt set de date în grid sau le ascundem pe cele de elevi */}
           {!isTeacher ? (
             <>
               <div className="stats-grid">
@@ -412,15 +355,7 @@ const markAllNotificationsAsRead = async () => {
               </div>
             </>
           ) : (
-           
-            <div style={{
-              padding: '15px', 
-              borderRadius: '8px', 
-              background: 'rgba(0,123,255,0.05)', 
-              border: '1px dashed var(--accent, #007bff)',
-              marginBottom: '20px',
-              fontSize: '14px'
-            }}>
+            <div style={{ padding: '15px', borderRadius: '8px', background: 'rgba(0,123,255,0.05)', border: '1px dashed var(--accent, #007bff)', marginBottom: '20px', fontSize: '14px' }}>
               <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#0d47a1' }}>Panou Profesor Activ</p>
             </div>
           )}
@@ -454,7 +389,6 @@ const markAllNotificationsAsRead = async () => {
               <strong>{currentUser.email}</strong>
             </div>
 
-            {/*  ASCUNDEM SECȚIUNEA DE CODEFORCES ȘI TROFEE DACĂ ESTE PROFESOR */}
             {!isTeacher && (
               <>
                 <div className="info-item-input">
@@ -543,7 +477,6 @@ const markAllNotificationsAsRead = async () => {
           <button className="logout-btn-sidebar" onClick={() => { logout(); onClose(); }}>
             Deconectare Cont
           </button>
-
           <button 
             onClick={handleDeleteAccount}
             style={{ 
@@ -556,14 +489,8 @@ const markAllNotificationsAsRead = async () => {
           >
             Șterge Contul Definitiv
           </button>
-          
-          {deleteError && (
-            <small style={{ color: '#ff4d4d', textAlign: 'center', display: 'block', padding: '5px' }}>
-              {deleteError}
-            </small>
-          )}
+          {deleteError && <small style={{ color: '#ff4d4d', textAlign: 'center', display: 'block', padding: '5px' }}>{deleteError}</small>}
         </div>
-
       </div>
     </>
   );

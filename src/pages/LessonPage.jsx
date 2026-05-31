@@ -3,14 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
-import ArrayVisualizer from '../components/ArrayVisualizer'; // Playerul universal
+import ArrayVisualizer from '../components/ArrayVisualizer'; 
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import Markdown from 'react-markdown';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
 
-// Importuri lazy pentru animațiile vechi din frontend
+// Lazy loading components...
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
 const DivideAnim = React.lazy(() => import('../components/animatii/DivideAnim'));
 const GreedyAnim = React.lazy(() => import('../components/animatii/greedyAnim'));
@@ -44,12 +43,10 @@ function LessonPage() {
   const [esteGata, setEsteGata] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
 
-  // State-uri pentru animațiile din backend
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
 
-  // 🌟 CONFIGURARE TIPURI ANIMAȚII
   const algoritmiBackend = [
     "bubbleSort", 
     "BubbleSortAnim", 
@@ -59,35 +56,26 @@ function LessonPage() {
     "cautare_binara_div_imp"
   ];
   
- // const proceseazaTeorie = (html) => {
-  //if (!html) return '';
-  //return html
-    //.split('\n')
-    //.map(linie => {
-      //if (linie.trim().startsWith('###')) {
-        //const text = linie.trim().replace(/^###\s*/, '');
-        //return `<div class="theory-highlight-box">${text}</div>`;
-      //}
-      //return linie;
-   // })
-    //.join('\n');
-//};
-const proceseazaTeorie = (html) => {
-  if (!html) return '';
-  return html.replace(
-    /###\s*(.+?)(?=<|\n|$)/g,
-    (match, text) => {
-      const textCurat = text.trim().replace(/:$/, ''); // scoate : de la final dacă există
-      return `<span class="theory-highlight-box">${textCurat}:</span>`;
-    }
-  );
-};
+  const proceseazaTeorie = (html) => {
+    if (!html) return '';
+    return html.replace(
+      /###\s*(.+?)(?=<|\n|$)/g,
+      (match, text) => {
+        const textCurat = text.trim().replace(/:$/, '');
+        return `<span class="theory-highlight-box">${textCurat}:</span>`;
+      }
+    );
+  };
+
   useEffect(() => {
+    let isMounted = true;
+
     async function incarcaDatePagina() {
       setLoading(true);
-      setEsteGata(false);
-      setAnimationSteps([]); 
-      setCustomInput("");
+      if (isMounted) {
+        setAnimationSteps([]); 
+        setCustomInput("");
+      }
 
       try {
         const docRef = doc(db, "lectii", idLectie);
@@ -95,31 +83,38 @@ const proceseazaTeorie = (html) => {
 
         if (docSnap.exists()) {
           const dateLectie = docSnap.data();
-          setLectie(dateLectie);
+          if (isMounted) setLectie(dateLectie);
 
-          if (dateLectie.clasa) {
-            const q = query(
-              collection(db, "lectii"),
-              where("clasa", "==", dateLectie.clasa)
-            );
+          // 🧠 OPTIMIZARE SIDEBAR: Încercăm să luăm lista din cache-ul global generat de Lectii.jsx
+          const cachedLessonsRaw = localStorage.getItem('infomotion_lessons_cache');
+          let gasitInCache = false;
+
+          if (cachedLessonsRaw) {
+            const toateLectiile = JSON.parse(cachedLessonsRaw);
+            const filtrateLocal = toateLectiile.filter(l => l.clasa === dateLectie.clasa);
+            if (filtrateLocal.length > 0) {
+              if (isMounted) setToateLectiileDinClasa(filtrateLocal);
+              gasitInCache = true;
+            }
+          }
+
+          // Fallback doar dacă utilizatorul a intrat direct pe link fără să treacă prin /lectii
+          if (!gasitInCache && dateLectie.clasa) {
+            const q = query(collection(db, "lectii"), where("clasa", "==", dateLectie.clasa));
             const querySnapshot = await getDocs(q);
             const lista = [];
             querySnapshot.forEach((d) => {
               lista.push({ id: d.id, ...d.data() });
             });
-            setToateLectiileDinClasa(lista);
+            if (isMounted) setToateLectiileDinClasa(lista);
           }
 
+          // OPTIMIZARE ELEV STATUS: Luăm statusul direct din currentUser dacă îl avem în Context live, 
+          // economisind încă un getDoc complet inutil spre tabela 'users'!
           if (currentUser) {
-            const userRef = doc(db, 'users', currentUser.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-              const userData = userSnap.data();
-              const terminate = userData.lectiiTerminate || [];
-              const gasit = terminate.some(id => String(id) === String(idLectie));
-              setEsteGata(gasit);
-            }
+            const terminate = currentUser.lectiiTerminate || [];
+            const gasit = terminate.some(id => String(id) === String(idLectie));
+            if (isMounted) setEsteGata(gasit);
           }
         } else {
           console.error("Lecția nu a fost găsită!");
@@ -127,11 +122,12 @@ const proceseazaTeorie = (html) => {
       } catch (error) {
         console.error("Eroare la încărcarea datelor:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
 
     incarcaDatePagina();
+    return () => { isMounted = false; };
   }, [idLectie, currentUser]);
 
   const handleGenerateAnimation = async () => {
@@ -160,29 +156,22 @@ const proceseazaTeorie = (html) => {
       if (lectie.animatie === "cautare_binara_div_imp") {
         const targetInput = document.getElementById("target-search-input");
         targetVal = targetInput ? parseInt(targetInput.value) : null;
-        
-        if (isNaN(targetVal)) {
-          return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
-        }
+        if (isNaN(targetVal)) return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
       }
 
-      // Conexiune locală (Modifică în URL-ul de Render când urci pe live)
-      // Adresa corectă pentru serverul tău live
-const response = await fetch('https://infomotion.onrender.com/api/simulate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    algorithmType: lectie.animatie,
-    inputData: parsedData,
-    target: targetVal 
-  })
-});
+      const response = await fetch('https://infomotion.onrender.com/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          algorithmType: lectie.animatie,
+          inputData: parsedData,
+          target: targetVal 
+        })
+      });
 
       const data = await response.json();
 
       if (data.steps) {
-        console.log("=== PAȘI PRIMIȚI DE LA BACKEND ===", data.steps);
-        
         let pasiCuratatiPentruVisualizer;
 
         if (esteLectieSiruri) {
@@ -190,19 +179,16 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
           const asciiArrayComplet = textCurat.split('').map(l => l.charCodeAt(0));
           asciiArrayComplet.push(0); 
 
-          pasiCuratatiPentruVisualizer = data.steps.map((pas) => {
-            return {
-              array: asciiArrayComplet, 
-              highlights: pas.currentIndex !== undefined ? [pas.currentIndex] : [],
-              explanation: pas.explanation || "",
-              status: pas.status || "active"
-            };
-          });
+          pasiCuratatiPentruVisualizer = data.steps.map((pas) => ({
+            array: asciiArrayComplet, 
+            highlights: pas.currentIndex !== undefined ? [pas.currentIndex] : [],
+            explanation: pas.explanation || "",
+            status: pas.status || "active"
+          }));
         } else {
           pasiCuratatiPentruVisualizer = data.steps;
         }
 
-        console.log("=== PAȘI CURĂȚAȚI PENTRU VISUALIZER ===", pasiCuratatiPentruVisualizer);
         setAnimationSteps(pasiCuratatiPentruVisualizer);
       } else {
         alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
@@ -252,7 +238,6 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
     <div className="page-wrapper">
       <br />
       <div className="lesson-main-content-flex">
-
         <aside className="lessons-sidebar">
           <div className="sidebar-header">
             <h3>Lecții {lectie.clasa?.toUpperCase()}</h3>
@@ -281,14 +266,13 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
               <div 
-  className="lesson-theory-content"
-  dangerouslySetInnerHTML={{ __html: proceseazaTeorie(lectie.teorie) }} 
-/>
+                className="lesson-theory-content"
+                dangerouslySetInnerHTML={{ __html: proceseazaTeorie(lectie.teorie) }} 
+              />
             </div>
 
             <div className="lesson-animation">
               <h2><Gamepad2 size={60} color="#1fe0f9" strokeWidth={0.75} /> Animație Interactivă</h2>
-
               <Suspense fallback={<div className="loader">Se încarcă animația...</div>}>
                 {lectie.animatie ? (
                   esteAnimatieNoua ? (
@@ -342,7 +326,6 @@ const response = await fetch('https://infomotion.onrender.com/api/simulate', {
                         </div>
                       </div>
 
-                      {/* Zone în care afișezi vizualizatorul potrivit */}
                       <div className="animation-render-zone" style={{ marginTop: '20px', width: '100%' }}>
                         {animationSteps && animationSteps.length > 0 ? (
                           lectie.animatie === "cautare_binara_div_imp" ? (
