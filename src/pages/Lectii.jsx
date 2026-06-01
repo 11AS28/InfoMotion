@@ -15,8 +15,8 @@ function Lectii() {
     let isMounted = true;
 
     async function fetchLectii() {
-      // VERIFICARE CACHE MANUAL ÎN LOCALSTORAGE (Opțional, dar reduce Reads la 0!)
-      const cachedLessons = localStorage.getItem('infomotion_lessons_cache');
+      // Am schimbat cheia cache-ului la v2 pentru a forța reîmprospătarea datelor cu noul format de sortare
+      const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v2');
       if (cachedLessons) {
         setLessonsData(JSON.parse(cachedLessons));
         setLoading(false);
@@ -31,9 +31,19 @@ function Lectii() {
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
           
-          let extrasClasa = 9;
-          if (!esteOlimpiada && !esteConcept) {
-            extrasClasa = data.clasa ? parseInt(data.clasa.toString().replace(/^\D+/g, '')) : 9;
+          // Extragem clasa numerică din orice câmp relevant (clasa sau titlu)
+          // Funcționează acum și pentru olimpiade (ex: "clasa-9-olimpiada" sau "olimpici-10" va deveni 9, respectiv 10)
+          let extrasClasa = 9; 
+          if (data.clasa) {
+            const digits = data.clasa.toString().match(/\d+/);
+            if (digits) {
+              extrasClasa = parseInt(digits[0], 10);
+            }
+          } else if (data.titlu) {
+            const digits = data.titlu.toString().match(/\d+/);
+            if (digits) {
+              extrasClasa = parseInt(digits[0], 10);
+            }
           }
 
           return {
@@ -47,8 +57,8 @@ function Lectii() {
 
         if (isMounted) {
           setLessonsData(lectiiDinDB);
-          // Salvăm în cache pentru 30 de minute să nu mai facă citiri la fiecare click pe meniu
-          localStorage.setItem('infomotion_lessons_cache', JSON.stringify(lectiiDinDB));
+          // Salvăm în cache pentru 30 de minute cu noua cheie v2
+          localStorage.setItem('infomotion_lessons_cache_v2', JSON.stringify(lectiiDinDB));
         }
       } catch (error) {
         console.error("Eroare la preluarea lecțiilor:", error);
@@ -81,12 +91,44 @@ function Lectii() {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      if (a.clasaNumerica !== b.clasaNumerica) {
-        return a.clasaNumerica - b.clasaNumerica;
+      // Determinăm grupul principal de sortare pentru fiecare lecție
+      const getGroup = (item) => {
+        if (!item.esteOlimpiada && !item.esteConcept) {
+          if (item.clasaNumerica === 9) return 1;
+          if (item.clasaNumerica === 10) return 2;
+          if (item.clasaNumerica === 11) return 3;
+          return 4; // Altă clasă normală
+        }
+        if (item.esteOlimpiada) return 10; // Olimpiadă (Grupul 10)
+        if (item.esteConcept) return 20;   // Concepte/Termeni (Grupul 20)
+        return 999;
+      };
+
+      const grupA = getGroup(a);
+      const grupB = getGroup(b);
+
+      // 1. Sortăm mai întâi după grupul principal (Clasa 9 -> Clasa 10 -> Clasa 11 -> Olimpiadă -> Termeni)
+      if (grupA !== grupB) {
+        return grupA - grupB;
       }
-      const ordineA = a.ordine !== undefined && a.ordine !== null ? a.ordine : 999;
-      const ordineB = b.ordine !== undefined && b.ordine !== null ? b.ordine : 999;
-      return ordineA - ordineB;
+
+      // 2. Dacă fac parte din grupul Olimpiadă (Grup 10), le sortăm crescător după clasă (9 -> 10 -> 11)
+      if (grupA === 10) {
+        if (a.clasaNumerica !== b.clasaNumerica) {
+          return a.clasaNumerica - b.clasaNumerica;
+        }
+      }
+
+      // 3. În cadrul aceluiași grup/clase, sortăm crescător după ordinea modulului
+      const ordineA = a.ordine !== undefined && a.ordine !== null ? parseInt(a.ordine, 10) : 999;
+      const ordineB = b.ordine !== undefined && b.ordine !== null ? parseInt(b.ordine, 10) : 999;
+      
+      if (ordineA !== ordineB) {
+        return ordineA - ordineB;
+      }
+
+      // 4. Fallback alfabetic după titlu dacă au aceeași ordine de modul
+      return (a.titlu || "").localeCompare(b.titlu || "");
     });
 
   const getFilterLabel = (filter) => {
