@@ -1,6 +1,6 @@
 // TodoTab.jsx
 import { useState } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'sonner';
 
@@ -14,6 +14,9 @@ const formatTodoDate = (timestamp) => {
 export default function TodoTab({ todos, username, onRefresh }) {
   const [newTodoText, setNewTodoText] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Limita inițială de task-uri rezolvate afișate
+  const [visibleDoneCount, setVisibleDoneCount] = useState(5);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -59,6 +62,9 @@ export default function TodoTab({ todos, username, onRefresh }) {
 
   const active = todos.filter((t) => !t.completed);
   const done = todos.filter((t) => t.completed);
+  
+  // Extragem doar numărul de task-uri rezolvate setate ca fiind vizibile
+  const visibleDone = done.slice(0, visibleDoneCount);
 
   return (
     <div className="admin-card">
@@ -117,24 +123,60 @@ export default function TodoTab({ todos, username, onRefresh }) {
             Niciun task terminat până acum în această sesiune.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', opacity: 0.75 }}>
-            {done.map((todo) => (
-              <div key={todo.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #94a3b8', border: '1px solid #e2e8f0', borderLeftWidth: '4px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '14px', color: '#64748b', textDecoration: 'line-through' }}>{todo.text}</span>
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Rezolvat • Adăugat de {todo.author} pe {formatTodoDate(todo.createdAt)}</span>
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', opacity: 0.75 }}>
+              {visibleDone.map((todo) => (
+                <div key={todo.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #94a3b8', border: '1px solid #e2e8f0', borderLeftWidth: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '14px', color: '#64748b', textDecoration: 'line-through' }}>{todo.text}</span>
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Rezolvat • Adăugat de {todo.author} pe {formatTodoDate(todo.createdAt)}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => handleToggle(todo.id, todo.completed)} style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }} title="Pune înapoi în lista activă">
+                      ↩️ Pune înapoi
+                    </button>
+                    <button onClick={() => handleDelete(todo.id)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }} title="Șterge definitiv">
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => handleToggle(todo.id, todo.completed)} style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }} title="Pune înapoi în lista activă">
-                    ↩️ Pune înapoi
-                  </button>
-                  <button onClick={() => handleDelete(todo.id)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }} title="Șterge definitiv">
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Butonul apare doar dacă există mai multe task-uri rezolvate decât cele afișate curent */}
+            {done.length > visibleDoneCount && (
+              <button 
+                onClick={() => setVisibleDoneCount(prev => prev + 5)}
+                style={{
+                  marginTop: '15px',
+                  width: '100%',
+                  padding: '12px',
+                  background: '#f1f5f9',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease',
+                  textAlign: 'center',
+                  outline: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#e2e8f0';
+                  e.currentTarget.style.color = '#1e293b';
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f1f5f9';
+                  e.currentTarget.style.color = '#475569';
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                }}
+              >
+                ➕ Încarcă mai multe task-uri rezolvate ({done.length - visibleDoneCount} rămase)
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
