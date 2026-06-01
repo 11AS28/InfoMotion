@@ -4,8 +4,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 5%;
-  background-color: var(--nav-bg); /* Modificat din bg-nav */
-  border-bottom: 1px solid var(--border); /* Reparat bordura, inainte aveai doar border: var(--bg-nav) */
+  background-color: var(--nav-bg); 
+  border-bottom: 1px solid var(--border); 
   position: fixed; 
   top: 0; 
   z-index: 9999;
@@ -18,6 +18,7 @@
   font-weight: bold;
   text-decoration: none;
   color: var(--text-primary);
+  white-space: nowrap; /* Previne ruperea logo-ului pe ecrane medii */
 }
 
 .nav-logo span {
@@ -51,6 +52,7 @@
   color: var(--text-secondary);
   font-weight: 500;
   transition: color 0.2s;
+  white-space: nowrap; /* Previne ruperea textului link-urilor */
 }
 
 .nav-links a:hover {
@@ -62,10 +64,34 @@
   color: white !important;
   padding: 10px 20px;
   border-radius: 8px;
+  white-space: nowrap; /* Previne textul butonului să se rupă pe mai multe rânduri */
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
-/* --- STILURI PENTRU TELEFON (Responsive) --- */
-@media (max-width: 768px) {
+.btn-accent:hover {
+  background-color: #015257;
+  transform: translateY(-1px);
+}
+
+/* --- OPTIMIZARE SPATIU INTERMEDIAR (Desktop Mediu: 1025px - 1200px) --- */
+/* Micșorăm discret spațiile ca totul să încapă perfect înainte de a se transforma în hamburger */
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .navbar {
+    padding: 15px 3%;
+  }
+  .nav-links {
+    gap: 18px;
+  }
+  .nav-user-badge {
+    padding: 6px 12px;
+  }
+}
+
+/* --- STILURI PENTRU TELEFON & TABLETĂ (Responsive) --- */
+/* Schimbat de la 768px la 1024px pentru a evita suprapunerile de pe tablete/laptops */
+@media (max-width: 1024px) {
   
   .hamburger {
     display: block;
@@ -83,38 +109,36 @@
     width: 100%;
   }
 
-  /* Cum arată meniul când este deschis pe telefon */
-    /* Cum arată meniul când este deschis pe telefon */
+  /* Meniul dropdown mobil */
   .nav-links {
     position: absolute;
-    top: 100%; /* Acum cade FIX sub bară, fără găuri! (înainte era 70px) */
+    top: 100%; /* Acum cade FIX sub bară */
     left: 0;
     right: 0;
-    background-color: var(--nav-bg); /* Modificat din bg-nav */
+    background-color: var(--nav-bg); 
     flex-direction: column;
     align-items: center;
     width: 100%;
     padding: 0;
     gap: 0;
     max-height: 0; 
-    overflow: hidden;
+    overflow-y: auto; /* Permite scroll în meniu dacă ecranul e foarte mic */
     transition: max-height 0.4s ease-in-out;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    z-index: 0;
-
+    z-index: 999;
   }
 
   /* Când dăm click pe hamburger */
   .nav-links.active {
-    max-height: 600px; /* Am mărit de la 400px ca să nu mai taie butoanele de jos! */
+    max-height: 85vh; /* Ocupă maxim 85% din înălțimea ecranului */
     padding: 20px 0;
   }
 
   .nav-links li {
     width: 100%;
     display: flex;
-    justify-content: center; /* FORȚEAZĂ tot conținutul să stea la mijloc orizontal */
-    align-items: center;     /* FORȚEAZĂ tot conținutul să stea la mijloc vertical */
+    justify-content: center; /* Centrare orizontală */
+    align-items: center;     /* Centrare verticală */
     margin: 10px 0; 
   }
 
@@ -129,17 +153,27 @@
     flex-direction: column;
     margin: 10px 0;
     gap: 15px;
+    width: 100%;
+    align-items: center;
   }
 
+  /* Reparat: Butoanele au acum dimensiuni auto cu limite sigure, nu mai sunt strivite la 10% sau 20% */
   .btn-logout, .btn-login {
-    width: 10%;
+    width: auto;
+    min-width: 150px;
+    max-width: 80%;
+    text-align: center;
     margin: 0 auto;
+    box-sizing: border-box;
   }
 
   .btn-accent {
-    width: 20%;
+    width: auto;
+    min-width: 200px;
+    max-width: 80%;
     text-align: center;
     margin: 0 auto;
+    box-sizing: border-box;
   }
 
   /* Animația X pentru hamburger */
@@ -149,7 +183,7 @@
 }
 
 
-/*incepe nebunia lu babasha nav pentru logare aprtea asta*/
+/* --- ZONA DE SUPORT (LOGARE) --- */
 .nav-user-info {
   display: flex;
   align-items: center;
@@ -158,7 +192,7 @@
 
 .user-email {
   font-size: 0.9rem;
-  color: var(--text-color); /* sau ce variabilă ai tu */
+  color: var(--text-color); 
   font-weight: bold;
 }
 
@@ -170,6 +204,7 @@
   border-radius: 7px;
   cursor: pointer;
   transition: 0.3s;
+  text-decoration: none;
 }
 
 .btn-logout:hover {
@@ -184,13 +219,7 @@
 }
 
 
-
-
-
-/* =========================================
-   BUTONUL DE DARK MODE (Animația de glisare)
-   ========================================= */
-
+/* --- BUTONUL DE DARK MODE (Animația de glisare) --- */
 .theme-toggle {
   background: none;
   border: none;
@@ -202,11 +231,10 @@
   outline: none;
 }
 
-/* "Pilula" din spate */
 .theme-toggle-track {
   width: 60px;
   height: 30px;
-  background-color: #cbd5e1; /* Culoare Light Mode (Gri deschis) */
+  background-color: #cbd5e1; 
   border-radius: 30px;
   position: relative;
   display: flex;
@@ -217,7 +245,6 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Iconițele (stau sub cerc) */
 .theme-toggle-track .icon-sun,
 .theme-toggle-track .icon-moon {
   font-size: 14px;
@@ -225,14 +252,12 @@
   transition: opacity 0.3s ease;
 }
 
-/* Facem iconița activă mai clară, iar cea inactivă mai transparentă */
 .theme-toggle .icon-sun { opacity: 1; }
 .theme-toggle .icon-moon { opacity: 0.3; }
 
 .theme-toggle.dark-active .icon-sun { opacity: 0.3; }
 .theme-toggle.dark-active .icon-moon { opacity: 1; }
 
-/* Cercul care se plimbă */
 .theme-toggle-thumb {
   position: absolute;
   top: 3px;
@@ -242,42 +267,32 @@
   background-color: #ffffff;
   border-radius: 50%;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 2; /* Stă PESTE iconițe */
-  
-  /* Animația magică (Muta cercul stânga-dreapta) */
+  z-index: 2; 
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* --- STAREA CÂND E DARK MODE --- */
 .theme-toggle.dark-active .theme-toggle-track {
-  background-color: #0f172a; /* Pilula devine închisă la culoare */
+  background-color: #0f172a; 
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .theme-toggle.dark-active .theme-toggle-thumb {
-  /* Se mută la dreapta: 60px(lățime) - 24px(cerc) - 6px(margini stânga-dreapta) = 30px */
   transform: translateX(30px); 
 }
 
 
-
-
-
-
-
-
-
-/* Containerul tip pastilă pentru Username */
+/* --- CONTAINERUL PENTRU USERNAME --- */
 .nav-user-badge {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background-color: rgba(1, 105, 111, 0.1); /* O nuanță foarte slabă din culoarea ta de accent */
+  background-color: rgba(1, 105, 111, 0.1); 
   border: 1px solid var(--accent);
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap; /* Previne ruperea numelui pe mai multe linii */
 }
 
 .nav-user-badge:hover {
@@ -285,7 +300,6 @@
   transform: translateY(-2px);
 }
 
-/* Schimbăm culoarea textului când punem mouse-ul (hover) */
 .nav-user-badge:hover .user-name-text,
 .nav-user-badge:hover .user-icon-mini {
   color: white;
@@ -305,5 +319,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-
