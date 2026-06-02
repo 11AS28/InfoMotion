@@ -8,6 +8,8 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
+import parse from 'html-react-parser';
+import WikiPreviewLink from '../components/WikiPreviewLink';
 
 // Lazy loading components...
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -265,10 +267,29 @@ function LessonPage() {
           <section className="lesson-content">
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
-              <div 
-                className="lesson-theory-content"
-                dangerouslySetInnerHTML={{ __html: proceseazaTeorie(lectie.teorie) }} 
-              />
+              {/* CODUL NOU INTERACTIV */}
+<div className="lesson-theory-content">
+  {parse(proceseazaTeorie(lectie.teorie), {
+    replace: (domNode) => {
+      // Dacă nodul este un tag de link <a> și trimite către o altă lecție
+      if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
+        const href = domNode.attribs.href;
+
+        if (href.startsWith('/lectie/')) {
+          // Extragem ID-ul documentului din link (ex: din "/lectie/tle" luăm "tle")
+          const idLectieTinta = href.split('/').pop();
+          const textLink = domNode.children[0]?.data || '';
+
+          return (
+            <WikiPreviewLink href={href} idLectieTinta={idLectieTinta}>
+              {textLink}
+            </WikiPreviewLink>
+          );
+        }
+      }
+    }
+  })}
+</div>
             </div>
 
             <div className="lesson-animation">

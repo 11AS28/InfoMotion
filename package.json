@@ -14,7 +14,7 @@
     "dompurify": "^3.4.7",
     "dotenv": "^17.4.2",
     "firebase": "^12.12.1",
-    "html-react-parser": "^6.1.2",
+    "html-react-parser": "^5.1.10",
     "js-auto-translate": "^1.0.1",
     "lucide-react": "^1.16.0",
     "react": "^19.2.5",

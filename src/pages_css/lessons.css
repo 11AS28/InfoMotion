@@ -677,3 +677,112 @@ body {
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
+
+
+/* Containerul părintelui - trebuie să fie relativ ca să poziționăm căsuța absolut față de el */
+.wiki-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Stilul linkului din text */
+.wiki-interactive-link {
+  color: #1fe0f9 !important; /* Culoarea cyan pe care o folosești la iconițe */
+  text-decoration: underline dotted #1fe0f9 !important;
+  text-underline-offset: 4px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.wiki-interactive-link:hover {
+  color: #ffffff !important;
+}
+
+.wiki-popup-box {
+  position: absolute;
+  bottom: 125%; 
+  left: 50%;
+  transform: translateX(-50%);
+  
+  width: 280px;
+  max-width: calc(100vw - 40px); 
+  
+  background-color: #111827;
+  border: 1px solid #1fe0f9;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  animation: wikiFadeIn 0.2s ease-out;
+
+  word-wrap: break-word; 
+}
+
+.wiki-popup-box::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #1fe0f9 transparent transparent transparent;
+}
+
+.wiki-popup-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.wiki-popup-desc {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wiki-popup-footer {
+  font-size: 10px;
+  color: #1fe0f9;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.wiki-loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.skeleton-line {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: loadingSkeleton 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-line.title {
+  width: 50%;
+  height: 14px;
+}
+
+.skeleton-line.text {
+  width: 100%;
+  height: 30px;
+}
+
+@keyframes wikiFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes loadingSkeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
