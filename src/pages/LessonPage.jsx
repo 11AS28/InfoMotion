@@ -34,7 +34,7 @@ const StructuriNeomogene = React.lazy(() => import('../components/animatii/Struc
 const Matrici = React.lazy(() => import('../components/animatii/MatriciAnim'));
 const OperatoriAnim = React.lazy(() => import('../components/animatii/OperatoriAnim'));
 const CombinatoricaAnim = React.lazy(() => import('../components/animatii/CombinatoricaAnim'));
-const CstringSearchAnim = React.lazy(() => import("../components/animatii/CstringSearchAnim"));
+
 const StrtokAnim = React.lazy(() => import('../components/animatii/StrtokAnim'));
 const CStringCompareReverseAnim = React.lazy(() => import('../components/animatii/CStringCompareReverseAnim'));
 
@@ -235,7 +235,7 @@ function LessonPage() {
       case "Matrici": return <Matrici />;
       case "OperatoriAnim": return <OperatoriAnim />;
       case "CombinatoricaAnim": return <CombinatoricaAnim />;
-      case "CstringSearchAnim": return <CstringSearchAnim />;
+     
       case "StrtokAnim": return <StrtokAnim />;
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
