@@ -68,37 +68,66 @@ function Clasament() {
   }, []);
 
   const paginaUrmatoareXP = async () => {
-    if (!ultimulDocXP) return;
-    try {
-      const nextQ = query(collection(db, 'users'), orderBy('puncteTotale', 'desc'), startAfter(ultimulDocXP), limit(USERS_PER_PAGE));
-      const snap = await getDocs(nextQ);
-      if (!snap.empty) {
-        const noiUseri = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => u.role !== 'teacher');
-        setTopXP((prev) => [...prev, ...noiUseri]);
-        setUltimulDocXP(snap.docs[snap.docs.length - 1]);
-        setPaginaXP((prev) => prev + 1);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Dacă avem deja datele pentru pagina următoare în array, doar schimbăm pagina
+  const dateSuficiente = topXP.length > paginaXP * USERS_PER_PAGE;
 
-  const paginaUrmatoareProbleme = async () => {
-    if (!ultimulDocProbleme) return;
-    try {
-      const nextQ = query(collection(db, 'users'), orderBy('problemeRezolvateCount', 'desc'), startAfter(ultimulDocProbleme), limit(USERS_PER_PAGE));
-      const snap = await getDocs(nextQ);
-      if (!snap.empty) {
-        const noiUseri = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => u.role !== 'teacher');
-        setTopProbleme((prev) => [...prev, ...noiUseri]);
-        setUltimulDocProbleme(snap.docs[snap.docs.length - 1]);
-        setPaginaProbleme((prev) => prev + 1);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  if (dateSuficiente) {
+    setPaginaXP(prev => prev + 1);
+    return;
+  }
 
+  // Altfel, facem query mai departe
+  if (!ultimulDocXP) return;
+  
+  try {
+    const nextQ = query(
+      collection(db, 'users'), 
+      orderBy('puncteTotale', 'desc'), 
+      startAfter(ultimulDocXP), 
+      limit(USERS_PER_PAGE)
+    );
+    const snap = await getDocs(nextQ);
+    
+    if (!snap.empty) {
+      const noiUseri = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => u.role !== 'teacher');
+      setTopXP((prev) => [...prev, ...noiUseri]);
+      setUltimulDocXP(snap.docs[snap.docs.length - 1]);
+      setPaginaXP((prev) => prev + 1);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+ const paginaUrmatoareProbleme = async () => {
+  const dateSuficiente = topProbleme.length > paginaProbleme * USERS_PER_PAGE;
+
+  if (dateSuficiente) {
+    setPaginaProbleme(prev => prev + 1);
+    return;
+  }
+
+  if (!ultimulDocProbleme) return;
+
+  try {
+    const nextQ = query(
+      collection(db, 'users'), 
+      orderBy('problemeRezolvateCount', 'desc'), 
+      startAfter(ultimulDocProbleme), 
+      limit(USERS_PER_PAGE)
+    );
+    const snap = await getDocs(nextQ);
+
+    if (!snap.empty) {
+      const noiUseri = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => u.role !== 'teacher');
+      setTopProbleme((prev) => [...prev, ...noiUseri]);
+      setUltimulDocProbleme(snap.docs[snap.docs.length - 1]);
+      setPaginaProbleme((prev) => prev + 1);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
   const paginaInapoiXP = () => { if (paginaXP > 1) setPaginaXP((prev) => prev - 1); };
   const paginaInapoiProbleme = () => { if (paginaProbleme > 1) setPaginaProbleme((prev) => prev - 1); };
 

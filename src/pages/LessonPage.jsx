@@ -34,6 +34,9 @@ const StructuriNeomogene = React.lazy(() => import('../components/animatii/Struc
 const Matrici = React.lazy(() => import('../components/animatii/MatriciAnim'));
 const OperatoriAnim = React.lazy(() => import('../components/animatii/OperatoriAnim'));
 const CombinatoricaAnim = React.lazy(() => import('../components/animatii/CombinatoricaAnim'));
+const CstringSearchAnim = React.lazy(() => import('../components/animatii/CstringSearchAnim'));
+const StrtokAnim = React.lazy(() => import('../components/animatii/StrtokAnim'));
+const CStringCompareReverseAnim = React.lazy(() => import('../components/animatii/CStringCompareReverseAnim'));
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -48,6 +51,7 @@ function LessonPage() {
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
+
 
   const algoritmiBackend = [
     "bubbleSort", 
@@ -231,6 +235,9 @@ function LessonPage() {
       case "Matrici": return <Matrici />;
       case "OperatoriAnim": return <OperatoriAnim />;
       case "CombinatoricaAnim": return <CombinatoricaAnim />;
+      case "CstringSearchAnim": return <CstringSearchAnim />;
+      case "StrtokAnim": return <StrtokAnim />;
+      case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
@@ -295,8 +302,8 @@ function LessonPage() {
                       <div className="input-control-zone">
                         <label className="input-zone-label">
                           {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
-                            ? "🚀 INTRODU CUVÂNTUL TĂU DE TEST:"
-                            : "🚀 INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
+                            ? " INTRODU CUVÂNTUL TĂU DE TEST:"
+                            : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
                         </label>
 
                         <div className="input-action-flex" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
@@ -317,7 +324,7 @@ function LessonPage() {
                           {lectie.animatie === "cautare_binara_div_imp" && (
                             <div style={{ width: '100%' }}>
                               <label className="input-zone-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#1fe0f9' }}>
-                                🎯 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
+                                 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
                               </label>
                               <input
                                 type="number"
@@ -372,7 +379,7 @@ function LessonPage() {
             </section>
           )}
 
-          {/* 🌟 REZOLVARE PROBLEME PBINFO: Randăm doar dacă NU este concept general */}
+          {/*  REZOLVARE PROBLEME PBINFO: Randăm doar dacă NU este concept general */}
           {!esteConceptGeneral && (
             <section className="lesson-problems">
               <h2><NotebookPen size={40} color="#1fe0f9" strokeWidth={0.75} /> Probleme Pbinfo recomandate</h2>
@@ -391,7 +398,7 @@ function LessonPage() {
             </section>
           )}
 
-          {/* 🌟 REZOLVARE QUIZ INTERACTIV: Randăm doar dacă NU este concept general */}
+          {/*  REZOLVARE QUIZ INTERACTIV: Randăm doar dacă NU este concept general */}
           {!esteConceptGeneral && (
             <section className="lesson-finish-action">
               {esteGata ? (

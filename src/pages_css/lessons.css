@@ -629,7 +629,7 @@ body {
 }
 .lesson-theory-content div,
 .lesson-theory-content span:not(.theory-highlight-box) {
-  color: inherit !important;
+  color: var(--text-primary) !important;
 }
 
 .theory-highlight-box {

@@ -65,7 +65,7 @@ function TreeVisualizer({ steps }) {
 
   const currentData = steps[currentStep];
 
-  // 🔍 DETECTARE AUTOMATĂ A STRUCTURII DE ARBORE
+  //  DETECTARE AUTOMATĂ A STRUCTURII DE ARBORE
   // Încercăm să luăm structura din treeStructure, direct din rădăcina pasului sau din proprietatea .tree
   const validTreeNode = currentData.treeStructure || currentData.tree || (currentData.children ? currentData : null);
 
@@ -74,7 +74,7 @@ function TreeVisualizer({ steps }) {
       
       {/* Caseta de Explicații */}
       <div className="visualizer-explanation" style={{ background: '#111625', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#fff', borderLeft: '4px solid #1fe0f9' }}>
-        💡 <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation || "Se execută pasul algoritmului..."}
+         <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation || "Se execută pasul algoritmului..."}
       </div>
 
       {/* Spațiul de desenare al Arborelui */}
