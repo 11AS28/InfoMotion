@@ -1,5 +1,5 @@
 // AdaugaTab.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Editor, {
   BtnBold, BtnItalic, BtnUnderline, BtnStrikeThrough,
   BtnNumberedList, BtnBulletList, BtnLink, BtnClearFormatting, Toolbar,
@@ -40,6 +40,9 @@ export default function AdaugaTab({
   const [cfProblems, setCfProblems] = useState(d.codeforces || ['', '']);
   const [loading, setLoading] = useState(false);
 
+  // Helper ca să știm rapid dacă suntem pe modul "Concepte"
+  const esteConcept = fClasa === 'concepte';
+
   const updatePb = (idx, field, val) =>
     setPbRows(pbRows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
   const addPbRow = () => setPbRows([...pbRows, { id: '', titlu: '', url: '' }]);
@@ -63,7 +66,7 @@ export default function AdaugaTab({
     }
   };
 
- const handlePublish = async () => {
+  const handlePublish = async () => {
     if (!fId || !fTitlu) return toast.warning('Completează ID și Titlu!');
     setLoading(true);
     
@@ -76,22 +79,16 @@ export default function AdaugaTab({
       const lectiiRef = collection(db, 'lectii');
       let ordineFinala = Number(fOrdine);
 
-      // --- LOGICA NOUĂ PENTRU DECALARE ȘI AUTO-INCREMENT ---
-      
-      // Cream un batch (un pachet de modificări care se execută toate deodată)
       const batch = writeBatch(db);
 
       if (!isEditing && !propunereInCurs) {
-        // CAZUL A: Dacă e o lecție complet nouă, verificăm dacă numărul de ordine există deja
         const qVerificare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '==', ordineFinala));
         const snapVerificare = await getDocs(qVerificare);
 
         if (!snapVerificare.empty) {
-          // Dacă numărul există deja, luăm toate lecțiile din clasa respectivă care au ordine >= numărul introdus
           const qDecalare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '>=', ordineFinala));
           const snapDecalare = await getDocs(qDecalare);
 
-          // Le decalăm pe toate cu +1
           snapDecalare.forEach((document) => {
             const docRef = doc(db, 'lectii', document.id);
             batch.update(docRef, { ordine: document.data().ordine + 1 });
@@ -100,34 +97,33 @@ export default function AdaugaTab({
         }
       }
 
-      // Pregătim datele lecției
+      // Pregătim datele lecției cu verificarea pentru Concepte
       const lectieData = {
         id: fId, clasa: clasaFinala, categorie: categorieVal,
         ordine: ordineFinala, titlu: fTitlu, descriere: fDescriere,
         teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
-        problemePbinfo: pbRows.filter((r) => r.id || r.titlu),
-        quiz, codeforces: cfProblems,
+        // Daca e concept, trimitem array gol ca sa nu apara pe frontend, altfel filtram randurile valide
+        problemePbinfo: esteConcept ? [] : pbRows.filter((r) => r.id || r.titlu),
+        // Daca e concept, stergem quiz-ul din datele trimise
+        quiz: esteConcept ? [] : quiz, 
+        codeforces: esteConcept ? [] : cfProblems,
         dataModificarii: new Date().toISOString(),
       };
 
-      // Adăugăm și salvarea lecției în același batch
       const nouaLectieRef = doc(db, 'lectii', fId);
       batch.set(nouaLectieRef, lectieData);
 
-      // --- STRUCTURA DE PROVENIENȚĂ PROPUNERI (Rămâne neschimbată) ---
       if (propunereInCurs) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {
           await sendUserNotification(propGasita.autorId, 'lectie_aprobata',
             `Propunerea ta pentru lecția „${propGasita.titlu}" a fost aprobată.`);
         }
-        // Ștergem propunerea deoarece a fost aprobată (o adăugăm tot în batch ca să fie atomic)
         const propRef = doc(db, 'propuneri_lectii', propunereInCurs);
         batch.delete(propRef);
       }
 
-      // Executăm toate operațiunile deodată în baza de date!
       await batch.commit();
 
       toast.success(isEditing ? '✅ Modificări salvate în cloud!' : '🚀 Lecție publicată cu succes!');
@@ -208,7 +204,7 @@ export default function AdaugaTab({
 
         {/* Animație */}
         <div className="admin-field admin-field--full">
-          <label>Animație Interactivă</label>
+          <label>Animație Interactivă (Opțională)</label>
           <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
             {['null', 'BubbleSortAnim', 'CautareBinaraAnim', 'custom'].map((opt) => (
               <button key={opt} type="button" className={`admin-anim-opt ${fAnim === opt ? 'selected' : ''}`} onClick={() => setFAnim(opt)}>
@@ -223,41 +219,46 @@ export default function AdaugaTab({
 
         {/* Cod C++ */}
         <div className="admin-field admin-field--full">
-          <label>Cod C++</label>
+          <label>Cod C++ (Lasă gol dacă nu e nevoie)</label>
           <textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} />
         </div>
 
-        {/* Pbinfo */}
-        <div className="admin-field admin-field--full">
-          <div className="admin-section-divider">Probleme Pbinfo</div>
-          {pbRows.map((row, idx) => (
-            <div key={idx} className="admin-pb-row">
-              <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" className="admin-pb-id" />
-              <input type="text" value={row.titlu} onChange={(e) => updatePb(idx, 'titlu', e.target.value)} placeholder="Titlu" />
-              <input type="text" value={row.url} onChange={(e) => updatePb(idx, 'url', e.target.value)} placeholder="URL" />
-              <button type="button" onClick={() => removePbRow(idx)}>✕</button>
+        {/* SECȚIUNI ASCUNSE PENTRU CONCEPTE */}
+        {!esteConcept && (
+          <>
+            {/* Pbinfo */}
+            <div className="admin-field admin-field--full">
+              <div className="admin-section-divider">Probleme Pbinfo</div>
+              {pbRows.map((row, idx) => (
+                <div key={idx} className="admin-pb-row">
+                  <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" className="admin-pb-id" />
+                  <input type="text" value={row.titlu} onChange={(e) => updatePb(idx, 'titlu', e.target.value)} placeholder="Titlu" />
+                  <input type="text" value={row.url} onChange={(e) => updatePb(idx, 'url', e.target.value)} placeholder="URL" />
+                  <button type="button" onClick={() => removePbRow(idx)}>✕</button>
+                </div>
+              ))}
+              <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
             </div>
-          ))}
-          <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
-        </div>
 
-        {/* Quiz */}
-        <div className="admin-field admin-field--full">
-          <div className="admin-section-divider">Quiz (5 Întrebări)</div>
-          {quiz.map((q, qIdx) => (
-            <div key={qIdx} className="admin-quiz-setup-card" style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
-              <input type="text" placeholder={`Întrebarea ${qIdx + 1}`} value={q.intrebare} onChange={(e) => updateQuiz(qIdx, 'intrebare', e.target.value)} style={{ width: '100%', fontWeight: 'bold', marginBottom: '10px' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {q.variante.map((v, vIdx) => (
-                  <div key={vIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-                    <input type="radio" name={`correct-${qIdx}`} checked={q.corect === vIdx} onChange={() => updateQuiz(qIdx, 'corect', vIdx)} style={{ flexShrink: 0, width: '16px', height: '16px', cursor: 'pointer' }} />
-                    <input type="text" placeholder={`Varianta ${vIdx + 1}`} value={v} onChange={(e) => updateQuiz(qIdx, 'varianta', e.target.value, vIdx)} style={{ flex: 1, minWidth: 0 }} />
+            {/* Quiz */}
+            <div className="admin-field admin-field--full">
+              <div className="admin-section-divider">Quiz (5 Întrebări)</div>
+              {quiz.map((q, qIdx) => (
+                <div key={qIdx} className="admin-quiz-setup-card" style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
+                  <input type="text" placeholder={`Întrebarea ${qIdx + 1}`} value={q.intrebare} onChange={(e) => updateQuiz(qIdx, 'intrebare', e.target.value)} style={{ width: '100%', fontWeight: 'bold', marginBottom: '10px' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {q.variante.map((v, vIdx) => (
+                      <div key={vIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                        <input type="radio" name={`correct-${qIdx}`} checked={q.corect === vIdx} onChange={() => updateQuiz(qIdx, 'corect', vIdx)} style={{ flexShrink: 0, width: '16px', height: '16px', cursor: 'pointer' }} />
+                        <input type="text" placeholder={`Varianta ${vIdx + 1}`} value={v} onChange={(e) => updateQuiz(qIdx, 'varianta', e.target.value, vIdx)} style={{ flex: 1, minWidth: 0 }} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>

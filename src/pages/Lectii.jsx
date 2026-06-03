@@ -15,8 +15,8 @@ function Lectii() {
     let isMounted = true;
 
     async function fetchLectii() {
-      // Am schimbat cheia cache-ului la v2 pentru a forța reîmprospătarea datelor cu noul format de sortare
-      const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v2');
+      // 🚀 Trecem la cache v3 pentru a goli datele vechi și a aduce lecția despre Complexitate!
+      const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v3');
       if (cachedLessons) {
         setLessonsData(JSON.parse(cachedLessons));
         setLoading(false);
@@ -31,8 +31,6 @@ function Lectii() {
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
           
-          // Extragem clasa numerică din orice câmp relevant (clasa sau titlu)
-          // Funcționează acum și pentru olimpiade (ex: "clasa-9-olimpiada" sau "olimpici-10" va deveni 9, respectiv 10)
           let extrasClasa = 9; 
           if (data.clasa) {
             const digits = data.clasa.toString().match(/\d+/);
@@ -57,8 +55,8 @@ function Lectii() {
 
         if (isMounted) {
           setLessonsData(lectiiDinDB);
-          // Salvăm în cache pentru 30 de minute cu noua cheie v2
-          localStorage.setItem('infomotion_lessons_cache_v2', JSON.stringify(lectiiDinDB));
+          // Salvare în cache v3
+          localStorage.setItem('infomotion_lessons_cache_v3', JSON.stringify(lectiiDinDB));
         }
       } catch (error) {
         console.error("Eroare la preluarea lecțiilor:", error);
@@ -81,7 +79,8 @@ function Lectii() {
         matchesFilter = true;
       } else if (activeFilter === 'olimpici') {
         matchesFilter = lectie.esteOlimpiada;
-      } else if (activeFilter === 'concepte' || activeFilter === 'termeni') {
+      } else if (activeFilter === 'concepte') {
+        // Acum verifică corect dacă este setat ca fiind concept general
         matchesFilter = lectie.esteConcept;
       } else {
         const clasaTinta = parseInt(activeFilter.split('-')[1]);
@@ -91,35 +90,31 @@ function Lectii() {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      // Determinăm grupul principal de sortare pentru fiecare lecție
       const getGroup = (item) => {
         if (!item.esteOlimpiada && !item.esteConcept) {
           if (item.clasaNumerica === 9) return 1;
           if (item.clasaNumerica === 10) return 2;
           if (item.clasaNumerica === 11) return 3;
-          return 4; // Altă clasă normală
+          return 4;
         }
-        if (item.esteOlimpiada) return 10; // Olimpiadă (Grupul 10)
-        if (item.esteConcept) return 20;   // Concepte/Termeni (Grupul 20)
+        if (item.esteOlimpiada) return 10;
+        if (item.esteConcept) return 20; // Concepte rămân la sfârșit ordonate frumos
         return 999;
       };
 
       const grupA = getGroup(a);
       const grupB = getGroup(b);
 
-      // 1. Sortăm mai întâi după grupul principal (Clasa 9 -> Clasa 10 -> Clasa 11 -> Olimpiadă -> Termeni)
       if (grupA !== grupB) {
         return grupA - grupB;
       }
 
-      // 2. Dacă fac parte din grupul Olimpiadă (Grup 10), le sortăm crescător după clasă (9 -> 10 -> 11)
       if (grupA === 10) {
         if (a.clasaNumerica !== b.clasaNumerica) {
           return a.clasaNumerica - b.clasaNumerica;
         }
       }
 
-      // 3. În cadrul aceluiași grup/clase, sortăm crescător după ordinea modulului
       const ordineA = a.ordine !== undefined && a.ordine !== null ? parseInt(a.ordine, 10) : 999;
       const ordineB = b.ordine !== undefined && b.ordine !== null ? parseInt(b.ordine, 10) : 999;
       
@@ -127,14 +122,13 @@ function Lectii() {
         return ordineA - ordineB;
       }
 
-      // 4. Fallback alfabetic după titlu dacă au aceeași ordine de modul
       return (a.titlu || "").localeCompare(b.titlu || "");
     });
 
   const getFilterLabel = (filter) => {
     if (filter === 'toate') return 'Toate';
     if (filter === 'olimpici') return 'Olimpici';
-    if (filter === 'termeni' || filter === 'concepte') return 'Termeni';
+    if (filter === 'concepte') return 'Concepte'; // Schimbat din Termeni -> Concepte
     return `Clasa ${filter.split('-')[1]}`;
   };
 
@@ -151,14 +145,15 @@ function Lectii() {
             <span className="search-icon"><Search size={22} color="#23a9b3" strokeWidth={3} /></span>
             <input 
               type="text" 
-              placeholder="Caută o lecție (ex: Bubble Sort, vectori...)" 
+              placeholder="Caută o lecție (ex: Complexitate, vectori...)" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
           <div className="class-filters">
-            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'termeni'].map((f) => (
+            {/* Înlocuit valoarea 'termeni' cu 'concepte' pentru butoane */}
+            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte'].map((f) => (
               <button 
                 key={f}
                 className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 
@@ -183,7 +178,7 @@ function Lectii() {
                   {lectie.esteOlimpiada 
                     ? 'OLIMPIADĂ' 
                     : lectie.esteConcept 
-                    ? 'CONCEPTE & TLE' 
+                    ? 'CONCEPTE GENERAL' 
                     : (lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`)}
                   {lectie.ordine ? ` • Modulul ${lectie.ordine}` : ''}
                 </div>

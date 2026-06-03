@@ -87,7 +87,6 @@ function LessonPage() {
           const dateLectie = docSnap.data();
           if (isMounted) setLectie(dateLectie);
 
-          // 🧠 OPTIMIZARE SIDEBAR: Încercăm să luăm lista din cache-ul global generat de Lectii.jsx
           const cachedLessonsRaw = localStorage.getItem('infomotion_lessons_cache');
           let gasitInCache = false;
 
@@ -100,7 +99,6 @@ function LessonPage() {
             }
           }
 
-          // Fallback doar dacă utilizatorul a intrat direct pe link fără să treacă prin /lectii
           if (!gasitInCache && dateLectie.clasa) {
             const q = query(collection(db, "lectii"), where("clasa", "==", dateLectie.clasa));
             const querySnapshot = await getDocs(q);
@@ -111,8 +109,6 @@ function LessonPage() {
             if (isMounted) setToateLectiileDinClasa(lista);
           }
 
-          // OPTIMIZARE ELEV STATUS: Luăm statusul direct din currentUser dacă îl avem în Context live, 
-          // economisind încă un getDoc complet inutil spre tabela 'users'!
           if (currentUser) {
             const terminate = currentUser.lectiiTerminate || [];
             const gasit = terminate.some(id => String(id) === String(idLectie));
@@ -207,6 +203,9 @@ function LessonPage() {
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
   const esteAnimatieNoua = algoritmiBackend.includes(lectie.animatie);
+  
+  // Flag ca să știm dacă ascundem elementele specifice claselor de concurs
+  const esteConceptGeneral = lectie.clasa === 'concepte' || lectie.categorie === 'concepte';
 
   const ComponentaAnimatieVeche = () => {
     switch (lectie.animatie) {
@@ -267,29 +266,24 @@ function LessonPage() {
           <section className="lesson-content">
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
-              {/* CODUL NOU INTERACTIV */}
-<div className="lesson-theory-content">
-  {parse(proceseazaTeorie(lectie.teorie), {
-    replace: (domNode) => {
-      // Dacă nodul este un tag de link <a> și trimite către o altă lecție
-      if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
-        const href = domNode.attribs.href;
-
-        if (href.startsWith('/lectie/')) {
-          // Extragem ID-ul documentului din link (ex: din "/lectie/tle" luăm "tle")
-          const idLectieTinta = href.split('/').pop();
-          const textLink = domNode.children[0]?.data || '';
-
-          return (
-            <WikiPreviewLink href={href} idLectieTinta={idLectieTinta}>
-              {textLink}
-            </WikiPreviewLink>
-          );
-        }
-      }
-    }
-  })}
-</div>
+              <div className="lesson-theory-content">
+                {parse(proceseazaTeorie(lectie.teorie), {
+                  replace: (domNode) => {
+                    if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
+                      const href = domNode.attribs.href;
+                      if (href.startsWith('/lectie/')) {
+                        const idLectieTinta = href.split('/').pop();
+                        const textLink = domNode.children[0]?.data || '';
+                        return (
+                          <WikiPreviewLink href={href} idLectieTinta={idLectieTinta}>
+                            {textLink}
+                          </WikiPreviewLink>
+                        );
+                      }
+                    }
+                  }
+                })}
+              </div>
             </div>
 
             <div className="lesson-animation">
@@ -378,38 +372,44 @@ function LessonPage() {
             </section>
           )}
 
-          <section className="lesson-problems">
-            <h2><NotebookPen size={40} color="#1fe0f9" strokeWidth={0.75} /> Probleme Pbinfo recomandate</h2>
-            <div className="problems-grid">
-              {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
-                lectie.problemePbinfo.map((prob, index) => (
-                  <a key={index} href={prob.url} target="_blank" rel="noopener noreferrer" className="problem-card">
-                    <span className="prob-id">{prob.idProblema || prob.id}</span>
-                    <span className="prob-title">{prob.titluProblema || prob.titlu}</span>
-                  </a>
-                ))
+          {/* 🌟 REZOLVARE PROBLEME PBINFO: Randăm doar dacă NU este concept general */}
+          {!esteConceptGeneral && (
+            <section className="lesson-problems">
+              <h2><NotebookPen size={40} color="#1fe0f9" strokeWidth={0.75} /> Probleme Pbinfo recomandate</h2>
+              <div className="problems-grid">
+                {lectie.problemePbinfo && lectie.problemePbinfo.length > 0 ? (
+                  lectie.problemePbinfo.map((prob, index) => (
+                    <a key={index} href={prob.url} target="_blank" rel="noopener noreferrer" className="problem-card">
+                      <span className="prob-id">{prob.idProblema || prob.id}</span>
+                      <span className="prob-title">{prob.titluProblema || prob.titlu}</span>
+                    </a>
+                  ))
+                ) : (
+                  <p>Nu sunt probleme Pbinfo asociate acestei lecții.</p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* 🌟 REZOLVARE QUIZ INTERACTIV: Randăm doar dacă NU este concept general */}
+          {!esteConceptGeneral && (
+            <section className="lesson-finish-action">
+              {esteGata ? (
+                <div className="lesson-completed-success-msg">
+                  <span className="check-icon"><Check size={60} color="#030303" strokeWidth={2} /></span> <br />Lecție finalizată! Ai stăpânit acest concept.
+                </div>
               ) : (
-                <p>Nu sunt probleme Pbinfo asociate acestei lecții.</p>
+                <div className="finish-container">
+                  <p>Ești gata să testezi ce ai învățat?</p>
+                  <button className="finish-btn" onClick={() => setIsQuizOpen(true)}>
+                    Finalizează Lecția (Quiz)
+                  </button>
+                </div>
               )}
-            </div>
-          </section>
+            </section>
+          )}
 
-          <section className="lesson-finish-action">
-            {esteGata ? (
-              <div className="lesson-completed-success-msg">
-                <span className="check-icon"><Check size={60} color="#030303" strokeWidth={2} /></span> <br />Lecție finalizată! Ai stăpânit acest concept.
-              </div>
-            ) : (
-              <div className="finish-container">
-                <p>Ești gata să testezi ce ai învățat?</p>
-                <button className="finish-btn" onClick={() => setIsQuizOpen(true)}>
-                  Finalizează Lecția (Quiz)
-                </button>
-              </div>
-            )}
-          </section>
-
-          {isQuizOpen && (
+          {isQuizOpen && !esteConceptGeneral && (
             <QuizModal
               lessonId={idLectie}
               quizData={lectie.quiz}
