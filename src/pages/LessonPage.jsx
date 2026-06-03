@@ -235,7 +235,7 @@ function LessonPage() {
       case "Matrici": return <Matrici />;
       case "OperatoriAnim": return <OperatoriAnim />;
       case "CombinatoricaAnim": return <CombinatoricaAnim />;
-      case "CstringSearchAnim": return <CStringSearchAnim />;
+      case "CstringSearchAnim": return <CstringSearchAnim />;
       case "StrtokAnim": return <StrtokAnim />;
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
