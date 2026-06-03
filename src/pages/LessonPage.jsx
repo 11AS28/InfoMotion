@@ -34,7 +34,7 @@ const StructuriNeomogene = React.lazy(() => import('../components/animatii/Struc
 const Matrici = React.lazy(() => import('../components/animatii/MatriciAnim'));
 const OperatoriAnim = React.lazy(() => import('../components/animatii/OperatoriAnim'));
 const CombinatoricaAnim = React.lazy(() => import('../components/animatii/CombinatoricaAnim'));
-const CstringSearchAnim = React.lazy(() => import("../components/animatii/CstringSearchAnim.jsx"));
+const CstringSearchAnim = React.lazy(() => import("../components/animatii/CstringSearchAnim"));
 const StrtokAnim = React.lazy(() => import('../components/animatii/StrtokAnim'));
 const CStringCompareReverseAnim = React.lazy(() => import('../components/animatii/CStringCompareReverseAnim'));
 
