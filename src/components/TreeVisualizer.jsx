@@ -83,7 +83,7 @@ function TreeVisualizer({ steps }) {
           <TreeNode node={validTreeNode} />
         ) : (
           <div style={{ color: '#ffb703', textAlign: 'center', padding: '20px', border: '1px dashed #ffb703', borderRadius: '8px', background: 'rgba(255,183,3,0.05)' }}>
-            ⚠️ Pașii primiți nu conțin o structură de arbore validă.<br />
+             Pașii primiți nu conțin o structură de arbore validă.<br />
             <span style={{ fontSize: '12px', color: '#8fa0c4' }}>Asigură-te că simulatorul din backend returnează noduri cu 'children'.</span>
           </div>
         )}

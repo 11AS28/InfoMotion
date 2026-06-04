@@ -126,7 +126,7 @@ export default function AdaugaTab({
 
       await batch.commit();
 
-      toast.success(isEditing ? '✅ Modificări salvate în cloud!' : '🚀 Lecție publicată cu succes!');
+      toast.success(isEditing ? ' Modificări salvate în cloud!' : ' Lecție publicată cu succes!');
       onSuccess();
     } catch (e) {
       toast.error('Eroare la salvare: ' + e.message);

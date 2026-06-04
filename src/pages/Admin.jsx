@@ -200,9 +200,9 @@ function Dashboard({ username, onLogout }) {
 
   const tabLabel = (t) => ({
     overview: 'Prezentare generală',
-    utilizatori: '👥 Utilizatori',
+    utilizatori: ' Utilizatori',
     aprobari: `Aprobări (${propuneri.length})`,
-    todo: `📋 To-Do List (${activeTodoCount} active)`,
+    todo: ` To-Do List (${activeTodoCount} active)`,
     lectii: 'Lecțiile mele',
     adauga: isEditing ? '📝 Editează lecția' : '➕ Adaugă lecție',
   }[t]);
