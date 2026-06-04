@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import '../animatii_css/cstringSearchAnim.css';
+import '../animatii_css/CstringSearchAnim.css';
 
 const MODES = {
   strchr: {
