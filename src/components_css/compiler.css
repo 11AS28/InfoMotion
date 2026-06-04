@@ -1,0 +1,109 @@
+/* src/components/Compiler.css */
+.compiler-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background-color: #1a1a1a;
+  color: #fff;
+  height: 82vh;
+  border-radius: 8px;
+}
+
+.compiler-main-zone {
+  display: flex;
+  gap: 15px;
+  flex: 7; /* Îi dăm mai mult spațiu zonei de cod */
+  min-height: 0; 
+}
+
+.compiler-editor-box {
+  flex: 6; 
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.monaco-wrapper {
+  flex: 1;
+  border: 1px solid #333;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  overflow: hidden; /* Să nu iasă editorul din margini */
+}
+
+.compiler-input-box {
+  flex: 4; 
+  display: flex;
+  flex-direction: column;
+}
+
+.compiler-console-zone {
+  flex: 3; /* Spațiul pentru consolă */
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+}
+
+.box-header {
+  background-color: #262626;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+  font-family: sans-serif;
+  font-weight: bold;
+  border-bottom: 2px solid #333;
+}
+
+.input-textarea {
+  width: 100%;
+  height: 100%;
+  background-color: #1e1e1e;
+  color: #f8f8f2;
+  border: 1px solid #333;
+  border-top: none;
+  padding: 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  resize: none;
+  outline: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.run-btn {
+  background-color: #2cc95b;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.run-btn:hover {
+  background-color: #24a84c;
+}
+
+.run-btn:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+}
+
+.console-output {
+  margin: 0;
+  padding: 15px;
+  background-color: #000000;
+  color: #00ff66; /* Verde clasic de terminal Linux */
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 0 0 6px 6px;
+  border: 1px solid #333;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  white-space: pre-wrap; 
+}

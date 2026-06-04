@@ -1,3 +1,4 @@
+// App.js modificat
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -8,7 +9,7 @@ import Nav from './components/nav';
 import Footer from './components/footer';
 import PrivateRoute from './components/PrivateRoute';
 import Arena from './components/Arena';
-
+import CompilerPage from './components/CompilatorTab';
 
 import MainPage from './pages/mainpage';
 import Contact from './pages/contact';
@@ -26,22 +27,27 @@ import TrimiteLectii from './pages/TrimiteLectii';
 import './theme.css';
 
 function App() {
-  
   const location = useLocation();
 
- 
   const isAdminPage = location.pathname === '/admin';
-  const epagadmin = location.pathname ==='/adminusers';
-  return (
+  const epagadmin = location.pathname === '/adminusers';
+  
+  // Verificăm dacă suntem pe pagina compilatorului ca să ascundem Nav și Footer și să scoatem padding-ul de sus!
+  const isCompilerPage = location.pathname.startsWith('/compiler');
 
+  return (
     <ThemeProvider>
       <AuthProvider>
+        <Toaster richColors /> {/* Adăugat pentru notificări */}
         
-        {!isAdminPage && !epagadmin && <Nav />}
+        {/* Ascundem navigația pe admin și pe compiler */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && <Nav />}
         
-        <main style={{ minHeight: '80vh', paddingTop: isAdminPage || epagadmin ? '0' : '85px' }}>
+        <main style={{ 
+          minHeight: '100vh', 
+          paddingTop: isAdminPage || epagadmin || isCompilerPage ? '0' : '85px' 
+        }}>
           <Routes>
-            
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
@@ -49,10 +55,8 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
 
-            
             <Route path="/admin" element={<Admin />} />
 
-           
             <Route
               path="/lectii"
               element={
@@ -61,7 +65,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-           
 
             <Route
               path="/arena"
@@ -80,6 +83,17 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* RUTA NOUĂ PENTRU TABUL SEPARAT DE COD */}
+            <Route
+              path="/compiler/:idLectie"
+              element={
+                <PrivateRoute>
+                  <CompilerPage />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/adminusers/"
               element={
@@ -96,12 +110,11 @@ function App() {
                 </PrivateRoute>
               }
             />
-
           </Routes>
         </main>
 
-       
-        {!isAdminPage && !epagadmin &&<Footer />}
+        {/* Ascundem footer-ul pe admin și pe compiler */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && <Footer />}
         
       </AuthProvider>
       <SpeedInsights />

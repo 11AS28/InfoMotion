@@ -372,12 +372,55 @@ function LessonPage() {
             </div>
           </section>
 
-          {lectie.codCPlusPlus && (
-            <section className="lesson-code">
-              <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
-              <pre><code>{lectie.codCPlusPlus}</code></pre>
-            </section>
-          )}
+         {/* ÎNLOCUIEȘTE SECȚIUNEA EXISTENTĂ DE COD C++ CU ACEASTA */}
+{lectie.codCPlusPlus && (
+  <section className="lesson-code" style={{ position: 'relative' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+      <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
+      
+      {/* BUTONUL INTELIGENT DE ACTIONARE PLAYGROUND */}
+      <button
+        onClick={() => {
+          // 1. Salvăm codul în cache-ul specific lecției pentru a fi citit instantaneu de compiler
+          localStorage.setItem(`infomotion_code_${idLectie}`, lectie.codCPlusPlus);
+          
+          // 2. Deschidem ruta configurată în App.js într-un tab complet separat
+          window.open(`/compiler/${idLectie}`, '_blank');
+        }}
+        style={{
+          background: 'rgba(31, 224, 249, 0.1)',
+          color: '#1fe0f9',
+          border: '1px solid #1fe0f9',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          fontFamily: 'monospace',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 0 15px rgba(31, 224, 249, 0.1)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#1fe0f9';
+          e.currentTarget.style.color = '#121212';
+          e.currentTarget.style.boxShadow = '0 0 20px rgba(31, 224, 249, 0.4)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(31, 224, 249, 0.1)';
+          e.currentTarget.style.color = '#1fe0f9';
+          e.currentTarget.style.boxShadow = '0 0 15px rgba(31, 224, 249, 0.1)';
+        }}
+      >
+        🚀 Modifică și Rulează codul
+      </button>
+    </div>
+
+    <pre><code className="language-cpp">{lectie.codCPlusPlus}</code></pre>
+  </section>
+)}
 
           {/*  REZOLVARE PROBLEME PBINFO: Randăm doar dacă NU este concept general */}
           {!esteConceptGeneral && (
