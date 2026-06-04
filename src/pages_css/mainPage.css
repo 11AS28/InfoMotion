@@ -152,11 +152,11 @@ span {
 
 /* --- PARTEA DREAPTĂ: VISUALIZER-UL BUBBLE SORT --- */
 .visualizer-container {
-  background-color: var(--bg-card); /* AM SCHIMBAT AICI (în loc de #ffffff) */
+  background-color: var(--bg-card) !important; 
   border-radius: 16px;
   padding: 40px 30px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color); /* AM SCHIMBAT AICI (în loc de #e2e8f0) */
+  border: 1px solid var(--border-color) !important; 
   text-align: center;
   height: 100%;
   display: flex;
@@ -187,7 +187,7 @@ span {
 
 .bar {
   width: 40px;
-  background-color: var(--accent); /* AM SCHIMBAT AICI (în loc de #01696f) */
+  background-color: var(--accent); 
   border-radius: 6px 6px 0 0;
   position: relative;
   display: flex;
@@ -199,7 +199,7 @@ span {
   position: absolute;
   top: -28px;
   font-weight: 700;
-  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #475569) */
+  color: var(--footer-text); /* AM SCHIMBAT AICI (în loc de #475569) */
   font-size: 0.9rem;
 }
 
@@ -231,7 +231,7 @@ span {
 /* ---------------------------------------------------- */
 
 .viz-text {
-  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #64748b) */
+  color: var(--footer-text); /* AM SCHIMBAT AICI (în loc de #64748b) */
   font-size: 0.95rem;
   margin-bottom: 30px;
 }
