@@ -59,7 +59,7 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
         <button className="close-x" onClick={onClose}>&times;</button>
         
         <div className="quiz-step">
-          <h3>🧠 Quiz Finalizare ({answeredCount}/{quizData.length})</h3>
+          <h3> Quiz Finalizare ({answeredCount}/{quizData.length})</h3>
           
           {quizData.map((q, qIdx) => (
             <div key={qIdx} className="q-block">
@@ -99,7 +99,7 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
                   onClick={handleFinalizeLesson}
                   disabled={loading}
                 >
-                  {loading ? "Se salvează..." : "Felicitări! Finalizează Lecția 🏆"}
+                  {loading ? "Se salvează..." : "Felicitări! Finalizează Lecția "}
                 </button>
               ) : (
                 <div style={{textAlign: 'center'}}>

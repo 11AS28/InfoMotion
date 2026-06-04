@@ -71,7 +71,7 @@ function ArrayVisualizer({ steps }) {
         })}
       </div>
 
-      {/* 🌟 3. Zona pentru Stiva de Apeluri Recursive (Așezată curat sub bare) */}
+      {/*  3. Zona pentru Stiva de Apeluri Recursive (Așezată curat sub bare) */}
       {steps[currentStep]?.apelCurent && (
         <div className="recursion-stack-zone" style={{
           marginTop: '25px',
@@ -85,7 +85,7 @@ function ArrayVisualizer({ steps }) {
           width: '100%'
         }}>
           <h4 style={{ color: '#1fe0f9', margin: '0 0 10px 0', fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-            🥞 Stiva de Apeluri Recursive (Divide et Impera)
+             Stiva de Apeluri Recursive (Divide et Impera)
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: '5px' }}>
             <div className="stack-frame active" style={{
@@ -98,7 +98,7 @@ function ArrayVisualizer({ steps }) {
               fontSize: '14px',
               fontWeight: 'bold'
             }}>
-              ➡️ {steps[currentStep].apelCurent}
+               {steps[currentStep].apelCurent}
             </div>
           </div>
         </div>

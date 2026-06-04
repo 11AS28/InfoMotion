@@ -357,7 +357,7 @@ function LessonPage() {
                           )
                         ) : (
                           <div className="animation-placeholder">
-                            💡 Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
+                             Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
                           </div>
                         )}
                       </div>
@@ -414,7 +414,7 @@ function LessonPage() {
           e.currentTarget.style.boxShadow = '0 0 15px rgba(31, 224, 249, 0.1)';
         }}
       >
-        🚀 Modifică și Rulează codul
+         Modifică și Rulează codul
       </button>
     </div>
 

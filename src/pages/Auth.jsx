@@ -250,7 +250,7 @@ function Auth() {
           {isRegistering && role === 'teacher' && (
             <div className="teacher-extra-fields" style={{ marginBottom: '15px', padding: '10px', background: 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
               <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
-                💡 Contul de profesor îți va permite să trimiți lecții pentru a fi publicate pe site.
+                 Contul de profesor îți va permite să trimiți lecții pentru a fi publicate pe site.
               </p>
             </div>
           )}

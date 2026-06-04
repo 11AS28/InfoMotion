@@ -104,9 +104,9 @@ function AdminUsers() {
       setEditUserId(null);
       
       // Toast șmecher de succes în loc de alert()
-      toast.success("🚀 Modificări salvate cu succes în Firestore!");
+      toast.success(" Modificări salvate cu succes în Firestore!");
     } catch (error) {
-      toast.error("💥 Eroare la salvare: " + error.message);
+      toast.error(" Eroare la salvare: " + error.message);
     }
   };
 
@@ -177,7 +177,7 @@ function AdminUsers() {
       {/* Componenta care randează efectiv pop-up-urile în pagină */}
       <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>🛠️ Panou Admin Suprem - Gestiune Utilizatori</h2>
+          <h2 style={{ margin: 0, fontSize: '1.5rem' }}> Panou Admin Suprem - Gestiune Utilizatori</h2>
           <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
         </div>
         <button onClick={() => { setIsAuthorized(false); toast.info("Deconectat din panou."); }} style={{ ...btnStyle, background: '#a12424', padding: '10px 16px' }}>Ieșire Panou</button>
@@ -211,13 +211,13 @@ function AdminUsers() {
             Toți ({users.length})
           </button>
           <button onClick={() => setSortBy("username")} style={{ ...btnStyle, background: sortBy === "username" ? "#378ADD" : "#222", border: "1px solid #444" }}>
-            🔤 După Username
+             După Username
           </button>
           <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#222", border: "1px solid #444" }}>
-            👨‍🏫 Doar Profesori
+             Doar Profesori
           </button>
           <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#222", border: "1px solid #444" }}>
-            👨‍🎓 Doar Elevi
+             Doar Elevi
           </button>
 
           {searchTerm && (
@@ -256,13 +256,13 @@ function AdminUsers() {
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{user.nume || "-"}</td>
                     <td style={{ padding: '12px' }}>
                       <span style={{ padding: '2px 6px', borderRadius: '4px', background: user.role === 'teacher' ? '#0d47a1' : '#1b5e20', fontSize: '0.8rem' }}>
-                        {user.role === 'teacher' ? '👨‍🏫 Profesor' : '👨‍🎓 Elev'}
+                        {user.role === 'teacher' ? ' Profesor' : ' Elev'}
                       </span>
                     </td>
                     <td style={{ padding: '12px' }}>{user.codeforcesHandle || "-"}</td>
-                    <td style={{ padding: '12px', color: '#ffd700' }}>⭐ {user.puncteTotale || 0}</td>
-                    <td style={{ padding: '12px', color: '#ff4500' }}>🔥 {user.streakCount || 0}</td>
-                    <td style={{ padding: '12px' }}>{user.cfValidat ? "✅ Da" : "❌ Nu"}</td>
+                    <td style={{ padding: '12px', color: '#ffd700' }}> {user.puncteTotale || 0}</td>
+                    <td style={{ padding: '12px', color: '#ff4500' }}> {user.streakCount || 0}</td>
+                    <td style={{ padding: '12px' }}>{user.cfValidat ? " Da" : " Nu"}</td>
                     <td style={{ padding: '12px' }}>
                       {isEditing ? (
                         <div style={{ display: 'flex', gap: '5px' }}>

@@ -50,7 +50,7 @@ export default function UtilizatoriTab({ firebaseUsers }) {
 
       <div className="admin-two-col">
         <div className="admin-card" style={{ flex: 1 }}>
-          <div className="admin-section-title">🏆 Top Elevi (După XP)</div>
+          <div className="admin-section-title"> Top Elevi (După XP)</div>
           {topUsers.map((user, i) => (
             <div key={i} className="admin-bar-row" style={{ marginBottom: '15px' }}>
               <span className="admin-bar-label" style={{ minWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -68,7 +68,7 @@ export default function UtilizatoriTab({ firebaseUsers }) {
         </div>
 
         <div className="admin-card" style={{ flex: 1 }}>
-          <div className="admin-section-title">🔥 Top Elevi (După Streak)</div>
+          <div className="admin-section-title"> Top Elevi (După Streak)</div>
           {topStreakUsers.map((user, i) => (
             <div key={i} className="admin-bar-row" style={{ marginBottom: '15px' }}>
               <span className="admin-bar-label" style={{ minWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

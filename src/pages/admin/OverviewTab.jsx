@@ -28,7 +28,7 @@ export default function OverviewTab({ firebaseLessons }) {
         </div>
         <div className="admin-stat-card" style={{ borderColor: '#BA7517' }}>
           <div className="admin-stat-label">Clase acoperite</div>
-          <div className="admin-stat-num">{claseUnice}/3</div>
+          <div className="admin-stat-num">{claseUnice}/5</div>
           <div className="admin-stat-sub">clase</div>
         </div>
         <div className="admin-stat-card" style={{ borderColor: '#D4537E' }}>
