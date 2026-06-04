@@ -40,7 +40,7 @@ function CompilerPage() {
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
 
     try {
-      const response = await fetch('http://localhost:5000/api/run-cpp', {
+      const response = await fetch('https://infomotion.onrender.com/api/run-cpp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
