@@ -29,6 +29,8 @@ function CompilerPage() {
 
   const containerRef = useRef(null);
   const sidePanelRef = useRef(null);
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 
   useEffect(() => {
     async function incarcaCodSursa() {
@@ -154,7 +156,7 @@ function CompilerPage() {
     setLoadingCompiler(true);
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
     try {
-      const response = await fetch('https://infomotion.onrender.com/api/run-cpp', {
+      const response = await fetch(`${baseUrl}/api/run-cpp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: editorCode, input: compilerInput })

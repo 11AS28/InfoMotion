@@ -1,4 +1,5 @@
 // server.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs'); 
@@ -102,9 +103,7 @@ app.post('/api/run-cpp', (req, res) => {
     }
   }
 
-  // -------------------------------------------------------------------------
   // PASUL 1: Generare ID unic pentru sesiune (Evită suprapunerea fișierelor la utilizatori simultani)
-  // -------------------------------------------------------------------------
   const uniqueId = crypto.randomBytes(8).toString('hex');
   const fileName = `cod_${uniqueId}.cpp`;
   const exeName = `program_${uniqueId}`;
@@ -126,18 +125,22 @@ app.post('/api/run-cpp', (req, res) => {
       });
     }
 
-    // Pasul C: Dacă s-a compilat brici, pregătim comanda de rulare
-    let runCommand = `./${exeName}`;
+    const exeAbsolutePath = path.join(__dirname, exeName);
+    let runCommand = `"${exeAbsolutePath}"`; // Ghilimelele previn problemele dacă există spații în căi
     
     if (input) {
       fs.writeFileSync(inputFileName, input);
-      runCommand = `./${exeName} < ${inputFileName}`;
+      runCommand = `"${exeAbsolutePath}" < ${inputFileName}`;
     }
 
-    // Pasul D: Rulăm executabilul cu timeout strâns de 2 secunde (Previne TLE / Bucle Infinite)
     exec(runCommand, { timeout: 2000 }, (runError, runStdout, runStderr) => {
       
-      // Ștergem IMEDIAT absolut toate fișierele temporare unice generate pentru această rulare
+      if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+      
+      if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
+      if (fs.existsSync(`${exeName}.exe`)) fs.unlinkSync(`${exeName}.exe`); 
+      if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
+      
       if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
       if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
       if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
