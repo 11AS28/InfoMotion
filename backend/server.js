@@ -1,13 +1,12 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs'); 
 const { exec } = require('child_process'); 
-const path = require('path'); // Adăugat pentru manipularea sigură a căilor de fișiere
-const crypto = require('crypto'); // Adăugat pentru a genera ID-uri unice pentru fișiere
+const path = require('path'); 
+const crypto = require('crypto'); 
 
-// Importurile tale originale pentru simulatoare
+// Importurile pentru simulatoare
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
@@ -16,63 +15,43 @@ const { simulateCautareBinaraDivImpJS } = require('./simulators/cautareBinaraDiv
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Activăm middleware-urile obligatorii
 app.use(cors());          
 app.use(express.json());  
 
 // =========================================================================
-// RUTA 1: Pentru animații (Codul tău original nemodificat, doar optimizat)
+// RUTA 1: Pentru animații (Neschimbată)
 // =========================================================================
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithmType, inputData } = req.body;
-    
     if (!inputData || !Array.isArray(inputData)) {
       return res.status(400).json({ error: "Datele de intrare lipsesc sau sunt invalide!" });
     }
-
     let steps = [];
-
     switch (algorithmType) {
       case 'bubbleSort':
-      case 'BubbleSortAnim':
-        steps = simulateBubbleSort(inputData);
-        break;
-        
-      case 'quick_sort_dinamic':
-        steps = simulateQuickSortJS(inputData);
-        break;
-
+      case 'BubbleSortAnim': steps = simulateBubbleSort(inputData); break;
+      case 'quick_sort_dinamic': steps = simulateQuickSortJS(inputData); break;
       case 'strlen_dinamic':
-        const cuvantStrlen = inputData.map(ascii => String.fromCharCode(ascii)).join('');
-        steps = await simulateStrlen(cuvantStrlen);
-        break;
-
       case 'strcpy_dinamic':
-        const cuvantStrcpy = inputData.map(ascii => String.fromCharCode(ascii)).join('');
-        steps = await simulateStrlen(cuvantStrcpy); 
+        const cuvant = inputData.map(ascii => String.fromCharCode(ascii)).join('');
+        steps = await simulateStrlen(cuvant);
         break;
-
-      case 'cautare_binara_div_imp': {
+      case 'cautare_binara_div_imp':
         const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : inputData[0];
         steps = simulateCautareBinaraDivImpJS(inputData, targetCautat);
         break;
-      }
-
-      default:
-        return res.status(400).json({ error: "Algoritm neimplementat" });
+      default: return res.status(400).json({ error: "Algoritm neimplementat" });
     }
-
     return res.json({ steps });
-
   } catch (error) {
     console.error("Eroare la simulare:", error);
-    return res.status(500).json({ error: "Eroare internă de server la rularea binarului C++" });
+    return res.status(500).json({ error: "Eroare internă de server" });
   }
 });
 
 // =========================================================================
-// RUTA 2: Super-ruta securizată și paralelă pentru executat C++
+// RUTA 2: Super-ruta securizată industrial (Docker Sandbox)
 // =========================================================================
 app.post('/api/run-cpp', (req, res) => {
   const { code, input } = req.body; 
@@ -81,43 +60,26 @@ app.post('/api/run-cpp', (req, res) => {
     return res.status(400).json({ error: "Nu ai trimis niciun cod!" });
   }
 
-  // -------------------------------------------------------------------------
-  // PASUL 0: Filtru de Securitate Antihack (RCE Protection)
-  // -------------------------------------------------------------------------
-  const cuvinteInterzise = [
-    "system", "popen", "fork", "exec", "syscall", "unistd",
-    "fstream", "ifstream", "ofstream", "remove", "rename"
-  ];
-
-  // Eliminăm comentariile din cod ca să nu prindem cuvinte interzise scrise în comentarii
-  const codFaraComentarii = code.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, "");
-
-  for (let cuvant of cuvinteInterzise) {
-    // Folosim RegExp ca să verificăm cuvântul exact (să nu blocăm variabile gen "system_status")
-    const regex = new RegExp(`\\b${cuvant}\\b`);
-    if (regex.test(codFaraComentarii)) {
-      return res.status(403).json({
-        status: "Securitate Încălcată",
-        error: `Utilizarea cuvântului sau a funcției '${cuvant}' este strict interzisă din motive de securitate!`
-      });
-    }
-  }
-
-  // PASUL 1: Generare ID unic pentru sesiune (Evită suprapunerea fișierelor la utilizatori simultani)
+  // PASUL 1: ID unic și izolat în folderul Linux /tmp
   const uniqueId = crypto.randomBytes(8).toString('hex');
-  const fileName = `cod_${uniqueId}.cpp`;
-  const exeName = `program_${uniqueId}`;
-  const inputFileName = `input_${uniqueId}.txt`;
+  const targetDir = '/tmp'; 
+  const fileName = path.join(targetDir, `cod_${uniqueId}.cpp`);
+  const exeName = path.join(targetDir, `program_${uniqueId}`);
+  const inputFileName = path.join(targetDir, `input_${uniqueId}.txt`);
 
-  // Pasul A: Salvăm textul primit în fișierul fizic .cpp unic
+  // Scriem fișierul de cod local pe server în folderul /tmp
   fs.writeFileSync(fileName, code);
+  
+  // Creăm fișierul de input (chiar dacă e gol, ca să nu crape redirectarea < în Docker)
+  fs.writeFileSync(inputFileName, input || "");
 
-  // Pasul B: Deschidem terminalul ascuns și compilăm cu g++
+  // PASUL 2: Compilarea inițială direct pe server (pentru viteză)
   exec(`g++ ${fileName} -o ${exeName}`, (compileError, stdout, stderr) => {
     
     if (compileError) {
-      // Curățăm fișierul sursă dacă a dat eroare de compilare
+      // Curățăm rapid fișierele dacă a dat eroare de sintaxă/compilare
       if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+      if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
       
       return res.status(400).json({
         status: "Eroare de compilare",
@@ -125,51 +87,68 @@ app.post('/api/run-cpp', (req, res) => {
       });
     }
 
-    const exeAbsolutePath = path.join(__dirname, exeName);
-    let runCommand = `"${exeAbsolutePath}"`; // Ghilimelele previn problemele dacă există spații în căi
+    // PASUL 3: CONSTRUIREA CUȘTII DOCKER (Aici se întâmplă magia)
+    // --rm                 -> Șterge containerul în milisecunda în care codul s-a oprit
+    // --net=none           -> Taie complet internetul (Hackerul nu poate trimite date în exterior)
+    // -m 64m               -> Limitează memoria RAM la exact 64MB (OOM/MLE Protection)
+    // --cpus="0.5"         -> Alocă maxim jumătate de nucleu de procesor (Previne blocarea totală a serverului)
+    // -v /tmp:/sandbox     -> Mapează folderul /tmp de pe server în folderul /sandbox din container
     
-    if (input) {
-      fs.writeFileSync(inputFileName, input);
-      runCommand = `"${exeAbsolutePath}" < ${inputFileName}`;
-    }
+    const binarContainer = `/sandbox/program_${uniqueId}`;
+    const inputContainer = `/sandbox/input_${uniqueId}.txt`;
+    
+    const dockerCommand = `docker run --rm --net=none -m 64m --cpus="0.5" -v /tmp:/sandbox infomotion-sandbox sh -c "${binarContainer} < ${inputContainer}"`;
 
-    exec(runCommand, { timeout: 2000 }, (runError, runStdout, runStderr) => {
+    // Rulăm executabilul în container cu un timeout strâns de 2000ms (TLE Protection)
+    // maxBuffer împiedică blocarea serverului în cazul în care consola dă un text infinit
+    exec(dockerCommand, { timeout: 2000, maxBuffer: 1024 * 512 }, (runError, runStdout, runStderr) => {
       
-      if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
-      
-      if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
-      if (fs.existsSync(`${exeName}.exe`)) fs.unlinkSync(`${exeName}.exe`); 
-      if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
-      
+      // Ștergem IMEDIAT toate fișierele de pe server ca să eliberăm spațiul
       if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
       if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
       if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
 
       if (runError) {
-        // Cazul 1: Timeout (Bucle infinite)
-        if (runError.killed) {
+        // Cazul A: Time Limit Exceeded (Killed de Node.js la timeout sau oprit de Docker)
+        if (runError.killed || runError.signal === 'SIGTERM') {
           return res.status(400).json({ 
             status: "Time Limit Exceeded (TLE)", 
-            error: "Codul tău a rulat mai mult de 2 secunde! Ai grijă la buclele infinite (while sau for)." 
+            error: "Codul tău a rulat mai mult de 2 secunde! Ai grijă la buclele infinite." 
           });
         }
         
-        // Cazul 2: Errore de Memorie / Pointeri / Segmentare (Codul Linux standard pentru SegFault este 139)
-        if (runError.code === 139) {
+        // Cazul B: Out Of Memory / Memory Limit Exceeded (Cod de ieșire Docker 137 înseamnă de obicei OOM)
+        if (runError.code === 137) {
           return res.status(400).json({
-            status: "Segmentation Fault (Runtime Error)",
-            error: "Programul a crăpat în timpul rulării! Ai accesat memorie nealocată (ex: vectori în afara limitelor sau pointeri defecți)."
+            status: "Memory Limit Exceeded (MLE)",
+            error: "Programul a depășit limita de memorie de 64MB! Ai grijă la vectorii gigantici alocați aiurea."
           });
         }
 
-        // Cazul 3: Alt tip de eroare de execuție
+        // Cazul C: Segmentation Fault în interiorul Linux-ului din container
+        if (runError.code === 139) {
+          return res.status(400).json({
+            status: "Segmentation Fault (Runtime Error)",
+            error: "Programul a crăpat! Ai accesat memorie nealocată (ex: indici în afara limitelor vectorului sau pointeri defecți)."
+          });
+        }
+
+        // Cazul D: Output prea mare (maxBuffer exceeded)
+        if (runError.message && runError.message.includes("maxBuffer exceeded")) {
+          return res.status(400).json({
+            status: "Output Limit Exceeded",
+            error: "Programul a generat prea mult text! Limita maximă afișabilă este de 512 KB."
+          });
+        }
+
+        // Alte erori nespecificate
         return res.status(400).json({ 
           status: "Runtime Error", 
-          error: runStderr || "Programul a returnat un cod de eroare la execuție." 
+          error: runStderr || "Programul a returnat o eroare în timpul execuției." 
         });
       }
 
-      // Pasul E: Totul a mers perfect! Trimitem output-ul către React
+      // PASUL E: Totul a rulat impecabil!
       return res.json({
         status: "Succes",
         output: runStdout
@@ -178,7 +157,6 @@ app.post('/api/run-cpp', (req, res) => {
   });
 });
 
-// Pornim serverul unic pe portul setat (5000 local)
 app.listen(PORT, () => {
-    console.log(`🚀 Serverul InfoMotion Securizat rulează pe http://localhost:${PORT}`);
+    console.log(`Serverul InfoMotion de Ultra-Securitate rulează pe portul ${PORT}`);
 });

@@ -1,0 +1,17 @@
+# Imagine Linux ultra-ușoară care conține compilatorul GCC/G++
+FROM alpine:3.19
+
+# Instalăm g++ și dependințele esențiale pentru compilare
+RUN apk add --no-cache g++ build-base
+
+# Securitate maximă: Creăm un user simplu numit "elev" fără drepturi de admin (non-root)
+RUN adduser -D -g "" elev
+
+# Setăm directorul de lucru în folderul temporar din container
+WORKDIR /sandbox
+
+# Îi dăm utilizatorului "elev" drepturi stricte pe folderul de lucru
+RUN chown -R elev:elev /sandbox
+
+# De aici încolo, orice se execută în container rulează ca user simplu, nu ca root!
+USER elev
