@@ -182,20 +182,20 @@ body {
 }
 
 .lesson-code pre {
-  background-color: #1e293b; 
-  color: #f8fafc; 
+  background-color: #1e293b;
   padding: 25px;
   border-radius: 12px;
-  overflow-x: auto; 
+  overflow-x: auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.lesson-code code {
+.lesson-code pre code {
   font-family: 'Courier New', Courier, monospace;
   font-size: 1.05rem;
   line-height: 1.5;
+  color: #f8fafc !important;
+  background-color: transparent !important;
 }
-
 .lesson-problems {
   background-color: var(--bg-card); 
   padding: 30px;
