@@ -1,17 +1,16 @@
-// TodoTab.jsx
+// TodoTab.jsx modificat profesional pentru Serverless API
 import { useState } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'sonner';
 
 const formatTodoDate = (timestamp) => {
   if (!timestamp) return 'Acum un moment';
-  return timestamp.toDate().toLocaleDateString('ro-RO', {
-    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-  });
+  // Dacă vine din Firestore ca obiect de tip Timestamp (direct din SDK frontend)
+  if (timestamp.toDate) return timestamp.toDate().toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  // Dacă vine prin serverless ca string ISO/Dată simplă
+  return new Date(timestamp).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
 
-export default function TodoTab({ todos, username, onRefresh }) {
+export default function TodoTab({ todos, username, onRefresh, adminPassword, adminUsername }) {
   const [newTodoText, setNewTodoText] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -23,14 +22,23 @@ export default function TodoTab({ todos, username, onRefresh }) {
     if (!newTodoText.trim()) return toast.warning('Nu poți adăuga un task gol!');
     setLoading(true);
     try {
-      await addDoc(collection(db, 'admin_todo'), {
-        text: newTodoText.trim(),
-        author: username,
-        completed: false,
-        createdAt: serverTimestamp(),
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'add_todo',
+          username: adminUsername,
+          sessionToken: adminPassword,
+          data: { text: newTodoText.trim() }
+        })
       });
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error || 'Eroare la API.');
+      }
+
       setNewTodoText('');
-      toast.success('Task adăugat în listă!');
+      toast.success('Task adăugat prin API! 🚀');
       onRefresh();
     } catch (e) {
       toast.error('Eroare la adăugare: ' + e.message);
@@ -41,7 +49,22 @@ export default function TodoTab({ todos, username, onRefresh }) {
 
   const handleToggle = async (id, currentStatus) => {
     try {
-      await updateDoc(doc(db, 'admin_todo', id), { completed: !currentStatus });
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggle_todo',
+          username: adminUsername,
+          sessionToken: adminPassword,
+          targetId: id,
+          data: { completed: !currentStatus }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error || 'Eroare la API.');
+      }
+
       toast.success(!currentStatus ? 'Task marcat ca finalizat! 🎉' : 'Task redeschis.');
       onRefresh();
     } catch (e) {
@@ -52,8 +75,22 @@ export default function TodoTab({ todos, username, onRefresh }) {
   const handleDelete = async (id) => {
     if (!window.confirm('Vrei să ștergi definitiv acest task din istoric?')) return;
     try {
-      await deleteDoc(doc(db, 'admin_todo', id));
-      toast.success('Task șters definitiv.');
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete_todo',
+          username: adminUsername,
+          sessionToken: adminPassword,
+          targetId: id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error || 'Eroare la API.');
+      }
+
+      toast.success('Task șters definitiv prin API.');
       onRefresh();
     } catch (e) {
       toast.error('Eroare: ' + e.message);

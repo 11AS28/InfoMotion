@@ -1,10 +1,8 @@
-// LectiiTab.jsx
+// LectiiTab.jsx modificat profesional pentru Serverless API
 import { useState } from 'react';
-import { deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'sonner';
 
-export default function LectiiTab({ firebaseLessons, onEdit, onRefresh }) {
+export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPassword, adminUsername }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filtered = firebaseLessons.filter((l) => {
@@ -15,8 +13,23 @@ export default function LectiiTab({ firebaseLessons, onEdit, onRefresh }) {
   const handleDelete = async (id) => {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
-      await deleteDoc(doc(db, 'lectii', id));
-      toast.success('Lecție ștearsă cu succes!');
+      // Trimitem cererea de ștergere către backend-ul nostru central securizat
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete_lesson',
+          username: adminUsername,
+          sessionToken: adminPassword,
+          targetId: id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
+      }
+
+      toast.success('Lecție ștearsă cu succes prin API! 🗑️');
       onRefresh();
     } catch (e) {
       toast.error('Eroare la ștergere: ' + e.message);

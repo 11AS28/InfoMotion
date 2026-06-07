@@ -14,8 +14,12 @@ const { simulateCautareBinaraDivImpJS } = require('./simulators/cautareBinaraDiv
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-app.use(cors());          
+// Permite doar site-ului tău de pe Vercel să vorbească cu serverul de Render
+app.use(cors({
+  origin: ['https://infomotion.vercel.app', 'http://localhost:3000'], // Pune aici domeniul tău oficial de Vercel + localhost pentru când testezi local
+  methods: ['POST', 'GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));         
 app.use(express.json());  
 
 // =========================================================================

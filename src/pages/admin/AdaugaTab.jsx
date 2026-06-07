@@ -1,13 +1,10 @@
-// AdaugaTab.jsx
-import { useState, useEffect } from 'react';
+// AdaugaTab.jsx modificat profesional pentru Serverless API
+import { useState } from 'react';
 import Editor, {
   BtnBold, BtnItalic, BtnUnderline, BtnStrikeThrough,
   BtnNumberedList, BtnBulletList, BtnLink, BtnClearFormatting, Toolbar,
 } from 'react-simple-wysiwyg';
-import { 
-  doc, setDoc, deleteDoc, addDoc, collection, serverTimestamp,
-  query, where, orderBy, limit, getDocs, writeBatch 
-} from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'sonner';
 
@@ -22,6 +19,8 @@ export default function AdaugaTab({
   initialData,        // obiect cu toate câmpurile precompletate (pt edit/aprobare)
   onSuccess,          // callback după publicare
   onCancel,
+  adminPassword,      // Primit din Dashboard pentru validarea securizării
+  adminUsername,      // Primit din Dashboard pentru validarea securizării
 }) {
   const d = initialData || {};
 
@@ -58,8 +57,11 @@ export default function AdaugaTab({
   const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
     try {
+      // Notificările rămân pe frontend pentru că utilizatorul de rând oricum își citește/scrie notificările proprii
       await addDoc(collection(db, 'users', userId, 'notifications'), {
         type, text, read: false, createdAt: serverTimestamp(),
+        cheieSecuritate: adminPassword,
+        adminUsername: adminUsername
       });
     } catch (e) {
       console.error('Eroare notificare:', e);
@@ -76,62 +78,60 @@ export default function AdaugaTab({
       if (fClasa === 'olimpici') { categorieVal = 'olimpiada'; clasaFinala = 'olimpici'; }
       else if (fClasa === 'concepte') { categorieVal = 'concepte'; clasaFinala = 'concepte'; }
 
-      const lectiiRef = collection(db, 'lectii');
       let ordineFinala = Number(fOrdine);
 
-      const batch = writeBatch(db);
-
-      if (!isEditing && !propunereInCurs) {
-        const qVerificare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '==', ordineFinala));
-        const snapVerificare = await getDocs(qVerificare);
-
-        if (!snapVerificare.empty) {
-          const qDecalare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '>=', ordineFinala));
-          const snapDecalare = await getDocs(qDecalare);
-
-          snapDecalare.forEach((document) => {
-            const docRef = doc(db, 'lectii', document.id);
-            batch.update(docRef, { ordine: document.data().ordine + 1 });
-          });
-          toast.info(`Lecțiile existente au fost decalate pentru a face loc pe poziția ${ordineFinala}.`);
-        }
-      }
-
-      // Pregătim datele lecției cu verificarea pentru Concepte
+      // Pregătim obiectul curat cu datele lecției
       const lectieData = {
         id: fId, clasa: clasaFinala, categorie: categorieVal,
         ordine: ordineFinala, titlu: fTitlu, descriere: fDescriere,
         teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
-        // Daca e concept, trimitem array gol ca sa nu apara pe frontend, altfel filtram randurile valide
         problemePbinfo: esteConcept ? [] : pbRows.filter((r) => r.id || r.titlu),
-        // Daca e concept, stergem quiz-ul din datele trimise
         quiz: esteConcept ? [] : quiz, 
         codeforces: esteConcept ? [] : cfProblems,
-        dataModificarii: new Date().toISOString(),
+        dataModificarii: new Date().toISOString()
       };
 
-      const nouaLectieRef = doc(db, 'lectii', fId);
-      batch.set(nouaLectieRef, lectieData);
+      // Trimitem totul către serverless API-ul nostru global securizat
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'publish_lesson',
+          username: adminUsername,
+          sessionToken: adminPassword,
+          data: {
+            isEditing,
+            propunereInCurs,
+            clasaFinala,
+            categorieVal,
+            ordineFinala,
+            fId,
+            lectieData
+          }
+        })
+      });
 
+      if (!response.ok) {
+        throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
+      }
+
+      // Trimitere notificare dacă este o propunere aprobată de la un elev
       if (propunereInCurs) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {
           await sendUserNotification(propGasita.autorId, 'lectie_aprobata',
             `Propunerea ta pentru lecția „${propGasita.titlu}" a fost aprobată.`);
         }
-        const propRef = doc(db, 'propuneri_lectii', propunereInCurs);
-        batch.delete(propRef);
       }
 
-      await batch.commit();
-
-      toast.success(isEditing ? ' Modificări salvate în cloud!' : ' Lecție publicată cu succes!');
+      toast.success(isEditing ? '🚀 Modificări salvate în cloud prin API!' : '🎉 Lecție publicată cu succes prin API!');
       onSuccess();
     } catch (e) {
       toast.error('Eroare la salvare: ' + e.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
