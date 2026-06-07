@@ -103,10 +103,72 @@ app.post('/api/run-cpp', (req, res) => {
     
     const dockerCommand = `docker run --rm --net=none -m 64m --cpus="0.5" -v /tmp:/sandbox infomotion-sandbox sh -c "${binarContainer} < ${inputContainer}"`;
 
+    const runBinaryDirectly = () => {
+      const fallbackCommand = `${exeName} < ${inputFileName}`;
+      exec(fallbackCommand, { timeout: 2000, maxBuffer: 1024 * 512 }, (fallbackError, fallbackStdout, fallbackStderr) => {
+        // Ștergem IMEDIAT toate fișierele de pe server ca să eliberăm spațiul
+        if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+        if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
+        if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
+
+        if (fallbackError) {
+          // Cazul A: Time Limit Exceeded (Killed de Node.js la timeout)
+          if (fallbackError.killed || fallbackError.signal === 'SIGTERM') {
+            return res.status(400).json({ 
+              status: "Time Limit Exceeded (TLE)", 
+              error: "Codul tău a rulat mai mult de 2 secunde! Ai grijă la buclele infinite." 
+            });
+          }
+
+          // Cazul D: Output prea mare (maxBuffer exceeded)
+          if (fallbackError.message && fallbackError.message.includes("maxBuffer exceeded")) {
+            return res.status(400).json({
+              status: "Output Limit Exceeded",
+              error: "Programul a generat prea mult text! Limita maximă afișabilă este de 512 KB."
+            });
+          }
+
+          // Alte erori nespecificate
+          return res.status(400).json({ 
+            status: "Runtime Error", 
+            error: fallbackStderr || "Programul a returnat o eroare în timpul execuției." 
+          });
+        }
+
+        // PASUL E: Totul a rulat impecabil!
+        return res.json({
+          status: "Succes",
+          output: fallbackStdout
+        });
+      });
+    };
+
     // Rulăm executabilul în container cu un timeout strâns de 2000ms (TLE Protection)
     // maxBuffer împiedică blocarea serverului în cazul în care consola dă un text infinit
     exec(dockerCommand, { timeout: 2000, maxBuffer: 1024 * 512 }, (runError, runStdout, runStderr) => {
       
+      const isDockerMissing = runError && (
+        runError.code === 127 ||
+        (runStderr && (
+          runStderr.includes("docker: not found") || 
+          runStderr.includes("docker: command not found") ||
+          runStderr.includes("dial unix /var/run/docker.sock") ||
+          runStderr.includes("Cannot connect to the Docker daemon") ||
+          runStderr.includes("failed to connect to the docker API")
+        )) ||
+        (runError.message && (
+          runError.message.includes("docker: not found") || 
+          runError.message.includes("docker: command not found") ||
+          runError.message.includes("dial unix /var/run/docker.sock") ||
+          runError.message.includes("Cannot connect to the Docker daemon") ||
+          runError.message.includes("failed to connect to the docker API")
+        ))
+      );
+
+      if (isDockerMissing) {
+        return runBinaryDirectly();
+      }
+
       // Ștergem IMEDIAT toate fișierele de pe server ca să eliberăm spațiul
       if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
       if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
