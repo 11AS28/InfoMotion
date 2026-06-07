@@ -6,7 +6,7 @@ import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer'; 
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import { BookOpenText, Gamepad2, Code, NotebookPen, Check } from 'lucide-react';
+import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
 import parse from 'html-react-parser';
 import WikiPreviewLink from '../components/WikiPreviewLink';
@@ -47,11 +47,11 @@ function LessonPage() {
   const [loading, setLoading] = useState(true);
   const [esteGata, setEsteGata] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
-
 
   const algoritmiBackend = [
     "bubbleSort", 
@@ -62,6 +62,17 @@ function LessonPage() {
     "cautare_binara_div_imp"
   ];
   
+  const handleCopyCode = async () => {
+    if (!lectie?.codCPlusPlus) return;
+    try {
+      await navigator.clipboard.writeText(lectie.codCPlusPlus);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Eroare la copierea codului: ", err);
+    }
+  };
+
   const proceseazaTeorie = (html) => {
     if (!html) return '';
     return html.replace(
@@ -208,8 +219,6 @@ function LessonPage() {
   if (!lectie) return <div className="page-wrapper"><h2>Lecție negăsită în baza de date.</h2></div>;
 
   const esteAnimatieNoua = algoritmiBackend.includes(lectie.animatie);
-  
-  // Flag ca să știm dacă ascundem elementele specifice claselor de concurs
   const esteConceptGeneral = lectie.clasa === 'concepte' || lectie.categorie === 'concepte';
 
   const ComponentaAnimatieVeche = () => {
@@ -373,57 +382,85 @@ function LessonPage() {
             </div>
           </section>
 
-         {/* ÎNLOCUIEȘTE SECȚIUNEA EXISTENTĂ DE COD C++ CU ACEASTA */}
-{lectie.codCPlusPlus && (
-  <section className="lesson-code" style={{ position: 'relative' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-      <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
-      
-      {/* BUTONUL INTELIGENT DE ACTIONARE PLAYGROUND */}
-      <button
-        onClick={() => {
-          // 1. Salvăm codul în cache-ul specific lecției pentru a fi citit instantaneu de compiler
-          localStorage.setItem(`infomotion_code_${idLectie}`, lectie.codCPlusPlus);
-          
-          // 2. Deschidem ruta configurată în App.js într-un tab complet separat
-          window.open(`/compiler/${idLectie}`, '_blank');
-        }}
-        style={{
-          background: 'rgba(31, 224, 249, 0.1)',
-          color: '#1fe0f9',
-          border: '1px solid #1fe0f9',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          fontFamily: 'monospace',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.2s ease',
-          boxShadow: '0 0 15px rgba(31, 224, 249, 0.1)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#1fe0f9';
-          e.currentTarget.style.color = '#121212';
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(31, 224, 249, 0.4)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(31, 224, 249, 0.1)';
-          e.currentTarget.style.color = '#1fe0f9';
-          e.currentTarget.style.boxShadow = '0 0 15px rgba(31, 224, 249, 0.1)';
-        }}
-      >
-         Modifică și Rulează codul
-      </button>
-    </div>
+          {lectie.codCPlusPlus && (
+            <section className="lesson-code" style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
+                
+                <button
+                  onClick={() => {
+                    localStorage.setItem(`infomotion_code_${idLectie}`, lectie.codCPlusPlus);
+                    window.open(`/compiler/${idLectie}`, '_blank');
+                  }}
+                  style={{
+                    background: 'rgba(31, 224, 249, 0.1)',
+                    color: '#1fe0f9',
+                    border: '1px solid #1fe0f9',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 0 15px rgba(31, 224, 249, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#1fe0f9';
+                    e.currentTarget.style.color = '#121212';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(31, 224, 249, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(31, 224, 249, 0.1)';
+                    e.currentTarget.style.color = '#1fe0f9';
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(31, 224, 249, 0.1)';
+                  }}
+                >
+                   Modifică și Rulează codul
+                </button>
+              </div>
 
-    <pre><code className="language-cpp">{lectie.codCPlusPlus}</code></pre>
-  </section>
-)}
+              <div style={{ position: 'relative', width: '100%' }}>
+                <button
+                  onClick={handleCopyCode}
+                  title="Copiază codul!"
+                  className="copy-code-btn"
+                  style={{
+                    position: 'absolute',
+                    top: '15px',
+                    right: '15px',
+                    background: 'rgba(255, 255, 255, 0.07)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    zIndex: 10,
+                    color: copied ? '#00ffcc' : '#a0aec0'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                  }}
+                >
+                  {copied ? <Check size={18} strokeWidth={2.5} /> : <Copy size={18} strokeWidth={2} />}
+                </button>
 
-          {/*  REZOLVARE PROBLEME PBINFO: Randăm doar dacă NU este concept general */}
+                <pre style={{ margin: 0 }}><code className="language-cpp">{lectie.codCPlusPlus}</code></pre>
+              </div>
+            </section>
+          )}
+
           {!esteConceptGeneral && (
             <section className="lesson-problems">
               <h2><NotebookPen size={40} color="#1fe0f9" strokeWidth={0.75} /> Probleme Pbinfo recomandate</h2>
@@ -442,7 +479,6 @@ function LessonPage() {
             </section>
           )}
 
-          {/*  REZOLVARE QUIZ INTERACTIV: Randăm doar dacă NU este concept general */}
           {!esteConceptGeneral && (
             <section className="lesson-finish-action">
               {esteGata ? (
