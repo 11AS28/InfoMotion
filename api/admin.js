@@ -2,24 +2,33 @@
 import admin from 'firebase-admin';
 
 // Inițializăm Firebase Admin o singură dată per instanță serverless
-if (!admin.apps.length) {
-  try {
+let db = null;
+
+function getFirestoreDb() {
+  if (db) return db;
+  if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-        // Înlocuim eventualele caractere newline salvate greșit în variabila de mediu
         privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       }),
     });
-  } catch (error) {
-    console.error('Eroare la inițializarea Firebase Admin:', error);
   }
+  db = admin.firestore();
+  return db;
 }
 
-const db = admin.firestore();
-
 export default async function handler(req, res) {
+  try {
+    db = getFirestoreDb();
+  } catch (error) {
+    console.error('Eroare la inițializarea Firebase Admin:', error);
+    return res.status(500).json({ 
+      error: 'Serverul nu a putut inițializa Firebase Admin. Te rugăm să te asiguri că ai configurat variabilele de mediu FIREBASE_PRIVATE_KEY și FIREBASE_CLIENT_EMAIL în proiectul tău Vercel.' 
+    });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
