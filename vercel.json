@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://infomotion.onrender.com/api/:path*"
+      "source": "/api/simulate",
+      "destination": "https://infomotion.onrender.com/api/simulate"
+    },
+    {
+      "source": "/api/run-cpp",
+      "destination": "https://infomotion.onrender.com/api/run-cpp"
     },
     {
       "source": "/(.*)",
