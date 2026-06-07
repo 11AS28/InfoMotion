@@ -16,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 // Permite doar site-ului tău de pe Vercel să vorbească cu serverul de Render
 app.use(cors({
-  origin: ['https://infomotion.vercel.app', 'http://localhost:3000'], // Pune aici domeniul tău oficial de Vercel + localhost pentru când testezi local
+  origin: ['https://info-motion.vercel.app', 'http://localhost:3000'], // Pune aici domeniul tău oficial de Vercel + localhost pentru când testezi local
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));         

@@ -1,18 +1,23 @@
 // api/admin.js
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import admin from 'firebase-admin';
 
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
-};
+// Inițializăm Firebase Admin o singură dată per instanță serverless
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        // Înlocuim eventualele caractere newline salvate greșit în variabila de mediu
+        privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      }),
+    });
+  } catch (error) {
+    console.error('Eroare la inițializarea Firebase Admin:', error);
+  }
+}
 
-const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+const db = admin.firestore();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -21,6 +26,7 @@ export default async function handler(req, res) {
 
   const { action, sessionToken, username, data, targetId } = req.body;
 
+  // Mapare parole administrative
   const admins = {
     'SexyBadircea6969': process.env.ADMIN_1_PASS,
     's.m._.maria':      process.env.ADMIN_2_PASS,
@@ -36,20 +42,25 @@ export default async function handler(req, res) {
   try {
     switch (action) {
       case 'publish_lesson': {
-        const { isEditing, propunereInCurs, clasaFinala, categorieVal, ordineFinala, fId, lectieData } = data;
-        const lectiiRef = collection(db, 'lectii');
-        const batch = writeBatch(db);
+        const { isEditing, propunereInCurs, clasaFinala, ordineFinala, fId, lectieData } = data;
+        const batch = db.batch();
+        const lectiiRef = db.collection('lectii');
 
+        // Decalare automată a lecțiilor dacă ordinea se suprapune
         if (!isEditing && !propunereInCurs) {
-          const qVerificare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '==', ordineFinala));
-          const snapVerificare = await getDocs(qVerificare);
+          const snapVerificare = await lectiiRef
+            .where('clasa', '==', clasaFinala)
+            .where('ordine', '==', ordineFinala)
+            .get();
 
           if (!snapVerificare.empty) {
-            const qDecalare = query(lectiiRef, where('clasa', '==', clasaFinala), where('ordine', '>=', ordineFinala));
-            const snapDecalare = await getDocs(qDecalare);
+            const snapDecalare = await lectiiRef
+              .where('clasa', '==', clasaFinala)
+              .where('ordine', '>=', ordineFinala)
+              .get();
 
             snapDecalare.forEach((document) => {
-              const docRef = doc(db, 'lectii', document.id);
+              const docRef = lectiiRef.doc(document.id);
               batch.update(docRef, { 
                 ordine: document.data().ordine + 1,
                 cheieSecuritate: sessionToken,
@@ -59,16 +70,17 @@ export default async function handler(req, res) {
           }
         }
 
-        const nouaLectieRef = doc(db, 'lectii', fId);
+        // Setăm noua lecție (Bypass total la Firebase Rules)
+        const nouaLectieRef = lectiiRef.doc(fId);
         batch.set(nouaLectieRef, {
           ...lectieData,
           cheieSecuritate: sessionToken,
           adminUsername: username
-        });
+        }, { merge: true });
 
+        // Ștergem propunerea din listă dacă a fost aprobată
         if (propunereInCurs) {
-          const propRef = doc(db, 'propuneri_lectii', propunereInCurs);
-          batch.update(propRef, { cheieSecuritate: sessionToken, adminUsername: username });
+          const propRef = db.collection('propuneri_lectii').doc(propunereInCurs);
           batch.delete(propRef);
         }
 
@@ -77,24 +89,24 @@ export default async function handler(req, res) {
       }
 
       case 'delete_lesson':
-        await updateDoc(doc(db, 'lectii', targetId), { cheieSecuritate: sessionToken, adminUsername: username });
-        await deleteDoc(doc(db, 'lectii', targetId));
+        await db.collection('lectii').doc(targetId).delete();
         return res.status(200).json({ success: true });
 
       case 'add_todo':
-        const todoRef = await addDoc(collection(db, 'admin_todo'), {
+        const todoRef = await db.collection('admin_todo').add({
           text: data.text, author: username, completed: false, createdAt: new Date().toISOString(),
           cheieSecuritate: sessionToken, adminUsername: username
         });
         return res.status(200).json({ success: true, id: todoRef.id });
 
       case 'toggle_todo':
-        await updateDoc(doc(db, 'admin_todo', targetId), { completed: data.completed, cheieSecuritate: sessionToken, adminUsername: username });
+        await db.collection('admin_todo').doc(targetId).update({ 
+          completed: data.completed, cheieSecuritate: sessionToken, adminUsername: username 
+        });
         return res.status(200).json({ success: true });
 
       case 'delete_todo':
-        await updateDoc(doc(db, 'admin_todo', targetId), { cheieSecuritate: sessionToken, adminUsername: username });
-        await deleteDoc(doc(db, 'admin_todo', targetId));
+        await db.collection('admin_todo').doc(targetId).delete();
         return res.status(200).json({ success: true });
 
       default:
