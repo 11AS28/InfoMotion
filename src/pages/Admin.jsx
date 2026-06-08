@@ -4,6 +4,7 @@ import '../pages_css/admin.css';
 import { doc, collection, getDocs, addDoc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Toaster, toast } from 'sonner';
+import usePageTitle from '../hooks/usePageTitle';
 
 import OverviewTab from './admin/OverviewTab';
 import UtilizatoriTab from './admin/UtilizatoriTab';
@@ -51,6 +52,7 @@ function LoginScreen({ onLogin }) {
   }
 
   return (
+    usePageTitle("InfoMotion - Admin"),
     <div className="admin-login-wrapper">
       <div className="admin-login-card">
         <div className="admin-login-logo">InfoMotion<span>.</span></div>

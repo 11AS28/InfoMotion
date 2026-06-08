@@ -1,8 +1,10 @@
 import React from 'react';
 import '../pages_css/mainPage.css';
 import { Cookie } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const PrivacyPolicy = () => {
+  usePageTitle("InfoMotion - Politica de Confidențialitate");
   return (
     <div
       className="policy-container"

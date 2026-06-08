@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import {toast } from 'sonner'; // Importăm Toast-ul
 import '../pages_css/adminusers.css';
+import usePageTitle from '../hooks/usePageTitle';
 
 const ADMINS = [
   { username: import.meta.env.VITE_ADMIN_1_USER, password: import.meta.env.VITE_ADMIN_1_PASS },
@@ -148,6 +149,7 @@ function AdminUsers() {
 
   if (!isAuthorized) {
     return (
+      usePageTitle("InfoMotion - AdminUsers"),
       <div className="admin-login-overlay">
         {/* Containerul de Toasts trebuie să existe și pe pagina de login ca să vedem eroarea de parolă */}
         

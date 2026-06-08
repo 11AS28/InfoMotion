@@ -10,6 +10,7 @@ import Footer from './components/footer';
 import PrivateRoute from './components/PrivateRoute';
 import Arena from './components/Arena';
 import CompilerPage from './components/CompilatorTab';
+import Online from './components/online';
 
 import MainPage from './pages/mainpage';
 import Contact from './pages/contact';
@@ -38,7 +39,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Toaster richColors /> {/* Adăugat pentru notificări */}
+        
         
         {/* Ascundem navigația pe admin și pe compiler */}
         {!isAdminPage && !epagadmin && !isCompilerPage && <Nav />}
@@ -111,8 +112,10 @@ function App() {
               }
             />
           </Routes>
+        
         </main>
 
+         <Online/>
         {/* Ascundem footer-ul pe admin și pe compiler */}
         {!isAdminPage && !epagadmin && !isCompilerPage && <Footer />}
         

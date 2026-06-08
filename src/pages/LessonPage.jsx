@@ -10,6 +10,7 @@ import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy } from 'lucide-r
 import TreeVisualizer from '../components/TreeVisualizer';
 import parse from 'html-react-parser';
 import WikiPreviewLink from '../components/WikiPreviewLink';
+import usePageTitle from '../hooks/usePageTitle';
 
 // Lazy loading components...
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -52,6 +53,12 @@ function LessonPage() {
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
+
+  usePageTitle(lectie ? `InfoMotion - ${lectie.titlu}` : 'InfoMotion - Lecție');
+
+
+
+
 
   const algoritmiBackend = [
     "bubbleSort", 
@@ -250,9 +257,15 @@ function LessonPage() {
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
+    
   };
 
+
+
+  
   return (
+    
+
     <div className="page-wrapper">
       <br />
       <div className="lesson-main-content-flex">

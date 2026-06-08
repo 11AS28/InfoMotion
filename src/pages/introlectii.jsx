@@ -2,9 +2,11 @@ import React from 'react';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
 import '../pages_css/intro.css';
+import usePageTitle from '../hooks/usePageTitle'; 
 import { Goal, Sparkles, Gamepad2, Laptop, Zap, Rocket, Bot, PenTool, ChartNoAxesCombined, PencilRuler } from 'lucide-react';
 
 function Intro() {
+  usePageTitle("InfoMotion - Despre Proiect");
   return (
     <div className="page-wrapper">
       <main className="intro-container">

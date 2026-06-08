@@ -5,6 +5,7 @@ import '../pages_css/mainPage.css';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
 import { Eye, ClipboardPenLine, LibraryBig } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const INITIAL_ARRAY = [24, 18, 35, 12, 42, 8];
 
@@ -61,7 +62,7 @@ function MainPage() {
 
   return (
     <div className="main-page">
-
+      {usePageTitle("InfoMotion - Descoperă Logica din Spatele Codului")}
       
       <section className="cta-bottom" style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: 'var(--bg-card)' }}>
         <h2 style={{ fontSize: '2.5rem', color: 'var(--text-primary)', marginBottom: '15px' }}>

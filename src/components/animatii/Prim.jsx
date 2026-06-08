@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../animatii_css/prim.css';
 
 export default function VerificarePrimAnim() {
   const [step, setStep] = useState(0);
@@ -17,7 +18,7 @@ export default function VerificarePrimAnim() {
       n: 37,
       d: 3,
       status: 'Verificare...',
-      check: '3 * 3 = 9 (<= 37) ✅',
+      check: '3 * 3 = 9 (<= 37) ',
       highlight: 3
     },
     {
@@ -33,7 +34,7 @@ export default function VerificarePrimAnim() {
       n: 37,
       d: 7,
       status: 'Verificare...',
-      check: '7 * 7 = 49 (> 37) 🛑 STOP!',
+      check: '7 * 7 = 49 (> 37)  STOP!',
       highlight: 7
     },
     {
@@ -47,6 +48,7 @@ export default function VerificarePrimAnim() {
   ];
 
   const current = stages[step];
+  const testedDivisors = [2, 3, 5, 7];
 
   const nextStep = () => {
     if (step < stages.length - 1) setStep(step + 1);
@@ -56,89 +58,39 @@ export default function VerificarePrimAnim() {
     if (step > 0) setStep(step - 1);
   };
 
-  const testedDivisors = [2, 3, 5, 7];
-
   return (
-    <div className="di-container">
+    <div className="di-container prim-anim-container">
       <h3 className="di-title">Animație: Testul de Primalitate</h3>
 
-      <p className="di-desc" style={{ minHeight: '60px' }}>
+      <p className="di-desc prim-desc">
         {current.desc}
       </p>
 
-      <div className="di-visual" style={{ marginBottom: '30px' }}>
-        <div
-          style={{
-            display: 'flex',
-            gap: '15px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}
-        >
-          <div
-            className="di-box"
-            style={{
-              width: '120px',
-              maxWidth: '100%',
-              backgroundColor: '#1e293b',
-              border: '2px solid #3b82f6'
-            }}
-          >
+      <div className="di-visual prim-visual">
+        <div className="prim-top-row">
+          <div className="di-box prim-box prim-box-n">
             N = {current.n}
           </div>
 
-          <div
-            className="di-box"
-            style={{
-              width: '120px',
-              maxWidth: '100%',
-              backgroundColor: '#BA7517',
-              border: '2px solid #ffb347'
-            }}
-          >
+          <div className="di-box prim-box prim-box-d">
             d = {current.d}
           </div>
 
-          <div style={{ fontSize: '2rem', color: 'var(--text-muted)' }}>➔</div>
+          <div className="prim-arrow">➔</div>
 
           <div
-            className="di-box"
-            style={{
-              width: '200px',
-              maxWidth: '100%',
-              backgroundColor: current.status === 'ESTE PRIM' ? '#639922' : '#BA7517',
-              transition: 'all 0.3s'
-            }}
+            className={`di-box prim-box prim-box-status ${
+              current.status === 'ESTE PRIM' ? 'prime' : 'checking'
+            }`}
           >
             {current.status}
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '28px',
-            textAlign: 'center'
-          }}
-        >
-          <p
-            style={{
-              fontSize: '0.9rem',
-              color: 'var(--text-muted)',
-              marginBottom: '10px'
-            }}
-          >
-            DIVIZORI TESTAȚI:
-          </p>
+        <div className="prim-tested-zone">
+          <p className="prim-tested-label">DIVIZORI TESTAȚI:</p>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '10px',
-              flexWrap: 'wrap'
-            }}
-          >
+          <div className="prim-tested-list">
             {testedDivisors.map((value) => {
               const isActive = current.highlight === value;
               const isChecked = value < current.d || (value === 2 && current.d > 2);
@@ -146,19 +98,7 @@ export default function VerificarePrimAnim() {
               return (
                 <div
                   key={value}
-                  style={{
-                    minWidth: '58px',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                    backgroundColor: isActive ? '#BA7517' : isChecked ? '#334155' : '#1e293b',
-                    color: '#fff',
-                    border: isActive ? '2px solid #ffb347' : '1px solid #4a5568',
-                    transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                    transition: 'all 0.3s ease',
-                    opacity: current.highlight === -1 ? 0.85 : 1
-                  }}
+                  className={`prim-tested-item ${isChecked ? 'checked' : ''} ${isActive ? 'active' : ''} ${current.highlight === -1 ? 'dimmed' : ''}`}
                 >
                   d={value}
                 </div>
@@ -167,26 +107,16 @@ export default function VerificarePrimAnim() {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '30px',
-            padding: '15px',
-            borderRadius: '8px',
-            background: 'var(--bg-subtle)',
-            border: '1px solid #4a5568',
-            width: '100%',
-            boxSizing: 'border-box',
-            wordWrap: 'break-word'
-          }}
-        >
-          <p style={{ margin: 0, fontFamily: 'monospace', fontSize: '0.95rem' }}>
-            Verificare curentă: <br />
-            <strong style={{ color: 'var(--accent)' }}>{current.check}</strong>
+        <div className="prim-check-box">
+          <p className="prim-check-text">
+            Verificare curentă:
+            <br />
+            <strong className="prim-check-value">{current.check}</strong>
           </p>
         </div>
       </div>
 
-      <div className="di-controls" style={{ flexWrap: 'wrap' }}>
+      <div className="di-controls prim-controls">
         <button onClick={prevStep} disabled={step === 0} className="btn-secondary">
           Înapoi
         </button>

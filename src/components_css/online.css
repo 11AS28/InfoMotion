@@ -1,0 +1,27 @@
+.popup{
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    padding: 16px 25px;
+    border-radius: 14px;
+    color: white;
+    font-size: 18px;
+    z-index: 999;
+    transform: translateX(400px);
+    transition: .4s;
+}
+
+
+.popup.show{
+    transform: translateX(0);
+}
+
+.online{
+    background-color: #22c55e;
+    box-shadow: 0 10px 30px #22c55e4d;
+}
+
+.offline{
+    background-color: #ef4444;
+    box-shadow: 0 10px 30px #ef44444d;
+}

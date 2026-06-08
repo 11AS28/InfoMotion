@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import Arena from '../components/Arena';
 import '../pages_css/clasament.css';
 import { Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 function Clasament() {
   const { theme } = useTheme();
@@ -152,13 +153,15 @@ function Clasament() {
   if (loading) return <div className="loader">Se încarcă...</div>;
 
   return (
+   
     <div className="clasament-page" data-theme={theme}>
+      
       <h1>
         <img src="/logo-infomotion.svg" alt="logo" id="arena-badge" />
         Arena Info-Motion
         <img src="/logo-infomotion.svg" alt="logo" id="arena-badge" />
       </h1>
-
+      
       {/* SOSIRE OPTIMIZARE: Trimitem datele gata citite către componenta copil */}
       <Arena datePreincarcate={arenaData} />
 

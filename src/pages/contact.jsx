@@ -6,6 +6,7 @@ import { FaDiscord, FaGithub, FaInstagram, FaChevronDown } from "react-icons/fa"
 import { CgMail } from "react-icons/cg";
 import { db } from "../firebase"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import usePageTitle from '../hooks/usePageTitle';
 
 
 const FAQ_ITEMS = [
@@ -37,8 +38,9 @@ const FAQ_ITEMS = [
 
 function FaqItem({ question, answer }) {
     const [open, setOpen] = useState(false);
-
+    usePageTitle("InfoMotion - Contact");
     return (
+        
         <div className={`faq-item ${open ? "open" : ""}`} onClick={() => setOpen(!open)}>
             <div className="faq-question">
                 <span>{question}</span>

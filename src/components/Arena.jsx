@@ -5,6 +5,7 @@ import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestor
 import '../components_css/arena.css';
 import { Toaster, toast } from 'sonner';
 import { Rocket, TriangleAlert, TestTubeDiagonal } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
@@ -184,6 +185,7 @@ function Arena({ datePreincarcate }) {
   const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
   
   return (
+    usePageTitle("InfoMotion - Arena"),
     <div className="arena-wrapper">
       <div className="arena-container">
         <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>

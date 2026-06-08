@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext"; // Dacă vrei să salvezi și 
 import Nav from "../components/nav";
 import Footer from "../components/footer";
 import '../pages_css/trimiteLectii.css';
+import usePageTitle from '../hooks/usePageTitle';
 
 const TrimiteLectii = () => {
     const { currentUser } = useAuth(); // Extragem utilizatorul logat, dacă este cazul
@@ -85,6 +86,7 @@ const TrimiteLectii = () => {
 
     return (    
         <div className="page-wrapper">
+        {usePageTitle("InfoMotion - Trimite o Lecție")}
         <Nav />
         <main className="trimite-lectii-container">
             <header className="trimite-lectii-header">

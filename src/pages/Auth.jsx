@@ -4,11 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import '../pages_css/auth.css';
 import { FaGoogle } from "react-icons/fa";
 import { sendEmailVerification } from "firebase/auth";
+import usePageTitle from '../hooks/usePageTitle';
 
 function Auth() {
   const navigate = useNavigate();
   const { loginWithGoogle, login, signup, logout, resetPassword } = useAuth();
   
+  
+
   const [isRegistering, setIsRegistering] = useState(false); 
   const [role, setRole] = useState('student'); //  STATE NOU: 'student' sau 'teacher'
   const [identificator, setIdentificator] = useState(''); 
@@ -20,6 +23,9 @@ function Auth() {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [showResendBtn, setShowResendBtn] = useState(false);
+
+usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autentificare');
+  
 
   const handleGoogleLogin = async () => {
     if (isRegistering && !agreedToTerms) {

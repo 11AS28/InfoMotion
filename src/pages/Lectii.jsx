@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import '../pages_css/Lectii.css';
 import { Search } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 function Lectii() {
   const [lessonsData, setLessonsData] = useState([]); 
@@ -133,7 +134,11 @@ function Lectii() {
   };
 
   return (
+
+      
+
     <div className="page-wrapper">
+      {usePageTitle("InfoMotion - Module de Învățare")}
       <main className="lectii-container">
         <div className="lectii-header">
           <h1>Module de <span>Învățare</span></h1>
