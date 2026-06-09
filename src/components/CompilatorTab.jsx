@@ -7,11 +7,7 @@ import Editor, { loader } from '@monaco-editor/react';
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext'; 
-<<<<<<< HEAD
-import { customThemes } from './shopItems'; 
-=======
 import { customThemes } from './shopItems';  
->>>>>>> 42a2661ca9d7297bb4d09ddbdc53a35bc80c9a10
 import '../components_css/compiler.css';
 
 //  INIȚIALIZARE GLOBALĂ A TEMELOR
@@ -71,8 +67,6 @@ function CompilerPage() {
     return name.replace(/[^a-zA-Z0-9]/g, ''); 
   };
 
-<<<<<<< HEAD
-=======
   // Numele temei curente curățat pe care îl pasăm proprietății `theme` din Monaco
   const monacoThemeName = (customThemes && customThemes[temaEchipataDb]) 
     ? sanitizeThemeName(temaEchipataDb) 
@@ -100,7 +94,6 @@ function CompilerPage() {
       });
     }
   };
->>>>>>> 42a2661ca9d7297bb4d09ddbdc53a35bc80c9a10
 
   useEffect(() => {
     async function incarcaCodSursa() {

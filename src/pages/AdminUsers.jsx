@@ -1,13 +1,13 @@
-// AdminUsers.jsx — Panou Gestiune Utilizatori securizat cu verificare Firestore
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { toast } from 'sonner'; 
+import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { toast } from 'sonner';
 import '../pages_css/adminusers.css';
 import usePageTitle from '../hooks/usePageTitle';
 
-// ─── LOGIN SCREEN SECURE (Exact ca în Admin.jsx) ──────────────────────────────
 function LoginScreen({ onLogin }) {
+  usePageTitle("InfoMotion - AdminUsers Login");
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -16,16 +16,15 @@ function LoginScreen({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    const exactUsername = username.trim(); 
+
+    const exactUsername = username.trim();
 
     try {
-      // Interogare document individual pentru a respecta regulile stricte din Firestore
       const userRef = doc(db, 'conturi_admin', exactUsername);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists() && userSnap.data().password === password) {
-        onLogin({ username: exactUsername, password: password });
+        onLogin({ username: exactUsername, password });
         toast.success(`Acces autorizat! Bine ai venit, ${exactUsername}. 🛠️`);
       } else {
         toast.error('Username sau parolă incorectă!');
@@ -39,50 +38,59 @@ function LoginScreen({ onLogin }) {
   };
 
   return (
-    usePageTitle("InfoMotion - AdminUsers Login"),
     <div className="admin-login-overlay" style={{ background: '#09090b' }}>
       <form onSubmit={handleLogin} className="admin-login-form">
         <div className="login-header">
           <h2 className="login-title">InfoMotion<span>.</span></h2>
           <h3 className="login-subtitle">Gestiune Utilizatori (Securizat)</h3>
         </div>
+
         <div className="input-group">
           <label>Utilizator Admin</label>
-          <input 
-            type="text" 
-            className="login-input" 
-            placeholder="username admin" 
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} 
-            required 
+          <input
+            type="text"
+            className="login-input"
+            placeholder="username admin"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
             disabled={loading}
           />
         </div>
+
         <div className="input-group">
           <label>Parolă Securizată</label>
           <div style={{ position: 'relative', width: '100%' }}>
-            <input 
-              type={showPass ? 'text' : 'password'} 
-              className="login-input" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
+            <input
+              type={showPass ? 'text' : 'password'}
+              className="login-input"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               disabled={loading}
               style={{ width: '100%' }}
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setShowPass(!showPass)}
               style={{
-                position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '1.1rem'
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#888',
+                fontSize: '1.1rem'
               }}
             >
               {showPass ? '🙈' : '👁️'}
             </button>
           </div>
         </div>
+
         <button type="submit" className="login-submit-btn" disabled={loading}>
           {loading ? 'Se verifică contul...' : 'Autorizează Panou'}
         </button>
@@ -91,62 +99,52 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ─── COMPONENTA PRINCIPALĂ MANAGEMENT ──────────────────────────────────────────
 function AdminUsers() {
   usePageTitle("InfoMotion - AdminUsers");
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  const [expandedUserId, setExpandedUserId] = useState(null); 
-
+  const [expandedUserId, setExpandedUserId] = useState(null);
   const [sortBy, setSortBy] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [loggedAdmin, setLoggedAdmin] = useState(null);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const querySnapshot = await getDocs(collection(db, "users"));
-      const usersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const usersList = querySnapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       setUsers(usersList);
     } catch (error) {
       toast.error("Eroare la încărcarea utilizatorilor: " + error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // Declanșăm citirea datelor doar când adminul s-a autentificat cu succes în Firestore
   useEffect(() => {
     if (isAuthorized) fetchUsers();
   }, [isAuthorized]);
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    const gasit = ADMINS.find(admin => admin.username === loginUser.trim() && admin.password === loginPass);
-    if (gasit) {
-      setIsAuthorized(true);
-      toast.success("Bine ai revenit, adminule!");
-    } else {
-      toast.error("Utilizator sau parolă incorectă!");
-    }
-  }, [loggedAdmin]);
-
   const handleEditClick = (user, e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     setEditUserId(user.id);
-    setEditFormData({ ...user }); 
+    setEditFormData({ ...user });
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value)
+      [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value
     }));
   };
 
   const handleComplexDataChange = (name, rawValue) => {
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
       [name]: rawValue
     }));
@@ -154,30 +152,28 @@ function AdminUsers() {
 
   const handleSaveClick = async (userId, e) => {
     if (e) e.stopPropagation();
+
     try {
       let finalData = { ...editFormData };
-      
+
       if (typeof finalData.lectiiTerminate === 'string') {
-        try { finalData.lectiiTerminate = JSON.parse(finalData.lectiiTerminate); } catch(e) {}
+        try { finalData.lectiiTerminate = JSON.parse(finalData.lectiiTerminate); } catch {}
       }
       if (typeof finalData.statistici === 'string') {
-        try { finalData.statistici = JSON.parse(finalData.statistici); } catch(e) {}
+        try { finalData.statistici = JSON.parse(finalData.statistici); } catch {}
       }
       if (typeof finalData.temeDeblocate === 'string') {
-        try { finalData.temeDeblocate = JSON.parse(finalData.temeDeblocate); } catch(e) {}
+        try { finalData.temeDeblocate = JSON.parse(finalData.temeDeblocate); } catch {}
       }
 
-      // ─── METODA DE SECURITATE FIRESTORE INDISPENSABILĂ ───
-      // Injectăm cheia și numele de admin pentru a trece de regulile din backend
       finalData.cheieSecuritate = loggedAdmin.password;
       finalData.adminUsername = loggedAdmin.username;
 
       const userRef = doc(db, 'users', userId);
       await updateDoc(userRef, finalData);
-      
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...finalData } : u));
+
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...finalData } : u)));
       setEditUserId(null);
-      
       toast.success("Modificări salvate cu succes în Firestore!");
     } catch (error) {
       toast.error("Eroare la salvare: " + error.message);
@@ -185,7 +181,7 @@ function AdminUsers() {
   };
 
   const toggleExpandUser = (userId) => {
-    setExpandedUserId(expandedUserId === userId ? null : userId);
+    setExpandedUserId((prev) => (prev === userId ? null : userId));
   };
 
   const getProcessedUsers = () => {
@@ -193,7 +189,7 @@ function AdminUsers() {
 
     if (searchTerm.trim() !== "") {
       const term = searchTerm.toLowerCase().trim();
-      processed = processed.filter(u => {
+      processed = processed.filter((u) => {
         const usernameMatch = (u.nume || "").toLowerCase().includes(term);
         const cfMatch = (u.codeforcesHandle || "").toLowerCase().includes(term);
         return usernameMatch || cfMatch;
@@ -201,9 +197,9 @@ function AdminUsers() {
     }
 
     if (sortBy === "teacher") {
-      processed = processed.filter(u => u.role === "teacher");
+      processed = processed.filter((u) => u.role === "teacher");
     } else if (sortBy === "student") {
-      processed = processed.filter(u => u.role === "student" || !u.role);
+      processed = processed.filter((u) => u.role === "student" || !u.role);
     }
 
     if (sortBy === "username") {
@@ -231,27 +227,18 @@ function AdminUsers() {
 
   if (!isAuthorized) {
     return (
-      <div className="admin-login-overlay">
-        <form onSubmit={handleLoginSubmit} className="admin-login-form">
-          <div className="login-header">
-            <h2 className="login-title">InfoMotion<span>.</span></h2>
-            <h3 className="login-subtitle">Panou de administrare</h3>
-          </div>
-          <div className="input-group">
-            <label>Utilizator</label>
-            <input type="text" className="login-input" placeholder="username" value={loginUser} onChange={(e) => setLoginUser(e.target.value)} required />
-          </div>
-          <div className="input-group">
-            <label>Parolă</label>
-            <input type="password" className="login-input" placeholder="••••••••" value={loginPass} onChange={(e) => setLoginPass(e.target.value)} required />
-          </div>
-          <button type="submit" className="login-submit-btn">Intra in cont</button>
-        </form>
-      </div>
+      <LoginScreen
+        onLogin={(adminData) => {
+          setLoggedAdmin(adminData);
+          setIsAuthorized(true);
+        }}
+      />
     );
   }
 
-  if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Se încarcă baza de date...</div>;
+  if (loading) {
+    return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Se încarcă baza de date...</div>;
+  }
 
   return (
     <div className="admin-panel-container">
@@ -260,20 +247,35 @@ function AdminUsers() {
           <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Panou Admin Suprem - Gestiune Utilizatori</h2>
           <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
         </div>
-        <button onClick={() => { setLoggedAdmin(null); toast.info("Sesiune admin închisă."); }} style={{ ...btnStyle, background: '#a12424', padding: '10px 16px' }}>Ieșire Panou</button>
+        <button
+          onClick={() => {
+            setLoggedAdmin(null);
+            setIsAuthorized(false);
+            toast.info("Sesiune admin închisă.");
+          }}
+          style={{ ...btnStyle, background: '#a12424', padding: '10px 16px' }}
+        >
+          Ieșire Panou
+        </button>
       </div>
 
       <div className="controls-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', background: '#1a1a24', padding: '15px', borderRadius: '6px', border: '1px solid #2d2d3d' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ color: '#378ADD', fontSize: '0.85rem', fontWeight: 'bold' }}>Caută rapid utilizator:</label>
-          <input 
+          <input
             type="text"
             placeholder="Introduceți Username sau Codeforces Handle..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              background: '#0f0f14', border: '1px solid #378ADD', color: 'white', 
-              padding: '10px 14px', borderRadius: '4px', width: '100%', boxSizing: 'border-box', fontSize: '0.95rem'
+            style={{
+              background: '#0f0f14',
+              border: '1px solid #378ADD',
+              color: 'white',
+              padding: '10px 14px',
+              borderRadius: '4px',
+              width: '100%',
+              boxSizing: 'border-box',
+              fontSize: '0.95rem'
             }}
           />
         </div>
@@ -287,7 +289,7 @@ function AdminUsers() {
           {searchTerm && <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>Găsiți: {displayedUsers.length} rezultate</span>}
         </div>
       </div>
-      
+
       <table className="desktop-table">
         <thead>
           <tr style={{ background: '#25252d', color: '#378ADD', textAlign: 'left' }}>
@@ -305,7 +307,7 @@ function AdminUsers() {
         </thead>
         <tbody>
           {displayedUsers.length > 0 ? (
-            displayedUsers.map(user => {
+            displayedUsers.map((user) => {
               const isEditing = editUserId === user.id;
               const isExpanded = expandedUserId === user.id;
               return (
@@ -331,6 +333,7 @@ function AdminUsers() {
                       )}
                     </td>
                   </tr>
+
                   {isExpanded && (
                     <tr>
                       <td colSpan="10" className="expanded-zone">
@@ -338,11 +341,13 @@ function AdminUsers() {
                           <span>Date Complete Document Firestore (UID: {user.id})</span>
                           {isEditing && <span style={{ color: '#639922', fontSize: '0.9rem' }}>⚠️ Ești în modul de editare activă</span>}
                         </h4>
+
                         <div className="grid-detalii">
                           <div className="detaliu-field">
                             <span className="detaliu-label">Nume Complet / Username</span>
                             {isEditing ? <input type="text" name="nume" value={editFormData.nume || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.nume || "-"}</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">Rol Sistem</span>
                             {isEditing ? (
@@ -352,43 +357,51 @@ function AdminUsers() {
                               </select>
                             ) : <span>{user.role || "student"}</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">Codeforces Handle</span>
                             {isEditing ? <input type="text" name="codeforcesHandle" value={editFormData.codeforcesHandle || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.codeforcesHandle || "-"}</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">CF Validat Status</span>
                             {isEditing ? <input type="checkbox" name="cfValidat" checked={editFormData.cfValidat || false} onChange={handleInputChange} /> : <span>{user.cfValidat ? "Aprobat" : "Fals / Neaprobat"}</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">Puncte XP Totale</span>
                             {isEditing ? <input type="number" name="puncteTotale" value={editFormData.puncteTotale || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.puncteTotale || 0} xp</span>}
                           </div>
-                          <div className="detaliu-field" style={{ borderLeft: '3px solid #ffa500', paddingLeft: '8px' }}>
-                            <span className="detaliu-label" style={{ color: '#ffa500' }}>Sold Monede Portofel</span>
-                            {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyle, borderColor: '#ffa500' }} /> : <span style={{ fontWeight: 'bold' }}>{user.puncte || 0} p</span>}
-                          </div>
+
                           <div className="detaliu-field">
-                            <span className="detaliu-label" style={{ color: '#ffb833' }}>Puncte Portofel Magazin (Coins)</span>
-                            {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyle, borderColor: '#ffb833' }} /> : <span style={{ color: '#ffb833', fontWeight: 'bold' }}>{user.puncte || 0} puncte</span>}
+                            <span className="detaliu-label">Sold Monede Portofel</span>
+                            {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={inputStyle} /> : <span style={{ fontWeight: 'bold' }}>{user.puncte || 0} p</span>}
+                          </div>
+
+                          <div className="detaliu-field">
+                            <span className="detaliu-label">Puncte Portofel Magazin (Coins)</span>
+                            {isEditing ? <input type="number" name="puncteMagazin" value={editFormData.puncteMagazin || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.puncteMagazin || 0} puncte</span>}
                           </div>
 
                           <div className="detaliu-field">
                             <span className="detaliu-label">Streak Autentificare</span>
                             {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.streakCount || 0} zile</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">Probleme Rezolvate Arenă (Count)</span>
                             {isEditing ? <input type="number" name="problemeRezolvateCount" value={editFormData.problemeRezolvateCount || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.problemeRezolvateCount || 0} pb</span>}
                           </div>
+
                           <div className="detaliu-field">
                             <span className="detaliu-label">Ultima Logare (Data Streak)</span>
                             {isEditing ? <input type="text" name="lastLoginDate" value={editFormData.lastLoginDate || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.lastLoginDate || "-"}</span>}
                           </div>
+
                           <div className="detaliu-field" style={{ gridColumn: '1 / -1' }}>
                             <span className="detaliu-label">Lecții terminate (Array JSON)</span>
                             {isEditing ? (
-                              <textarea 
+                              <textarea
                                 style={{ ...inputStyle, height: '60px', fontFamily: 'monospace', fontSize: '0.85rem' }}
                                 value={typeof editFormData.lectiiTerminate === 'object' ? JSON.stringify(editFormData.lectiiTerminate) : editFormData.lectiiTerminate || "[]"}
                                 onChange={(e) => handleComplexDataChange('lectiiTerminate', e.target.value)}
@@ -403,7 +416,7 @@ function AdminUsers() {
                           <div className="detaliu-field" style={{ gridColumn: '1 / -1' }}>
                             <span className="detaliu-label" style={{ color: '#00cbaf' }}>Teme Deblocate (Array JSON)</span>
                             {isEditing ? (
-                              <textarea 
+                              <textarea
                                 style={{ ...inputStyle, height: '60px', fontFamily: 'monospace', fontSize: '0.85rem', borderColor: '#00cbaf' }}
                                 value={typeof editFormData.temeDeblocate === 'object' ? JSON.stringify(editFormData.temeDeblocate) : editFormData.temeDeblocate || '["theme_default"]'}
                                 onChange={(e) => handleComplexDataChange('temeDeblocate', e.target.value)}
@@ -415,6 +428,7 @@ function AdminUsers() {
                             )}
                           </div>
                         </div>
+
                         {isEditing && (
                           <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                             <button onClick={(e) => handleSaveClick(user.id, e)} style={{ ...btnStyle, background: '#639922', padding: '8px 20px' }}>Salvează Modificări Document</button>
@@ -437,37 +451,47 @@ function AdminUsers() {
 
       <div className="mobile-cards">
         {displayedUsers.length > 0 ? (
-          displayedUsers.map(user => {
+          displayedUsers.map((user) => {
             const isEditing = editUserId === user.id;
             const isExpanded = expandedUserId === user.id;
             return (
-              <div key={user.id} className="user-card" onClick={() => toggleExpandUser(user.id)} style={{ borderLeft: isExpanded ? '4px solid #639922' : '4px solid #378ADD' }}>
+              <div
+                key={user.id}
+                className="user-card"
+                onClick={() => toggleExpandUser(user.id)}
+                style={{ borderLeft: isExpanded ? '4px solid #639922' : '4px solid #378ADD' }}
+              >
                 <div className="card-row"><span className="card-label">Username:</span> <strong>{user.nume || "-"}</strong></div>
                 <div className="card-row"><span className="card-label">Rol:</span> <span style={{ color: user.role === 'teacher' ? '#64b5f6' : '#81c784' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></div>
                 <div className="card-row"><span className="card-label">Monede:</span> <span style={{ color: '#ffa500', fontWeight: 'bold' }}>{user.puncte || 0}</span></div>
                 <div className="card-row"><span className="card-label">Email mascat:</span> <span>{mascheazaEmail(user.email)}</span></div>
+
                 {isExpanded && (
                   <div style={{ marginTop: '10px', padding: '10px', background: '#111', borderRadius: '6px', fontSize: '0.85rem' }} onClick={(e) => e.stopPropagation()}>
                     <div className="card-row">
                       <span className="card-label">Bani Shop:</span>
-                      {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, color: '#ffb833' }} /> : <span style={{ color: '#ffb833' }}>{user.puncte || 0}</span>}
+                      {isEditing ? <input type="number" name="puncteMagazin" value={editFormData.puncteMagazin || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, color: '#ffb833' }} /> : <span style={{ color: '#ffb833' }}>{user.puncteMagazin || 0}</span>}
                     </div>
+
                     <div className="card-row">
                       <span className="card-label">Puncte XP:</span>
                       {isEditing ? <input type="number" name="puncteTotale" value={editFormData.puncteTotale || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.puncteTotale || 0}</span>}
                     </div>
+
                     <div className="card-row">
                       <span className="card-label" style={{ color: '#ffa500' }}>Monede:</span>
                       {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, borderColor: '#ffa500' }} /> : <span>{user.puncte || 0}</span>}
                     </div>
+
                     <div className="card-row">
                       <span className="card-label">Streak:</span>
                       {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.streakCount || 0}</span>}
                     </div>
+
                     <div style={{ marginTop: '10px' }}>
                       <span className="card-label" style={{ display: 'block', marginBottom: '4px', color: '#00cbaf' }}>Teme Deblocate:</span>
                       {isEditing ? (
-                        <textarea 
+                        <textarea
                           style={{ ...inputStyle, width: '100%', height: '50px', fontSize: '0.8rem', borderColor: '#00cbaf' }}
                           value={typeof editFormData.temeDeblocate === 'object' ? JSON.stringify(editFormData.temeDeblocate) : editFormData.temeDeblocate || '["theme_default"]'}
                           onChange={(e) => handleComplexDataChange('temeDeblocate', e.target.value)}
@@ -476,6 +500,7 @@ function AdminUsers() {
                         <code style={{ fontSize: '0.75rem', color: '#00cbaf' }}>{JSON.stringify(user.temeDeblocate || ["theme_default"])}</code>
                       )}
                     </div>
+
                     <div className="card-actions">
                       {isEditing ? (
                         <>
@@ -499,8 +524,35 @@ function AdminUsers() {
   );
 }
 
-const inputStyle = { background: '#111', border: '1px solid #444', color: 'white', padding: '8px', borderRadius: '4px', width: '100%', boxSizing: 'border-box' };
-const inputStyleMobile = { background: '#111', border: '1px solid #444', color: 'white', padding: '4px 8px', borderRadius: '4px', width: '55%', textAlign: 'right' };
-const btnStyle = { color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', transition: 'opacity 0.2s' };
+const inputStyle = {
+  background: '#111',
+  border: '1px solid #444',
+  color: 'white',
+  padding: '8px',
+  borderRadius: '4px',
+  width: '100%',
+  boxSizing: 'border-box'
+};
+
+const inputStyleMobile = {
+  background: '#111',
+  border: '1px solid #444',
+  color: 'white',
+  padding: '4px 8px',
+  borderRadius: '4px',
+  width: '55%',
+  textAlign: 'right'
+};
+
+const btnStyle = {
+  color: 'white',
+  border: 'none',
+  padding: '6px 12px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '0.85rem',
+  transition: 'opacity 0.2s'
+};
 
 export default AdminUsers;
