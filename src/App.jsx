@@ -11,6 +11,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Arena from './components/Arena';
 import CompilerPage from './components/CompilatorTab';
 import Online from './components/online';
+import Marketplace from './components/Marketplace'; 
 
 import MainPage from './pages/mainpage';
 import Contact from './pages/contact';
@@ -94,6 +95,12 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+              <Route path="/marketplace" element={
+               <PrivateRoute>
+                <Marketplace />
+                </PrivateRoute>
+                } />
 
             <Route
               path="/adminusers/"

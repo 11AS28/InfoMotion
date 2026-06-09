@@ -5,10 +5,14 @@ import { db } from '../firebase';
 import Editor from '@monaco-editor/react';
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../context/AuthContext'; 
+import { customThemes } from './shopItems';  // VERIFICĂ ASTA: Asigură-te că ruta către shopItems.js este cea corectă!
 import '../components_css/compiler.css';
 
 function CompilerPage() {
   const { idLectie } = useParams();
+  const { currentUser } = useAuth(); 
+  
   const [titluLectie, setTitluLectie] = useState("Workspace C++");
   const [editorCode, setEditorCode] = useState("");
   const [compilerInput, setCompilerInput] = useState("");
@@ -16,10 +20,7 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
 
-  // Verificăm dacă ecranul este de mobil (< 768px)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  // Dimensiuni inițiale dinamice în funcție de ecran (pe mobil controlăm înălțimea editorului)
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
   const [topHeight, setTopHeight] = useState(window.innerHeight * 0.45);
   const [editorHeightMobile, setEditorHeightMobile] = useState(window.innerHeight * 0.5);
@@ -31,6 +32,42 @@ function CompilerPage() {
   const sidePanelRef = useRef(null);
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+  // --- REZOLVARE CONFLICT THEME CONTEXT ---
+  // Când utilizatorul intră în compiler, forțăm layout-ul pe întuneric. Când pleacă, revenim la setarea din LocalStorage.
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    return () => {
+      const savedTheme = localStorage.getItem('info-motion-theme') || 'light';
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+  }, []);
+
+  // --- PLASĂ DE SIGURANȚĂ PENTRU NUMELE TEMEI ---
+  // Monaco are voie să primească doar o cheie validă din shopItems. Dacă nu e încărcat userul sau e default, trimitem 'vs-dark'.
+  const temaActiva = currentUser?.temaEchipata || 'theme_default';
+  const monacoThemeName = (customThemes && customThemes[temaActiva]) ? temaActiva : 'vs-dark';
+
+  // Modificată pentru siguranță completă: înregistrăm doar dacă obiectul temei este valid și definit
+  const handleEditorBeforeMount = (monacoInstance) => {
+    if (customThemes && typeof customThemes === 'object') {
+      Object.keys(customThemes).forEach((themeKey) => {
+        // Ignorăm cheile goale sau temele native din Monaco ca să prevenim "Illegal theme name!"
+        if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
+          return; 
+        }
+
+        try {
+          if (customThemes[themeKey]) {
+            monacoInstance.editor.defineTheme(themeKey, customThemes[themeKey]);
+          }
+        } catch (e) {
+          console.error(`Eroare la definirea temei ${themeKey}:`, e);
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     async function incarcaCodSursa() {
@@ -51,7 +88,6 @@ function CompilerPage() {
     incarcaCodSursa();
   }, [idLectie]);
 
-  // Detector de resize ecran pentru a comuta între modurile Mobile și Desktop
   useEffect(() => {
     const handleResize = () => {
       const mobileCheck = window.innerWidth < 768;
@@ -61,30 +97,27 @@ function CompilerPage() {
         setTopHeight(window.innerHeight * 0.45);
       } else {
         setEditorHeightMobile(window.innerHeight * 0.5);
-        setTopHeight(window.innerHeight * 0.22); // Spațiu mai mic per casetă pe mobil
+        setTopHeight(window.innerHeight * 0.22); 
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Logica pentru Bara Principală (Orizontală pe Desktop / Verticală între Editor și Console pe Mobil)
   useEffect(() => {
     const handleMoveMain = (clientX, clientY) => {
       if (!isResizingH) return;
 
       if (!isMobile) {
-        // Desktop: lățime stânga-dreapta
         let newWidth = clientX;
-        if (newWidth < 150) newWidth = 0; // Se închide de tot în stânga dacă tragi mult
-        if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth; // Se duce la maxim în dreapta
+        if (newWidth < 150) newWidth = 0; 
+        if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth; 
         setLeftWidth(newWidth);
       } else {
-        // Mobil: înălțime sus-jos pentru editor (dispare sau ocupă tot ecranul)
-        let newHeight = clientY - 55; // Scădem header-ul
+        let newHeight = clientY - 55; 
         const disponibil = window.innerHeight - 55;
-        if (newHeight < 60) newHeight = 0; // Ascunde complet editorul, lasă doar consolele
-        if (newHeight > disponibil - 60) newHeight = disponibil; // Ascunde consolele, lasă doar editorul
+        if (newHeight < 60) newHeight = 0; 
+        if (newHeight > disponibil - 60) newHeight = disponibil; 
         setEditorHeightMobile(newHeight);
       }
     };
@@ -113,7 +146,6 @@ function CompilerPage() {
     };
   }, [isResizingH, isMobile]);
 
-  // Logica pentru Bara Secundară (Între STDIN și STDOUT)
   useEffect(() => {
     const handleMoveSecondary = (clientY) => {
       if (!isResizingV) return;
@@ -122,8 +154,8 @@ function CompilerPage() {
       const panelRect = sidePanelRef.current.getBoundingClientRect();
       let newHeight = clientY - panelRect.top;
 
-      if (newHeight < 40) newHeight = 0; // Ascunde STDIN, lasă doar STDOUT în panou
-      if (newHeight > panelRect.height - 40) newHeight = panelRect.height; // Ascunde STDOUT, lasă STDIN
+      if (newHeight < 40) newHeight = 0; 
+      if (newHeight > panelRect.height - 40) newHeight = panelRect.height; 
 
       setTopHeight(newHeight);
     };
@@ -186,7 +218,6 @@ function CompilerPage() {
     );
   }
 
-  // Calcularea stilurilor inline pentru dimensiuni fluide bazate pe stări
   const mainSplitStyle = isMobile 
     ? { height: `${editorHeightMobile}px`, width: '100%' }
     : { width: `${leftWidth}px`, height: '100%' };
@@ -223,11 +254,12 @@ function CompilerPage() {
           <Editor
             height="100%"
             language="cpp"
-            theme="vs-dark"
+            theme={monacoThemeName} 
+            beforeMount={handleEditorBeforeMount} 
             value={editorCode}
             onChange={(val) => setEditorCode(val || "")}
             options={{
-              fontSize: isMobile ? 14 : 16, // Font o idee mai mic pe telefon ca să încapă textul bine
+              fontSize: isMobile ? 14 : 16, 
               minimap: { enabled: false },
               automaticLayout: true,
               scrollbar: { vertical: 'visible', handleMouseWheel: true },
@@ -236,14 +268,14 @@ function CompilerPage() {
           />
         </div>
 
-        {/* BARA PRINCIPALA (Se transformă vizual din CSS pe mobil) */}
+        {/* BARA PRINCIPALA */}
         <div 
           className={`resizer-horizontal ${isResizingH ? 'active' : ''}`} 
           onMouseDown={() => setIsResizingH(true)}
           onTouchStart={() => setIsResizingH(true)} 
         />
 
-        {/* PARTEA 2: PANOU REZULTATE (INPUT + OUTPUT) */}
+        {/* PARTEA 2: PANOU REZULTATE */}
         <div className="ide-side-panel" ref={sidePanelRef} style={sidePanelStyle}>
           
           {/* Caseta STDIN */}

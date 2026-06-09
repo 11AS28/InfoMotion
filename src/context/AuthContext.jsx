@@ -10,7 +10,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs, increment, arrayUnion } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
 
 const AuthContext = createContext();
@@ -62,7 +62,12 @@ export function AuthProvider({ children }) {
 
   const getStatistici = () => {
     if (!currentUser) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
-    const terminate = currentUser.lectiiTerminate ? currentUser.lectiiTerminate.length : 0;
+    
+    const progresUser = currentUser.progres || {};
+    const terminate = Object.keys(progresUser).filter(
+      id => progresUser[id] && progresUser[id].status === 'complet'
+    ).length;
+
     const totalLectiiReale = lessonsData.length;
     return {
       terminate,
@@ -72,10 +77,8 @@ export function AuthProvider({ children }) {
   };
 
   const verificaDacaEGata = (idLectie) => {
-    if (!currentUser) return false;
-    if (currentUser.lectiiTerminate) return currentUser.lectiiTerminate.includes(idLectie);
-    if (currentUser.progres) return !!currentUser.progres[idLectie];
-    return false;
+    if (!currentUser || !currentUser.progres) return false;
+    return currentUser.progres[idLectie]?.status === 'complet';
   };
 
   const marcheazaLectieTerminata = async (idLectie) => {
@@ -116,28 +119,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  async function loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        uid: user.uid,
-        nume: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        dataCrearii: new Date(),
-        progres: {},
-        codeforcesHandle: "",
-        puncteTotale: 0,
-        problemeRezolvateCount: 0
-      });
-    }
-    return user;
-  }
-
   function logout() { return signOut(auth); }
 
   async function login(identificator, password) {
@@ -151,31 +132,31 @@ export function AuthProvider({ children }) {
     return signInWithEmailAndPassword(auth, emailDeLogare, password);
   }
 
-// Modificăm signup să accepte rolu
   async function signup(email, password, username, role = 'student') {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Obiectul de bază pentru salvare
     const userProfile = {
       uid: user.uid,
       nume: username,
       email: user.email,
-      role: role, // ✅ AICI salvăm dacă e 'student' sau 'teacher'
+      role: role,
       dataCrearii: new Date(),
     };
 
-    // Dacă este elev, îi punem câmpurile specifice de gamificare
     if (role === 'student') {
       userProfile.progres = {};
       userProfile.codeforcesHandle = "";
       userProfile.streakCount = 0;
       userProfile.puncteTotale = 0;
+      userProfile.puncte = 0;
       userProfile.problemeRezolvateCount = 0;
+      // Adăugăm câmpurile de personalizare default
+      userProfile.temeDeblocate = ['theme_default'];
+      userProfile.temaEchipata = 'theme_default';
     } else if (role === 'teacher') {
-      // ✅ Câmpuri inițiale specifice pentru profesor (le poți extinde ulterior)
-      userProfile.clase = []; // vector de ID-uri de clase pe care le va genera
-      userProfile.isVerifiedTeacher = false; // opțional, dacă vrei aprobare manuală
+      userProfile.clase = [];
+      userProfile.isVerifiedTeacher = false;
     }
 
     await setDoc(doc(db, 'users', user.uid), userProfile);
@@ -183,7 +164,6 @@ export function AuthProvider({ children }) {
     return userCredential;
   }
 
-  // Modificăm și login-ul cu Google să pună implicit rolul de student dacă e cont nou
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
@@ -195,17 +175,72 @@ export function AuthProvider({ children }) {
         uid: user.uid,
         nume: user.displayName,
         email: user.email,
-        role: 'student', // ✅ Adăugăm rolul implicit de elev la Google Login rapid
+        role: 'student',
         photoURL: user.photoURL,
         dataCrearii: new Date(),
         progres: {},
         codeforcesHandle: "",
         puncteTotale: 0,
-        problemeRezolvateCount: 0
+        puncte: 0,
+        problemeRezolvateCount: 0,
+        // Adăugăm câmpurile de personalizare default
+        temeDeblocate : ['theme_default'],
+        temaEchipata : 'theme_default'
       });
     }
     return user;
   }
+
+  // IMPLEMENTARE REALĂ: Cumpărare temă din Marketplace
+  const cumparaTema = async (idTema, pretTema) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+    
+    const puncteCurente = currentUser.puncte || 0;
+    
+    if (puncteCurente < pretTema) {
+      return { success: false, error: "Nu ai destule puncte în portofel!" };
+    }
+
+    const temeDeblocate = currentUser.temeDeblocate || ['theme_default'];
+    if (temeDeblocate.includes(idTema)) {
+      return { success: false, error: "Ai cumpărat deja această temă!" };
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await setDoc(userRef, {
+        puncte: increment(-pretTema),            // Scade prețul din portofel (dar lasă puncteTotale intact!)
+        temeDeblocate: arrayUnion(idTema)        // Adaugă ID-ul în inventar
+      }, { merge: true });
+
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la cumpărare:", error);
+      return { success: false, error: "Eroare la procesarea tranzacției." };
+    }
+  };
+
+  // IMPLEMENTARE REALĂ: Echipare temă din inventar
+  const echipeazaTema = async (idTema) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+    
+    const temeDeblocate = currentUser.temeDeblocate || ['theme_default'];
+    if (!temeDeblocate.includes(idTema)) {
+      return { success: false, error: "Nu deții această temă!" };
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await setDoc(userRef, {
+        temaEchipata: idTema
+      }, { merge: true });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la echipare:", error);
+      return { success: false, error: "Nu s-a putut echipa tema." };
+    }
+  };
+
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -271,12 +306,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ✅ FIX PRINCIPAL:
-  // - Acceptă număr direct din Arena (ex: acordaPuncte(40)) SAU string ('quiz' etc.)
-  // - Folosește increment() din Firestore în loc de calcul manual
-  //   → nu mai depinde de currentUser.puncteTotale care putea fi undefined/NaN
-  // - Folosește setDoc cu merge:true în loc de updateDoc
-  //   → funcționează chiar dacă câmpul nu există încă în Firestore
   const acordaPuncte = async (tip) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
@@ -301,7 +330,8 @@ export function AuthProvider({ children }) {
     try {
       await setDoc(userRef, {
         ...extraData,
-        puncteTotale: increment(puncteDeAdaugat)
+        puncteTotale: increment(puncteDeAdaugat), // Crește poziția în clasament
+        puncte: increment(puncteDeAdaugat)       // Crește portofelul de cumpărături
       }, { merge: true });
     } catch (error) {
       console.error("Eroare la acordarea punctelor:", error);
@@ -325,6 +355,8 @@ export function AuthProvider({ children }) {
     resetPassword,
     updateUsername,
     updateCodeforcesHandle,
+    cumparaTema,
+    echipeazaTema // Exportată cu succes!
   };
 
   return (
