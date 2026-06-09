@@ -35,6 +35,15 @@ export const shopItems = [
 
 // Obiectul de configurare pe care Monaco Editor îl va citi ca să știe ce culori să aplice
 export const customThemes = {
+  theme_default: {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': '#1e1e1e',
+      'editor.foreground': '#d4d4d4',
+    }
+  },
   theme_dracula: {
     base: 'vs-dark',
     inherit: true,

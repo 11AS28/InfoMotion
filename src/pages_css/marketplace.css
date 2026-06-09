@@ -1,0 +1,307 @@
+.market-container {
+  padding: 40px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-text);
+  background-color: var(--bg-color);
+
+}
+
+.market-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+  
+
+}
+
+.market-title-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.market-main-title {
+ font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #0f172a) */
+  margin-bottom: 15px;
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.market-subtitle {
+  font-size: 1.5rem;
+  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #475569) */
+  font-weight: 500;
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+.wallet-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.wallet-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wallet-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.wallet-balance {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.wallet-currency {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.market-alert {
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.alert-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.shop-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.shop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
+}
+
+.card-equipped {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-bg), var(--shadow-md);
+}
+
+.card-top-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.theme-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.color-preview-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.theme-card-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: var(--text-heading);
+  font-family: var(--font-titluri);
+}
+
+.theme-category-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+  padding: 4px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  letter-spacing: 0.4px;
+}
+
+.theme-description {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  min-height: 45px;
+}
+
+.card-actions {
+  margin-top: auto;
+}
+
+.btn-shop {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  border: 1px solid transparent;
+  text-align: center;
+  font-family: var(--font-text);
+}
+
+.btn-shop:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-shop:focus-visible {
+  outline: 3px solid var(--accent-hover);
+  outline-offset: 3px;
+}
+
+.btn-equipped {
+  background-color: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+  cursor: not-allowed;
+}
+
+.btn-unlock {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-unlock:hover:not(:disabled) {
+  background-color: var(--bg-card-alt);
+  border-color: var(--border-hover);
+}
+
+.btn-buy-active {
+  background-color: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-buy-active:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-buy-disabled {
+  background-color: var(--bg-subtle);
+  color: var(--text-faint);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.btn-shop:disabled {
+  opacity: 0.72;
+}
+
+
+/* Alinierea monedei în interiorul butoanelor */
+.button-coin-icon {
+  margin-left: 6px;
+  margin-top: -2px; /* Ajustare fină pe verticală */
+}
+
+/* Dacă vrei să adaugi un efect subtil de strălucire monedei din portofel */
+.wallet-coin-icon {
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.wallet-card:hover .wallet-coin-icon {
+  transform: rotate(15deg) scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .market-container {
+    padding: 28px 16px;
+  }
+
+  .market-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wallet-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .market-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-card {
+    padding: 20px;
+  }
+}

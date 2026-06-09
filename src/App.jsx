@@ -11,7 +11,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Arena from './components/Arena';
 import CompilerPage from './components/CompilatorTab';
 import Online from './components/online';
-import Marketplace from './components/Marketplace'; 
+
 
 import MainPage from './pages/mainpage';
 import Contact from './pages/contact';
@@ -25,6 +25,7 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
+import Marketplace from './pages/Marketplace'; 
 
 import './theme.css';
 

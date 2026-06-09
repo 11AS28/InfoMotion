@@ -2,12 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import Editor from '@monaco-editor/react';
+// 1. IMPORTĂ și "loader" de la monaco-editor
+import Editor, { loader } from '@monaco-editor/react'; 
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext'; 
-import { customThemes } from './shopItems';  // VERIFICĂ ASTA: Asigură-te că ruta către shopItems.js este cea corectă!
+import { customThemes } from './shopItems'; 
 import '../components_css/compiler.css';
+
+//  INIȚIALIZARE GLOBALĂ A TEMELOR
+// Forțăm Monaco să încarce temele noastre custom în nucleul lui înainte de randarea paginii
+loader.init().then((monacoInstance) => {
+  if (customThemes && typeof customThemes === 'object') {
+    Object.keys(customThemes).forEach((themeKey) => {
+      try {
+        monacoInstance.editor.defineTheme(themeKey, customThemes[themeKey]);
+      } catch (e) {
+        console.error(`Eroare la pre-încărcarea temei ${themeKey}:`, e);
+      }
+    });
+  }
+});
 
 function CompilerPage() {
   const { idLectie } = useParams();
@@ -49,25 +64,6 @@ function CompilerPage() {
   const temaActiva = currentUser?.temaEchipata || 'theme_default';
   const monacoThemeName = (customThemes && customThemes[temaActiva]) ? temaActiva : 'vs-dark';
 
-  // Modificată pentru siguranță completă: înregistrăm doar dacă obiectul temei este valid și definit
-  const handleEditorBeforeMount = (monacoInstance) => {
-    if (customThemes && typeof customThemes === 'object') {
-      Object.keys(customThemes).forEach((themeKey) => {
-        // Ignorăm cheile goale sau temele native din Monaco ca să prevenim "Illegal theme name!"
-        if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
-          return; 
-        }
-
-        try {
-          if (customThemes[themeKey]) {
-            monacoInstance.editor.defineTheme(themeKey, customThemes[themeKey]);
-          }
-        } catch (e) {
-          console.error(`Eroare la definirea temei ${themeKey}:`, e);
-        }
-      });
-    }
-  };
 
   useEffect(() => {
     async function incarcaCodSursa() {
@@ -254,8 +250,7 @@ function CompilerPage() {
           <Editor
             height="100%"
             language="cpp"
-            theme={monacoThemeName} 
-            beforeMount={handleEditorBeforeMount} 
+            theme={monacoThemeName} // Monaco va găsi instant cheia (ex: 'theme_default' sau 'theme_dracula')
             value={editorCode}
             onChange={(val) => setEditorCode(val || "")}
             options={{

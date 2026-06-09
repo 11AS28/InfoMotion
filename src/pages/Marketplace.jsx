@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext'; 
 import { shopItems } from '../components/shopItems';
-import '../components_css/marketplace.css'; // Îl creăm imediat la Pasul 2
+import CoinIcon from '../components/CoinIcon'; 
+import '../pages_css/marketplace.css'; 
+import usePageTitle from '../hooks/usePageTitle';
+
+
 
 export default function Marketplace() {
   const { currentUser, cumparaTema, echipeazaTema } = useAuth();
@@ -23,9 +27,9 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
-      afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! 🎉');
+      afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! ');
     } else {
-      afiseazaMesaj('eroare', resultado?.error || "Eroare la tranzacție.");
+      afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
     }
   };
 
@@ -35,24 +39,27 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
-      afiseazaMesaj('succes', 'Tema a fost echipată! 🚀');
+      afiseazaMesaj('succes', 'Tema a fost echipată! ');
     } else {
       afiseazaMesaj('eroare', 'Nu s-a putut echipa tema.');
     }
   };
 
   return (
+    
     <div className="market-container">
+     {usePageTitle("InfoMotion - Marketplace")}
       {/* Header Magazin */}
       <div className="market-header">
         <div className="market-title-zone">
-          <h1 className="market-main-title">InfoMotion Marketplace</h1>
+          <h1 className="market-main-title">InfoMotion<span id="dot">.</span> Marketplace</h1>
           <p className="market-subtitle">Personalizează-ți experiența de codare folosind punctele acumulate.</p>
         </div>
         
         {/* Soldul de puncte */}
         <div className="wallet-card">
-          <span className="wallet-icon">🪙</span>
+          {/* Schimbat emoji cu SVG-ul custom */}
+          <CoinIcon size={28} className="wallet-coin-icon" /> 
           <div className="wallet-info">
             <div className="wallet-label">Portofelul tău</div>
             <div className="wallet-balance">{punctePortofel} <span className="wallet-currency">puncte</span></div>
@@ -100,7 +107,7 @@ export default function Marketplace() {
               <div className="card-actions">
                 {esteEchipata ? (
                   <button disabled className="btn-shop btn-equipped">
-                    ✨ Echipată curent
+                     Echipată curent
                   </button>
                 ) : esteDeblocata ? (
                   <button
@@ -119,9 +126,9 @@ export default function Marketplace() {
                     {seIncarca ? (
                       'Se procesează...'
                     ) : areDestulePuncte ? (
-                      <>Cumpără cu {item.price} 🪙</>
+                      <>Cumpără cu {item.price} <CoinIcon size={16} className="button-coin-icon" /></>
                     ) : (
-                      `Puncte insuficiente (${item.price} 🪙)`
+                      <>Puncte insuficiente ({item.price} <CoinIcon size={16} className="button-coin-icon" />)</>
                     )}
                   </button>
                 )}

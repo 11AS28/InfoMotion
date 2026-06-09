@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import {toast } from 'sonner'; // Importăm Toast-ul
+import { toast } from 'sonner'; 
 import '../pages_css/adminusers.css';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -25,6 +25,7 @@ const mascheazaEmail = (email) => {
 };
 
 function AdminUsers() {
+  usePageTitle("InfoMotion - AdminUsers");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
@@ -34,7 +35,6 @@ function AdminUsers() {
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
-  // Stări pentru filtrare, sortare și căutare
   const [sortBy, setSortBy] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -45,7 +45,7 @@ function AdminUsers() {
       const usersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setUsers(usersList);
     } catch (error) {
-      toast.error("❌ Eroare la încărcarea utilizatorilor: " + error.message);
+      toast.error("Eroare la încărcarea utilizatorilor: " + error.message);
     }
     setLoading(false);
   };
@@ -59,9 +59,9 @@ function AdminUsers() {
     const gasit = ADMINS.find(admin => admin.username === loginUser.trim() && admin.password === loginPass);
     if (gasit) {
       setIsAuthorized(true);
-      toast.success("👋 Bine ai revenit, adminule!");
+      toast.success("Bine ai revenit, adminule!");
     } else {
-      toast.error("🔒 Utilizator sau parolă incorectă!");
+      toast.error("Utilizator sau parolă incorectă!");
     }
   };
 
@@ -104,10 +104,9 @@ function AdminUsers() {
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...finalData } : u));
       setEditUserId(null);
       
-      // Toast șmecher de succes în loc de alert()
-      toast.success(" Modificări salvate cu succes în Firestore!");
+      toast.success("Modificări salvate cu succes în Firestore!");
     } catch (error) {
-      toast.error(" Eroare la salvare: " + error.message);
+      toast.error("Eroare la salvare: " + error.message);
     }
   };
 
@@ -115,7 +114,6 @@ function AdminUsers() {
     setExpandedUserId(expandedUserId === userId ? null : userId);
   };
 
-  // Logică combinată de Căutare + Filtrare + Sortare
   const getProcessedUsers = () => {
     let processed = [...users];
 
@@ -149,10 +147,7 @@ function AdminUsers() {
 
   if (!isAuthorized) {
     return (
-      usePageTitle("InfoMotion - AdminUsers"),
       <div className="admin-login-overlay">
-        {/* Containerul de Toasts trebuie să existe și pe pagina de login ca să vedem eroarea de parolă */}
-        
         <form onSubmit={handleLoginSubmit} className="admin-login-form">
           <div className="login-header">
             <h2 className="login-title">InfoMotion<span>.</span></h2>
@@ -176,16 +171,14 @@ function AdminUsers() {
 
   return (
     <div className="admin-panel-container">
-      {/* Componenta care randează efectiv pop-up-urile în pagină */}
       <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}> Panou Admin Suprem - Gestiune Utilizatori</h2>
+          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Panou Admin Suprem - Gestiune Utilizatori</h2>
           <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
         </div>
         <button onClick={() => { setIsAuthorized(false); toast.info("Deconectat din panou."); }} style={{ ...btnStyle, background: '#a12424', padding: '10px 16px' }}>Ieșire Panou</button>
       </div>
 
-      {/* --- ZONA DE FILTRARE, SORTARE ȘI CĂUTARE --- */}
       <div className="controls-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', background: '#1a1a24', padding: '15px', borderRadius: '6px', border: '1px solid #2d2d3d' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ color: '#378ADD', fontSize: '0.85rem', fontWeight: 'bold' }}>Caută rapid utilizator:</label>
@@ -209,28 +202,14 @@ function AdminUsers() {
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ color: '#aaa', fontSize: '0.85rem', fontWeight: 'bold' }}>Filtre active:</span>
-          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#222", border: "1px solid #444" }}>
-            Toți ({users.length})
-          </button>
-          <button onClick={() => setSortBy("username")} style={{ ...btnStyle, background: sortBy === "username" ? "#378ADD" : "#222", border: "1px solid #444" }}>
-             După Username
-          </button>
-          <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#222", border: "1px solid #444" }}>
-             Doar Profesori
-          </button>
-          <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#222", border: "1px solid #444" }}>
-             Doar Elevi
-          </button>
-
-          {searchTerm && (
-            <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>
-              Găsiți: {displayedUsers.length} rezultate
-            </span>
-          )}
+          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#222", border: "1px solid #444" }}>Toți ({users.length})</button>
+          <button onClick={() => setSortBy("username")} style={{ ...btnStyle, background: sortBy === "username" ? "#378ADD" : "#222", border: "1px solid #444" }}>După Username</button>
+          <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#222", border: "1px solid #444" }}>Doar Profesori</button>
+          <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#222", border: "1px solid #444" }}>Doar Elevi</button>
+          {searchTerm && <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>Găsiți: {displayedUsers.length} rezultate</span>}
         </div>
       </div>
       
-      {/* --- DESKTOP TABLE --- */}
       <table className="desktop-table">
         <thead>
           <tr style={{ background: '#25252d', color: '#378ADD', textAlign: 'left' }}>
@@ -240,6 +219,7 @@ function AdminUsers() {
             <th style={{ padding: '12px' }}>Rol</th>
             <th style={{ padding: '12px' }}>CF Handle</th>
             <th style={{ padding: '12px' }}>XP</th>
+            <th style={{ padding: '12px' }}>Monede</th>
             <th style={{ padding: '12px' }}>Streak</th>
             <th style={{ padding: '12px' }}>CF Validat</th>
             <th style={{ padding: '12px' }}>Acțiuni</th>
@@ -256,15 +236,12 @@ function AdminUsers() {
                     <td style={{ padding: '12px', fontSize: '0.8rem', color: '#666' }}>{user.id.substring(0, 8)}... {isExpanded ? '▼' : '►'}</td>
                     <td style={{ padding: '12px' }}>{mascheazaEmail(user.email)}</td>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{user.nume || "-"}</td>
-                    <td style={{ padding: '12px' }}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: user.role === 'teacher' ? '#0d47a1' : '#1b5e20', fontSize: '0.8rem' }}>
-                        {user.role === 'teacher' ? ' Profesor' : ' Elev'}
-                      </span>
-                    </td>
+                    <td style={{ padding: '12px' }}><span style={{ padding: '2px 6px', borderRadius: '4px', background: user.role === 'teacher' ? '#0d47a1' : '#1b5e20', fontSize: '0.8rem' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></td>
                     <td style={{ padding: '12px' }}>{user.codeforcesHandle || "-"}</td>
-                    <td style={{ padding: '12px', color: '#ffd700' }}> {user.puncteTotale || 0}</td>
-                    <td style={{ padding: '12px', color: '#ff4500' }}> {user.streakCount || 0}</td>
-                    <td style={{ padding: '12px' }}>{user.cfValidat ? " Da" : " Nu"}</td>
+                    <td style={{ padding: '12px', color: '#ffd700' }}>{user.puncteTotale || 0}</td>
+                    <td style={{ padding: '12px', color: '#ffa500', fontWeight: 'bold' }}>{user.puncte || 0}</td>
+                    <td style={{ padding: '12px', color: '#ff4500' }}>{user.streakCount || 0}</td>
+                    <td style={{ padding: '12px' }}>{user.cfValidat ? "Da" : "Nu"}</td>
                     <td style={{ padding: '12px' }}>
                       {isEditing ? (
                         <div style={{ display: 'flex', gap: '5px' }}>
@@ -276,22 +253,18 @@ function AdminUsers() {
                       )}
                     </td>
                   </tr>
-
-                  {/* ZONA EXTINSĂ */}
                   {isExpanded && (
                     <tr>
-                      <td colSpan="9" className="expanded-zone">
+                      <td colSpan="10" className="expanded-zone">
                         <h4 style={{ margin: '0 0 15px 0', color: '#378ADD', display: 'flex', justifyContent: 'space-between' }}>
-                          <span>📋 Date Complete Document Firestore (UID: {user.id})</span>
+                          <span>Date Complete Document Firestore (UID: {user.id})</span>
                           {isEditing && <span style={{ color: '#639922', fontSize: '0.9rem' }}>⚠️ Ești în modul de editare activă</span>}
                         </h4>
-                        
                         <div className="grid-detalii">
                           <div className="detaliu-field">
                             <span className="detaliu-label">Nume Complet / Username</span>
                             {isEditing ? <input type="text" name="nume" value={editFormData.nume || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.nume || "-"}</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">Rol Sistem</span>
                             {isEditing ? (
@@ -301,37 +274,34 @@ function AdminUsers() {
                               </select>
                             ) : <span>{user.role || "student"}</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">Codeforces Handle</span>
                             {isEditing ? <input type="text" name="codeforcesHandle" value={editFormData.codeforcesHandle || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.codeforcesHandle || "-"}</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">CF Validat Status</span>
                             {isEditing ? <input type="checkbox" name="cfValidat" checked={editFormData.cfValidat || false} onChange={handleInputChange} /> : <span>{user.cfValidat ? "Aprobat" : "Fals / Neaprobat"}</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">Puncte XP Totale</span>
                             {isEditing ? <input type="number" name="puncteTotale" value={editFormData.puncteTotale || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.puncteTotale || 0} xp</span>}
                           </div>
-
+                          <div className="detaliu-field" style={{ borderLeft: '3px solid #ffa500', paddingLeft: '8px' }}>
+                            <span className="detaliu-label" style={{ color: '#ffa500' }}>Sold Monede Portofel</span>
+                            {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyle, borderColor: '#ffa500' }} /> : <span style={{ fontWeight: 'bold' }}>{user.puncte || 0} p</span>}
+                          </div>
                           <div className="detaliu-field">
                             <span className="detaliu-label">Streak Autentificare</span>
                             {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.streakCount || 0} zile</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">Probleme Rezolvate Arenă (Count)</span>
                             {isEditing ? <input type="number" name="problemeRezolvateCount" value={editFormData.problemeRezolvateCount || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.problemeRezolvateCount || 0} pb</span>}
                           </div>
-
                           <div className="detaliu-field">
                             <span className="detaliu-label">Ultima Logare (Data Streak)</span>
                             {isEditing ? <input type="text" name="lastLoginDate" value={editFormData.lastLoginDate || ""} onChange={handleInputChange} style={inputStyle} /> : <span>{user.lastLoginDate || "-"}</span>}
                           </div>
-
                           <div className="detaliu-field" style={{ gridColumn: '1 / -1' }}>
                             <span className="detaliu-label">Lecții terminate / Istoric parcurs (Format Brut JSON sau Array)</span>
                             {isEditing ? (
@@ -348,7 +318,6 @@ function AdminUsers() {
                             )}
                           </div>
                         </div>
-
                         {isEditing && (
                           <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                             <button onClick={(e) => handleSaveClick(user.id, e)} style={{ ...btnStyle, background: '#639922', padding: '8px 20px' }}>Salvează Modificări Document</button>
@@ -363,13 +332,12 @@ function AdminUsers() {
             })
           ) : (
             <tr>
-              <td colSpan="9" style={{ textAlign: 'center', padding: '30px', color: '#aaa' }}>Niciun utilizator găsit pentru criteriile introduse.</td>
+              <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#aaa' }}>Niciun utilizator găsit pentru criteriile introduse.</td>
             </tr>
           )}
         </tbody>
       </table>
 
-      {/* --- MOBILE CARDS --- */}
       <div className="mobile-cards">
         {displayedUsers.length > 0 ? (
           displayedUsers.map(user => {
@@ -377,19 +345,10 @@ function AdminUsers() {
             const isExpanded = expandedUserId === user.id;
             return (
               <div key={user.id} className="user-card" onClick={() => toggleExpandUser(user.id)} style={{ borderLeft: isExpanded ? '4px solid #639922' : '4px solid #378ADD' }}>
-                <div className="card-row">
-                  <span className="card-label">Username:</span> 
-                  <strong>{user.nume || "-"}</strong>
-                </div>
-                <div className="card-row">
-                  <span className="card-label">Rol:</span> 
-                  <span style={{ color: user.role === 'teacher' ? '#64b5f6' : '#81c784' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span>
-                </div>
-                <div className="card-row">
-                  <span className="card-label">Email mascat:</span> 
-                  <span>{mascheazaEmail(user.email)}</span>
-                </div>
-
+                <div className="card-row"><span className="card-label">Username:</span> <strong>{user.nume || "-"}</strong></div>
+                <div className="card-row"><span className="card-label">Rol:</span> <span style={{ color: user.role === 'teacher' ? '#64b5f6' : '#81c784' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></div>
+                <div className="card-row"><span className="card-label">Monede:</span> <span style={{ color: '#ffa500', fontWeight: 'bold' }}>{user.puncte || 0}</span></div>
+                <div className="card-row"><span className="card-label">Email mascat:</span> <span>{mascheazaEmail(user.email)}</span></div>
                 {isExpanded && (
                   <div style={{ marginTop: '10px', padding: '10px', background: '#111', borderRadius: '6px', fontSize: '0.85rem' }} onClick={(e) => e.stopPropagation()}>
                     <div className="card-row">
@@ -401,10 +360,13 @@ function AdminUsers() {
                       {isEditing ? <input type="number" name="puncteTotale" value={editFormData.puncteTotale || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.puncteTotale || 0}</span>}
                     </div>
                     <div className="card-row">
+                      <span className="card-label" style={{ color: '#ffa500' }}>Monede:</span>
+                      {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, borderColor: '#ffa500' }} /> : <span>{user.puncte || 0}</span>}
+                    </div>
+                    <div className="card-row">
                       <span className="card-label">Streak:</span>
                       {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.streakCount || 0}</span>}
                     </div>
-                    
                     <div style={{ marginTop: '10px' }}>
                       <span className="card-label" style={{ display: 'block', marginBottom: '4px' }}>Lecții Brute:</span>
                       {isEditing ? (
@@ -417,7 +379,6 @@ function AdminUsers() {
                         <code style={{ fontSize: '0.75rem', color: '#999' }}>{JSON.stringify(user.lectiiTerminate || [])}</code>
                       )}
                     </div>
-
                     <div className="card-actions">
                       {isEditing ? (
                         <>
@@ -434,9 +395,7 @@ function AdminUsers() {
             );
           })
         ) : (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#aaa', background: '#1a1a24', borderRadius: '6px' }}>
-            Niciun utilizator găsit pentru criteriile introduse.
-          </div>
+          <div style={{ textAlign: 'center', padding: '20px', color: '#aaa', background: '#1a1a24', borderRadius: '6px' }}>Niciun utilizator găsit pentru criteriile introduse.</div>
         )}
       </div>
     </div>
