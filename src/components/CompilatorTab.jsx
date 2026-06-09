@@ -10,13 +10,29 @@ import { useAuth } from '../context/AuthContext';
 import { customThemes } from './shopItems';  
 import '../components_css/compiler.css';
 
+// --- FUNCȚIE GLOBALĂ DE CURĂȚARE NUME TEMĂ ---
+// Elimină orice caracter care nu este literă sau cifră (ex: "theme_matrix" devine "themematrix")
+const sanitizeThemeName = (name) => {
+  if (!name) return 'vsdark';
+  return name.replace(/[^a-zA-Z0-9]/g, ''); 
+};
+
 //  INIȚIALIZARE GLOBALĂ A TEMELOR
 // Forțăm Monaco să încarce temele noastre custom în nucleul lui înainte de randarea paginii
 loader.init().then((monacoInstance) => {
   if (customThemes && typeof customThemes === 'object') {
     Object.keys(customThemes).forEach((themeKey) => {
+      // Ignorăm temele native din Monaco
+      if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
+        return; 
+      }
+
       try {
-        monacoInstance.editor.defineTheme(themeKey, customThemes[themeKey]);
+        if (customThemes[themeKey]) {
+          // REPARARE ACUM: Curățăm cheia și la înregistrarea globală ca să nu mai dea crash!
+          const cleanKey = sanitizeThemeName(themeKey);
+          monacoInstance.editor.defineTheme(cleanKey, customThemes[themeKey]);
+        }
       } catch (e) {
         console.error(`Eroare la pre-încărcarea temei ${themeKey}:`, e);
       }
@@ -58,42 +74,12 @@ function CompilerPage() {
   }, []);
 
   // --- REZOLVARE CURĂȚARE NUME TEMĂ ---
-  // Extragere ID temă din contul userului
   const temaEchipataDb = currentUser?.temaEchipata || 'theme_default';
-  
-  // Funcție ajutătoare care curăță numele temei pentru a fi acceptat de standardul Monaco (doar litere și cifre)
-  const sanitizeThemeName = (name) => {
-    if (!name) return 'vsdark';
-    return name.replace(/[^a-zA-Z0-9]/g, ''); 
-  };
 
   // Numele temei curente curățat pe care îl pasăm proprietății `theme` din Monaco
   const monacoThemeName = (customThemes && customThemes[temaEchipataDb]) 
     ? sanitizeThemeName(temaEchipataDb) 
     : 'vs-dark';
-
-  // Înregistrăm temele curățându-le cheia înainte de înregistrare
-  const handleEditorBeforeMount = (monacoInstance) => {
-    if (customThemes && typeof customThemes === 'object') {
-      Object.keys(customThemes).forEach((themeKey) => {
-        // Ignorăm temele native din Monaco
-        if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
-          return; 
-        }
-
-        try {
-          if (customThemes[themeKey]) {
-            // Curățăm cheia (ex: "theme_matrix" devine "themematrix", eliminând caracterul ilegal '_')
-            const cleanKey = sanitizeThemeName(themeKey);
-            
-            monacoInstance.editor.defineTheme(cleanKey, customThemes[themeKey]);
-          }
-        } catch (e) {
-          console.error(`Eroare la definirea temei ${themeKey}:`, e);
-        }
-      });
-    }
-  };
 
   useEffect(() => {
     async function incarcaCodSursa() {
@@ -189,7 +175,7 @@ function CompilerPage() {
     const onMouseMove = (e) => handleMoveSecondary(e.clientY);
     const onTouchMove = (e) => {
       if (e.touches.length > 0) {
-        handleMoveSecondary(e.touches[0].clientY);
+        handleMoveSecondary(e.touches[0].clientX, e.touches[0].clientY);
       }
     };
 
@@ -280,7 +266,7 @@ function CompilerPage() {
           <Editor
             height="100%"
             language="cpp"
-            theme={monacoThemeName} // Monaco va găsi instant cheia (ex: 'theme_default' sau 'theme_dracula')
+            theme={monacoThemeName} 
             value={editorCode}
             onChange={(val) => setEditorCode(val || "")}
             options={{
