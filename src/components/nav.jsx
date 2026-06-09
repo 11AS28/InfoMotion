@@ -100,7 +100,6 @@ function Nav() {
           <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
           
         )}
-        
         <li>
           <button
             className={`theme-toggle ${theme === 'dark' ? 'dark-active' : ''}`}

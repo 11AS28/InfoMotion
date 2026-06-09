@@ -61,7 +61,7 @@ export default function Marketplace() {
           {/* Schimbat emoji cu SVG-ul custom */}
           <CoinIcon size={28} className="wallet-coin-icon" /> 
           <div className="wallet-info">
-            <div className="wallet-label">Portofelul tău</div>
+            <div className="wallet-label">Balanță curentă</div>
             <div className="wallet-balance">{punctePortofel} <span className="wallet-currency">puncte</span></div>
           </div>
         </div>
@@ -70,6 +70,7 @@ export default function Marketplace() {
       {/* Alerte de feedback */}
       {mesaj.text && (
         <div className={`market-alert ${mesaj.tip === 'succes' ? 'alert-success' : 'alert-error'}`}>
+          <span className="alert-dot"></span>
           {mesaj.text}
         </div>
       )}
@@ -86,24 +87,32 @@ export default function Marketplace() {
             <div 
               key={item.id} 
               className={`shop-card ${esteEchipata ? 'card-equipped' : ''}`}
+              /* Transmitem culoarea temei ca o variabilă CSS direct în card */
+              style={{ '--theme-color': item.previewColor }}
             >
+              {/* Glow discret pe fundal în funcție de culoarea temei */}
+              <div className="card-glow-bg"></div>
+
               <div className="card-top-content">
-                {/* Preview cerc colorat */}
                 <div className="theme-preview-row">
-                  <div 
-                    className="color-preview-box" 
-                    style={{ backgroundColor: item.previewColor }}
-                  />
-                  <div>
-                    <h3 className="theme-card-name">{item.name}</h3>
+                  <div className="theme-meta">
                     <span className="theme-category-tag">{item.category}</span>
+                    {/* Numele temei preia acum un mic accent din culoarea ei */}
+                    <h3 className="theme-card-name">{item.name}</h3>
                   </div>
+                  
+                  {/* Badge de preț */}
+                  {!esteDeblocata && (
+                    <div className={`price-badge ${areDestulePuncte ? 'price-affordable' : 'price-expensive'}`}>
+                      {item.price} 🪙
+                    </div>
+                  )}
                 </div>
 
                 <p className="theme-description">{item.description}</p>
               </div>
 
-              {/* Zona de Acțiune / Butoane */}
+              {/* Zona de Acțiune */}
               <div className="card-actions">
                 {esteEchipata ? (
                   <button disabled className="btn-shop btn-equipped">
