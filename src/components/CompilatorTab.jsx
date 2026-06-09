@@ -6,7 +6,7 @@ import Editor from '@monaco-editor/react';
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext'; 
-import { customThemes } from './shopItems';  // VERIFICĂ ASTA: Asigură-te că ruta către shopItems.js este cea corectă!
+import { customThemes } from './shopItems';  
 import '../components_css/compiler.css';
 
 function CompilerPage() {
@@ -32,8 +32,6 @@ function CompilerPage() {
   const sidePanelRef = useRef(null);
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  // --- REZOLVARE CONFLICT THEME CONTEXT ---
-  // Când utilizatorul intră în compiler, forțăm layout-ul pe întuneric. Când pleacă, revenim la setarea din LocalStorage.
   useEffect(() => {
     document.documentElement.classList.add('dark');
     return () => {
@@ -44,23 +42,36 @@ function CompilerPage() {
     };
   }, []);
 
-  // --- PLASĂ DE SIGURANȚĂ PENTRU NUMELE TEMEI ---
-  // Monaco are voie să primească doar o cheie validă din shopItems. Dacă nu e încărcat userul sau e default, trimitem 'vs-dark'.
-  const temaActiva = currentUser?.temaEchipata || 'theme_default';
-  const monacoThemeName = (customThemes && customThemes[temaActiva]) ? temaActiva : 'vs-dark';
+  // --- REZOLVARE CURĂȚARE NUME TEMĂ ---
+  // Extragere ID temă din contul userului
+  const temaEchipataDb = currentUser?.temaEchipata || 'theme_default';
+  
+  // Funcție ajutătoare care curăță numele temei pentru a fi acceptat de standardul Monaco (doar litere și cifre)
+  const sanitizeThemeName = (name) => {
+    if (!name) return 'vsdark';
+    return name.replace(/[^a-zA-Z0-9]/g, ''); 
+  };
 
-  // Modificată pentru siguranță completă: înregistrăm doar dacă obiectul temei este valid și definit
+  // Numele temei curente curățat pe care îl pasăm proprietății `theme` din Monaco
+  const monacoThemeName = (customThemes && customThemes[temaEchipataDb]) 
+    ? sanitizeThemeName(temaEchipataDb) 
+    : 'vs-dark';
+
+  // Înregistrăm temele curățându-le cheia înainte de înregistrare
   const handleEditorBeforeMount = (monacoInstance) => {
     if (customThemes && typeof customThemes === 'object') {
       Object.keys(customThemes).forEach((themeKey) => {
-        // Ignorăm cheile goale sau temele native din Monaco ca să prevenim "Illegal theme name!"
+        // Ignorăm temele native din Monaco
         if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
           return; 
         }
 
         try {
           if (customThemes[themeKey]) {
-            monacoInstance.editor.defineTheme(themeKey, customThemes[themeKey]);
+            // Curățăm cheia (ex: "theme_matrix" devine "themematrix", eliminând caracterul ilegal '_')
+            const cleanKey = sanitizeThemeName(themeKey);
+            
+            monacoInstance.editor.defineTheme(cleanKey, customThemes[themeKey]);
           }
         } catch (e) {
           console.error(`Eroare la definirea temei ${themeKey}:`, e);

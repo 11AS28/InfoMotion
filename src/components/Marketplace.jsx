@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext'; 
 import { shopItems } from '../components/shopItems';
-import '../components_css/marketplace.css'; // Îl creăm imediat la Pasul 2
+import '../components_css/marketplace.css';
 
 export default function Marketplace() {
   const { currentUser, cumparaTema, echipeazaTema } = useAuth();
@@ -25,7 +25,7 @@ export default function Marketplace() {
     if (rezultat.success) {
       afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! 🎉');
     } else {
-      afiseazaMesaj('eroare', resultado?.error || "Eroare la tranzacție.");
+      afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
     }
   };
 
@@ -46,15 +46,16 @@ export default function Marketplace() {
       {/* Header Magazin */}
       <div className="market-header">
         <div className="market-title-zone">
+          <div className="market-badge-premium">SHOP</div>
           <h1 className="market-main-title">InfoMotion Marketplace</h1>
-          <p className="market-subtitle">Personalizează-ți experiența de codare folosind punctele acumulate.</p>
+          <p className="market-subtitle">Personalizează-ți spațiul de lucru cu punctele acumulate din lecții.</p>
         </div>
         
         {/* Soldul de puncte */}
         <div className="wallet-card">
-          <span className="wallet-icon">🪙</span>
+          <div className="wallet-icon-wrapper">🪙</div>
           <div className="wallet-info">
-            <div className="wallet-label">Portofelul tău</div>
+            <div className="wallet-label">Balanță curentă</div>
             <div className="wallet-balance">{punctePortofel} <span className="wallet-currency">puncte</span></div>
           </div>
         </div>
@@ -63,6 +64,7 @@ export default function Marketplace() {
       {/* Alerte de feedback */}
       {mesaj.text && (
         <div className={`market-alert ${mesaj.tip === 'succes' ? 'alert-success' : 'alert-error'}`}>
+          <span className="alert-dot"></span>
           {mesaj.text}
         </div>
       )}
@@ -79,28 +81,36 @@ export default function Marketplace() {
             <div 
               key={item.id} 
               className={`shop-card ${esteEchipata ? 'card-equipped' : ''}`}
+              /* Transmitem culoarea temei ca o variabilă CSS direct în card */
+              style={{ '--theme-color': item.previewColor }}
             >
+              {/* Glow discret pe fundal în funcție de culoarea temei */}
+              <div className="card-glow-bg"></div>
+
               <div className="card-top-content">
-                {/* Preview cerc colorat */}
                 <div className="theme-preview-row">
-                  <div 
-                    className="color-preview-box" 
-                    style={{ backgroundColor: item.previewColor }}
-                  />
-                  <div>
-                    <h3 className="theme-card-name">{item.name}</h3>
+                  <div className="theme-meta">
                     <span className="theme-category-tag">{item.category}</span>
+                    {/* Numele temei preia acum un mic accent din culoarea ei */}
+                    <h3 className="theme-card-name">{item.name}</h3>
                   </div>
+                  
+                  {/* Badge de preț */}
+                  {!esteDeblocata && (
+                    <div className={`price-badge ${areDestulePuncte ? 'price-affordable' : 'price-expensive'}`}>
+                      {item.price} 🪙
+                    </div>
+                  )}
                 </div>
 
                 <p className="theme-description">{item.description}</p>
               </div>
 
-              {/* Zona de Acțiune / Butoane */}
+              {/* Zona de Acțiune */}
               <div className="card-actions">
                 {esteEchipata ? (
                   <button disabled className="btn-shop btn-equipped">
-                    ✨ Echipată curent
+                    <span className="pulse-indicator"></span> Activă pe Cont
                   </button>
                 ) : esteDeblocata ? (
                   <button
@@ -119,9 +129,9 @@ export default function Marketplace() {
                     {seIncarca ? (
                       'Se procesează...'
                     ) : areDestulePuncte ? (
-                      <>Cumpără cu {item.price} 🪙</>
+                      'Deblochează Tema'
                     ) : (
-                      `Puncte insuficiente (${item.price} 🪙)`
+                      `Fonduri insuficiente`
                     )}
                   </button>
                 )}

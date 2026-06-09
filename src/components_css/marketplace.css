@@ -1,219 +1,310 @@
-/* Containerul general al paginii */
+/* ==========================================
+   DESIGN MODERN - FĂRĂ BULINE DE CULOARE
+   ========================================== */
+
 .market-container {
-  padding: 40px 24px;
-  max-width: 1200px;
+  padding: 60px 24px;
+  max-width: 1280px;
   margin: 0 auto;
   min-height: 100vh;
   color: #ffffff;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #0d0e12; /* Fundal închis fluid */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #0b0f19;
 }
 
-/* Header aliniat pe rând flexibil */
+/* Header UI */
 .market-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  border-b: 1px solid #1f222c;
-  padding-bottom: 24px;
-  margin-bottom: 32px;
+  align-items: flex-end;
+  border-bottom: 2px solid #161b26;
+  padding-bottom: 32px;
+  margin-bottom: 48px;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 24px;
+}
+
+.market-badge-premium {
+  background: rgba(0, 203, 175, 0.1);
+  color: #00cbaf;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-bottom: 12px;
 }
 
 .market-main-title {
-  font-size: 2.2rem;
+  font-size: 2.5rem;
   font-weight: 800;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
-  background: linear-gradient(90deg, #3b82f6, #6366f1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.8px;
+  color: #ffffff;
 }
 
 .market-subtitle {
-  color: #94a3b8;
+  color: #7b889b;
   margin: 0;
   font-size: 1rem;
 }
 
-/* Card-ul portofelului (Sold puncte) */
+/* Portofel */
 .wallet-card {
-  background-color: #1e202b;
-  border: 1px solid #2e3244;
-  padding: 12px 24px;
-  border-radius: 16px;
+  background: linear-gradient(135deg, #131926 0%, #192235 100%);
+  border: 1px solid #243049;
+  padding: 16px 28px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-.wallet-icon {
+.wallet-icon-wrapper {
   font-size: 2rem;
+  background: rgba(255, 184, 51, 0.1);
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 184, 51, 0.2);
 }
 
 .wallet-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #7b889b;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .wallet-balance {
-  font-size: 1.35rem;
-  font-weight: 900;
-  color: #f59e0b;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffb833;
 }
 
 .wallet-currency {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 0.9rem;
+  color: #a2b1c6;
   font-weight: 400;
 }
 
-/* Alerte/Notificări */
-.market-alert {
-  padding: 14px 20px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  font-size: 0.9rem;
+/* Grid layout */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+/* Card Modern FĂRĂ BULINE - Folosește dungă superioară colorată discret */
+.shop-card {
+  background-color: #121824;
+  border: 1px solid #1e2638;
+  /* Înlocuim bulina cu o linie fină elegantă sus, extrasă din variabila primită din JS */
+  border-top: 4px solid var(--theme-color, #1e2638); 
+  border-radius: 0 0 24px 24px; /* Rotunjim doar colțurile de jos pentru continuitate */
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glow fin ambiental în fundal, preluat din culoarea temei */
+.card-glow-bg {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: var(--theme-color);
+  filter: blur(50px);
+  opacity: 0.06;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.shop-card:hover {
+  transform: translateY(-6px);
+  border-left: 1px solid #2e3b56;
+  border-right: 1px solid #2e3b56;
+  border-bottom: 1px solid #2e3b56;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.shop-card:hover .card-glow-bg {
+  opacity: 0.15;
+}
+
+/* Cardul Echipat curent primește o extra bordură shadow Cyan (brandul InfoMotion) */
+.card-equipped {
+  box-shadow: 0 0 0 1px #00cbaf, 0 15px 35px rgba(0, 203, 175, 0.08) !important;
+}
+
+/* Randul de sus din card */
+.theme-preview-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.theme-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-card-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.theme-category-tag {
+  font-size: 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a2b1c6;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: max-content;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
+
+/* Badge preț în colț */
+.price-badge {
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.price-affordable {
+  background: rgba(255, 184, 51, 0.1);
+  color: #ffb833;
+  border: 1px solid rgba(255, 184, 51, 0.15);
+}
+
+.price-expensive {
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.12);
+}
+
+.theme-description {
+  color: #7b889b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 28px 0;
+  min-height: 54px;
+}
+
+/* Butoane */
+.btn-shop {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-equipped {
+  background-color: rgba(0, 203, 175, 0.08);
+  color: #00cbaf;
+  border: 1px solid rgba(0, 203, 175, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: not-allowed;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: #00cbaf;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00cbaf;
+}
+
+.btn-unlock {
+  background-color: #1e2638;
+  color: #ffffff;
+  border: 1px solid #2e3b56;
+}
+
+.btn-unlock:hover {
+  background-color: #253047;
+  border-color: #3e4f74;
+}
+
+.btn-buy-active {
+  background: #00cbaf;
+  color: #0b0f19;
+}
+
+.btn-buy-active:hover {
+  background: #00e0c2;
+  box-shadow: 0 8px 20px rgba(0, 203, 175, 0.25);
+}
+
+.btn-buy-disabled {
+  background-color: #161c27;
+  color: #4a5468;
+  border: 1px solid #1e2638;
+  cursor: not-allowed;
+}
+
+/* Alerte */
+.market-alert {
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
 .alert-success {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(0, 203, 175, 0.1);
+  color: #00cbaf;
+  border: 1px solid rgba(0, 203, 175, 0.2);
 }
+
 .alert-error {
-  background-color: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-/* Grid-ul adaptiv pentru carduri */
-.market-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-/* Card-ul individual al unei teme */
-.shop-card {
-  background-color: #151722;
-  border: 1px solid #222533;
-  border-radius: 20px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.shop-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Efect accentuat dacă tema e echipată curent */
-.card-equipped {
-  border-color: #6366f1;
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
-}
-
-/* Rândul cu cercul de previzualizare */
-.theme-preview-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-.color-preview-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-}
-
-.theme-card-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-}
-
-.theme-category-tag {
-  font-size: 0.7rem;
-  background-color: #222533;
-  color: #94a3b8;
-  padding: 2px 8px;
-  border-radius: 99px;
-  text-transform: uppercase;
-}
-
-.theme-description {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 0 0 24px 0;
-  min-height: 45px; /* Păstrează butoanele aliniate chiar dacă textul diferă ca lungime */
-}
-
-/* Butoane magazin */
-.btn-shop {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  border: none;
-  text-align: center;
-}
-
-.btn-shop:active {
-  transform: scale(0.98);
-}
-
-/* Buton Echipată Curent */
-.btn-equipped {
-  background-color: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  cursor: not-allowed;
-}
-
-/* Buton Echipează (Deblocată dar nefolosită) */
-.btn-unlock {
-  background-color: #2e3244;
-  color: #ffffff;
-}
-.btn-unlock:hover {
-  background-color: #3f445c;
-}
-
-/* Buton Cumpărare Activ */
-.btn-buy-active {
-  background-color: #d97706;
-  color: #000000;
-}
-.btn-buy-active:hover {
-  background-color: #f59e0b;
-}
-
-/* Buton Puncte Insuficiente */
-.btn-buy-disabled {
-  background-color: #1c1e29;
-  color: #475569;
-  border: 1px solid #222533;
-  cursor: not-allowed;
-}
-
-/* Ajustare Mobile */
 @media (max-width: 768px) {
   .market-header {
     flex-direction: column;

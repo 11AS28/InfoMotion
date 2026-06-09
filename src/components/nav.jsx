@@ -91,10 +91,7 @@ function Nav() {
         <li><Link to="/" onClick={() => setIsOpen(false)}>Acasă</Link></li>
         <li><Link to="/despre" onClick={() => setIsOpen(false)}>Despre</Link></li>
         <li><Link to="/contact" onClick={() => setIsOpen(false)}>Contact</Link></li>
-        <Link to="/marketplace" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800 transition-colors">
-  <ShoppingBag size={20} className="text-amber-400" />
-  <span>Marketplace</span>
-</Link>
+        
         {currentUser?.role === 'teacher' && (
           <li><Link to="/trimite-lectie" onClick={() => setIsOpen(false)}>Trimite Lecție</Link></li>
         )}
@@ -103,7 +100,9 @@ function Nav() {
           <li><Link to="/arena" onClick={() => setIsOpen(false)}>Arena</Link></li>
           
         )}
-        
+        <li><Link to="/marketplace" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800 transition-colors"> 
+        <ShoppingBag size={20} className="text-amber-400" />
+        </Link></li>
         <li>
           <button
             className={`theme-toggle ${theme === 'dark' ? 'dark-active' : ''}`}
