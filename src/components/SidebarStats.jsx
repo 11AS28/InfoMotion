@@ -6,7 +6,7 @@ import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapsho
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
-import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound } from 'lucide-react';
+import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound, Coins } from 'lucide-react';
 
 function SidebarStats({ isOpen, onClose }) {
   // ADĂUGĂM totalLectii din Context dacă îl ai, sau îl pasăm ca prop. 
@@ -30,6 +30,9 @@ function SidebarStats({ isOpen, onClose }) {
   // Extragem datele direct din currentUser (sunt live dacă folosești onSnapshot în AuthContext)
   const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
   const puncteTotale = currentUser?.puncteTotale || 0;
+  
+  // EXTRASĂ: Valoarea pentru bani direct din currentUser (câmpul 'monede')
+  const baniUtilizator = currentUser?.monede || 0;
 
   // 1. OPTIMIZARE: Pentru numărul total de lecții, ascultăm o singură dată la montarea componentei, 
   // NU la fiecare deschidere de sidebar!
@@ -331,6 +334,10 @@ function SidebarStats({ isOpen, onClose }) {
                 <div className="stat-box">
                   <span className="stat-label">Probleme Arenă</span>
                   <span className="stat-value"><Swords size={16} color="#adadad" strokeWidth={2.5} /> {totalProblemeDB}</span>
+                </div>
+                <div className="stat-box">
+                  <span className="stat-label">Bani</span>
+                  <span className="stat-value"><Coins size={16} color="#ffb703" strokeWidth={2.5} /> {baniUtilizator}</span>
                 </div>
               </div>
 

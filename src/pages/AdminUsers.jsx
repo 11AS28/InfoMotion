@@ -37,7 +37,7 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-  return (
+   return (
     <div className="admin-login-overlay" style={{ background: '#09090b' }}>
       <form onSubmit={handleLogin} className="admin-login-form">
         <div className="login-header">
