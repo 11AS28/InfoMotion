@@ -297,18 +297,19 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const scadeInima = async () => {
-    if (!currentUser) return;
-    const inimiCurente = currentUser.hearts ?? 3;
-    if (inimiCurente <= 0) return;
+const scadeInima = async (cantitate = 1) => {
+  if (!currentUser) return;
+  const inimiCurente = currentUser.hearts ?? 3;
+  if (inimiCurente <= 0) return;
 
-    const userRef = doc(db, 'users', currentUser.uid);
-    try {
-      await updateDoc(userRef, { hearts: increment(-1) });
-    } catch (error) {
-      console.error("Eroare la scădere inimă:", error);
-    }
-  };
+  const userRef = doc(db, 'users', currentUser.uid);
+  try {
+
+    await updateDoc(userRef, { hearts: increment(-cantitate) });
+  } catch (error) {
+    console.error("Eroare la scădere inimă:", error);
+  }
+};
 
   const verificaRegenerareInimi = async (userDocData, userRef) => {
     const acum = new Date();

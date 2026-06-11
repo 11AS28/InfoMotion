@@ -5,12 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import '../components_css/QuizModal.css';
 
 function QuizModal({ lessonId, quizData, onClose, onFinished }) {
-  const [answers, setAnswers] = useState(Array(5).fill(null));
+  const [answers, setAnswers] = useState(Array(quizData.length).fill(null));
   const [isQuizChecked, setIsQuizChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const { currentUser, acordaPuncte, scadeInima } = useAuth();
 
-  // O singură sursă de adevăr pentru inimi, cu fallback stabil la 3
   const inimiCurente = currentUser?.hearts ?? 3;
 
   const answeredCount = answers.filter(ans => ans !== null).length;
@@ -25,7 +24,7 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   };
 
   const resetQuiz = () => {
-    setAnswers(Array(5).fill(null));
+    setAnswers(Array(quizData.length).fill(null));
     setIsQuizChecked(false);
   };
 
@@ -47,6 +46,9 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   };
 
   const handleCheckQuiz = async () => {
+    // Prevenim rularea dublă dacă userul apasă de mai multe ori rapid pe buton
+    if (isQuizChecked || loading) return;
+    
     if (answers.includes(null)) 
       return alert("Răspunde la toate întrebările!");
 
@@ -55,13 +57,20 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
       return;
     }
 
+    setLoading(true);
     setIsQuizChecked(true);
 
     const gresite = quizData.length - answers.filter((ans, idx) => ans === quizData[idx].corect).length;
 
+    // Indiferent dacă a greșit 1, 2 sau toate întrebările, apelăm scadeInima o singură dată cu valoarea 1
     if (gresite > 0) {
-      await scadeInima(1); 
+      try {
+        await scadeInima(1); 
+      } catch (error) {
+        console.error("Eroare la actualizarea inimilor:", error);
+      }
     }
+    setLoading(false);
   };
 
   return (
@@ -71,12 +80,12 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
         
         <div className="quiz-step">
           <h3>Quiz Finalizare ({answeredCount}/{quizData.length})</h3>
-          <p>Finalizeaza lecția pentru a primi cele 10 puncte!</p>
-          <p>Daca răspunzi greșit, vei pierde o inimă. Fiecare inima se regenereaza la 24h.</p>
+          <p>Finalizează lecția pentru a primi cele 10 puncte!</p>
+          <p>Dacă răspunzi greșit, vei pierde o inimă. Fiecare inimă se regenerează la 24h.</p>
           <br />
           <div className="hearts-indicator" style={{ fontSize: '18px', marginBottom: '15px', textAlign: 'left' }}>
             Inimi rămase: {Array.from({ length: Math.max(0, inimiCurente) }).map((_, i) => (
-              <span key={i} style={{ color: '#fa5252', marginRight: '4px', textAlign: 'left' }}>❤️</span>
+              <span key={i} style={{ color: '#fa5252', marginRight: '4px' }}>❤️</span>
             ))}
             {inimiCurente <= 0 && <span style={{ color: '#fa5252', fontWeight: 'bold' }}>💔 Ai rămas fără inimi!</span>}
           </div>
@@ -122,8 +131,8 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
               ))}
 
               {!isQuizChecked ? (
-                <button className="main-action-btn" onClick={handleCheckQuiz}>
-                  Verifică Răspunsurile
+                <button className="main-action-btn" onClick={handleCheckQuiz} disabled={loading}>
+                  {loading ? "Se verifică..." : "Verifică Răspunsurile"}
                 </button>
               ) : (
                 <div className="quiz-results-actions">
