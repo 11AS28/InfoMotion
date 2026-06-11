@@ -9,8 +9,6 @@ import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound, Coins } from 'lucide-react';
 
 function SidebarStats({ isOpen, onClose }) {
-  // ADĂUGĂM totalLectii din Context dacă îl ai, sau îl pasăm ca prop. 
-  // Momentan folosim o metodă sigură: citim din currentUser datele deja existente.
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
   const { theme } = useTheme();
 
@@ -19,7 +17,6 @@ function SidebarStats({ isOpen, onClose }) {
   const [usernameError, setUsernameError] = useState("");
   const [deleteError, setDeleteError] = useState(""); 
 
-  // Păstrăm state-ul pentru lecții, dar nu îl mai încărcăm brutal prin getDocs din Sidebar
   const [totalLectiiDB, setTotalLectiiDB] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -27,30 +24,33 @@ function SidebarStats({ isOpen, onClose }) {
   const isTeacher = currentUser?.role === 'teacher';
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Extragem datele direct din currentUser (sunt live dacă folosești onSnapshot în AuthContext)
   const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
   const puncteTotale = currentUser?.puncteTotale || 0;
   
-  // EXTRASĂ: Valoarea pentru bani direct din currentUser (câmpul 'monede')
-  const baniUtilizator = currentUser?.monede || 0;
+  // CORECTAT: Folosim 'puncte' în loc de 'monede' pentru a se sincroniza cu portofelul din AuthContext
+  const baniUtilizator = currentUser?.puncte || 0;
 
-  // 1. OPTIMIZARE: Pentru numărul total de lecții, ascultăm o singură dată la montarea componentei, 
-  // NU la fiecare deschidere de sidebar!
+  // CORECTAT: Transformat din Array în Obiect (Key-Value) pentru a funcționa căutarea directă după ID
+  const dictionarTitluri = {
+    title_coders: { name: 'Codul e Legea', price: 300, color: '#f1c40f', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', desc: 'Pentru cei care dictează regulile în compilator.' },
+    title_toxic: { name: 'Zero Erori', price: 500, color: '#2ecc71', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)', desc: 'Titlu legendar pentru cine scrie cod curat din prima.' },
+    title_god: { name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
+    title_noob: { name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
+    title_grind: { name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
+    title_jeanG: { name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
+  };
+
   useEffect(() => {
     let isMounted = true;
-    
-    // Ascultăm colecția de lecții o singură dată (sau o poți înlocui cu o valoare statică / preîncărcată)
     const q = query(collection(db, "lectii"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (isMounted) {
         setTotalLectiiDB(snapshot.size);
       }
     });
-
     return () => { isMounted = false; unsubscribe(); };
-  }, []); // Rulează doar O SINGURĂ DATĂ când pornește aplicația
+  }, []);
 
-  // 2. OPTIMIZARE: Streak-ul se rulează doar când se deschide sidebar-ul, fără getDocs din DB
   useEffect(() => {
     if (isOpen && !isTeacher) {
       actualizeazaStreak();
@@ -64,7 +64,6 @@ function SidebarStats({ isOpen, onClose }) {
     }
   }, [currentUser, isOpen]);
 
-  // 3. NOTIFICĂRI LIVE: Curățate corect cu return de unsubscribe (Evită Memory Leaks)
   useEffect(() => {
     if (!currentUser?.uid) return;
 
@@ -99,7 +98,6 @@ function SidebarStats({ isOpen, onClose }) {
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where("nume", "==", usernameInput.trim()));
         
-        // Citire necesară pentru unicitatea numelui
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           setUsernameError("Acest username este deja folosit!");
@@ -188,9 +186,19 @@ function SidebarStats({ isOpen, onClose }) {
 
         <div className="sidebar-header">
           <div className="user-avatar-placeholder"><UserRound size={30} color="#8f4ebb" strokeWidth={2.5} /></div>
-          <h3>{currentUser.nume || currentUser.email.split('@')[0]}</h3>
+          <h3>
+            {currentUser.nume || currentUser.email.split('@')[0]}{""}              
+          </h3> 
+
+
+          {currentUser?.titluEchipat && dictionarTitluri[currentUser.titluEchipat] && (
+              <div className="sidebar-brawl-title-badge" style={{ background: dictionarTitluri[currentUser.titluEchipat].bg }}>
+                {dictionarTitluri[currentUser.titluEchipat].name}
+              </div>
+            )}
           
-          <div style={{ marginTop: '0 px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
+          
+          <div style={{ marginTop: '0px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
             <span style={{
               fontSize: '11px',
               fontWeight: 'bold',

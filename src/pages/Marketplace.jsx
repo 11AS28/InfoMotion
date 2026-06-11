@@ -5,7 +5,7 @@ import CoinIcon from '../components/CoinIcon';
 import '../pages_css/marketplace.css'; 
 
 export default function Marketplace() {
-  const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze } = useAuth();
+ const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
   const [loadingId, setLoadingId] = useState(null);
   const [mesaj, setMesaj] = useState({ tip: '', text: '' });
 
@@ -15,6 +15,10 @@ export default function Marketplace() {
   
   const inimiCurente = currentUser?.hearts ?? 3;
   const freezeCurente = currentUser?.streakFreezes || 0;
+
+
+  const titluriDeblocate = currentUser?.titluriDeblocate || [];
+  const titluEchipat = currentUser?.titluEchipat || "";
 
   // Definim Pachetele de Inimi (exact prețurile tale)
   const pacheteInimi = [
@@ -29,6 +33,16 @@ export default function Marketplace() {
     { id: 'streak_3', name: 'Pachet 3 Scuturi', qty: 3, price: 430, icon: '🥶', desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
     { id: 'streak_5', name: 'Mega Scut Pack', qty: 5, price: 610, icon: '🏔️', desc: 'Protecție maximă pe termen lung. Cel mai bun raport preț.' }
   ];
+
+  const pacheteTitluri = [
+  { id: 'title_coders', name: 'Codul e Legea', price: 300, color: '#f1c40f', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', desc: 'Pentru cei care dictează regulile în compilator.' },
+  { id: 'title_toxic', name: 'Zero Erori', price: 500, color: '#2ecc71', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)', desc: 'Titlu legendar pentru cine scrie cod curat din prima.' },
+  { id: 'title_god', name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
+  { id: 'title_noob', name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
+  { id: 'title_grind', name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
+  {id: 'title_jeanG', name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
+];
+
 
   const afiseazaMesaj = (tip, text) => {
     setMesaj({ tip, text });
@@ -82,6 +96,23 @@ export default function Marketplace() {
       afiseazaMesaj('eroare', rezultat?.error || "Eroare la cumpărare.");
     }
   };
+
+
+  const handleCumparaTitlu = async (id, pret) => {
+  setLoadingId(id);
+  const rezultat = await cumparaTitlu(id, pret);
+  setLoadingId(null);
+  if (rezultat.success) afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! 🏆');
+  else afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
+};
+
+const handleEchipeazaTitlu = async (id) => {
+  setLoadingId(id);
+  const rezultat = await echipeazaTitlu(id);
+  setLoadingId(null);
+  if (rezultat.success) afiseazaMesaj('succes', id === "" ? 'Titlu dezechipat!' : 'Titlul a fost echipat pe profil! 🎭');
+  else afiseazaMesaj('eroare', 'Nu s-a putut schimba titlul.');
+};
 
   return (
     <div className="market-container">
@@ -257,6 +288,63 @@ export default function Marketplace() {
     );
   })}
 </div>
+
+
+{/* CATEGORIA 4: TITLURI DE PROFIL STYLE BRAWL STARS */}
+<div className="market-section-divider" style={{ marginTop: '50px' }}>
+  <h2 className="market-section-title">Titluri de Profil Legendare</h2>
+  <div className="market-section-line"></div>
+</div>
+
+<div className="market-grid">
+  {pacheteTitluri.map((titlu) => {
+    const esteDeblocat = titluriDeblocate.includes(titlu.id);
+    const esteEchipat = titluEchipat === titlu.id;
+    const areDestulePuncte = punctePortofel >= titlu.price;
+    const seIncarca = loadingId === titlu.id;
+
+    return (
+      <div key={titlu.id} className={`shop-card ${esteEchipat ? 'card-equipped' : ''}`}>
+        <div className="card-top-content">
+          <div className="theme-preview-row">
+            {/* Vizualizare Titlu exact ca o insignă Brawl Stars */}
+            <div className="title-brawl-badge" style={{ background: titlu.bg }}>
+              {titlu.name}
+            </div>
+          </div>
+          <p className="theme-description" style={{ marginTop: '12px' }}>{titlu.desc}</p>
+        </div>
+
+        <div className="card-actions">
+          {esteEchipat ? (
+            <button onClick={() => handleEchipeazaTitlu("")} disabled={seIncarca} className="btn-shop btn-equipped">
+              {seIncarca ? 'Se procesează...' : 'Dezechipează'}
+            </button>
+          ) : esteDeblocat ? (
+            <button onClick={() => handleEchipeazaTitlu(titlu.id)} disabled={seIncarca} className="btn-shop btn-unlock">
+              {seIncarca ? 'Se aplică...' : 'Echipează Titlu'}
+            </button>
+          ) : (
+            <button
+              onClick={() => handleCumparaTitlu(titlu.id, titlu.price)}
+              disabled={!areDestulePuncte || seIncarca}
+              className={`btn-shop ${areDestulePuncte ? 'btn-buy-active' : 'btn-buy-disabled'}`}
+            >
+              {seIncarca ? 'Se procesează...' : areDestulePuncte ? (
+                <>Cumpără cu {titlu.price} <CoinIcon size={16} className="button-coin-icon" /></>
+              ) : (
+                <>Puncte insuficiente ({titlu.price} <CoinIcon size={16} className="button-coin-icon" />)</>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+
+
     </div>
   );
 }

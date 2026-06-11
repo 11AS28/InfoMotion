@@ -94,13 +94,13 @@ export function AuthProvider({ children }) {
   };
 
   const actualizeazaStreak = async () => {
-    if (!currentUser)
-      return;
+    if (!currentUser) return;
 
     const userRef = doc(db, 'users', currentUser.uid);
     const azi = new Date().toLocaleDateString("en-US");
     const streakCurent = currentUser.streakCount || 0;
     const ultimaLogare = currentUser.lastLoginDate;
+    const freezesDisponibile = currentUser.streakFreezes || 0; // Corectat referința lipsă
     let noulStreak = streakCurent;
     let freezesNoi = freezesDisponibile;
 
@@ -119,9 +119,13 @@ export function AuthProvider({ children }) {
           freezesNoi -= 1; 
           noulStreak = streakCurent + 1; 
           alert("Aproape ai pierdut streak-ul! Un 'Streak Freeze' a fost consumat automat pentru a te salva.");
+          try {
+            await updateDoc(userRef, { streakFreezes: freezesNoi });
+          } catch (e) {
+            console.error("Eroare la scădere freeze:", e);
+          }
         } else 
           noulStreak = 1; 
-        
       }
     }
 
@@ -164,9 +168,10 @@ export function AuthProvider({ children }) {
       userProfile.puncteTotale = 0;
       userProfile.puncte = 0;
       userProfile.problemeRezolvateCount = 0;
-      // Adăugăm câmpurile de personalizare default
       userProfile.temeDeblocate = ['theme_default'];
       userProfile.temaEchipata = 'theme_default';
+      userProfile.titluriDeblocate = [];
+      userProfile.titluEchipat = "";
       userProfile.hearts = 3;
       userProfile.streakFreezes = 0;
       userProfile.lastHeartRegen = new Date().toISOString();
@@ -203,7 +208,9 @@ export function AuthProvider({ children }) {
         streakFreezes: 0,
         lastHeartRegen: new Date().toISOString(),
         temeDeblocate: ['theme_default'],
-        temaEchipata: 'theme_default'
+        temaEchipata: 'theme_default',
+        titluriDeblocate: [],
+        titluEchipat: ""
       });
     }
     return user;
@@ -211,7 +218,6 @@ export function AuthProvider({ children }) {
 
   const cumparaTema = async (idTema, pretTema) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-
     const puncteCurente = currentUser.puncte || 0;
 
     if (puncteCurente < pretTema) {
@@ -229,7 +235,6 @@ export function AuthProvider({ children }) {
         puncte: increment(-pretTema),
         temeDeblocate: arrayUnion(idTema)
       }, { merge: true });
-
       return { success: true };
     } catch (error) {
       console.error("Eroare la cumpărare:", error);
@@ -237,82 +242,72 @@ export function AuthProvider({ children }) {
     }
   };
 
-const cumparaInima = async (cantitate, pretInima) => {
-  if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-  
-  const inimiCurente = currentUser.hearts ?? 3;
-  if (inimiCurente + cantitate > 3) {
-    return { success: false, error: `Nu poți avea mai mult de 3 inimi! În prezent ai deja ${inimiCurente}.` };
-  }
-
-  const puncteCurente = currentUser.puncte || 0;
-  if (puncteCurente < pretInima) {
-    return { success: false, error: "Nu ai destule puncte!" };
-  }
-
-  const userRef = doc(db, 'users', currentUser.uid);
-  try {
-    await updateDoc(userRef, {
-      puncte: increment(-pretInima),
-      hearts: increment(cantitate)
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Eroare la cumpărare inimă:", error);
-    return { success: false, error: "Tranzacție eșuată." };
-  }
-};
-
-// Cumpărare Streak Freeze (Maxim 6 scuturi în inventar)
-const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
-  if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-
-  const freezesCurente = currentUser.streakFreezes || 0;
-  if (freezesCurente + cantitate > 6) {
-    return { 
-      success: false, 
-      error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.` 
-    };
-  }
-
-  const puncteCurente = currentUser.puncte || 0;
-  if (puncteCurente < pretFreeze) {
-    return { success: false, error: "Nu ai destule puncte!" };
-  }
-
-  const userRef = doc(db, 'users', currentUser.uid);
-  try {
-    await updateDoc(userRef, {
-      puncte: increment(-pretFreeze),
-      streakFreezes: increment(cantitate)
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Eroare la cumpărare Streak Freeze:", error);
-    return { success: false, error: "Tranzacție eșuată." };
-  }
-};
-
-
-
-  const scadeInima = async () => {
-    if (!currentUser)
-      return;
-
+  const cumparaInima = async (cantitate, pretInima) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+    
     const inimiCurente = currentUser.hearts ?? 3;
-    if (inimiCurente <= 0)
-      return;
+    if (inimiCurente + cantitate > 3) {
+      return { success: false, error: `Nu poți avea mai mult de 3 inimi! În prezent ai deja ${inimiCurente}.` };
+    }
+
+    const puncteCurente = currentUser.puncte || 0;
+    if (puncteCurente < pretInima) {
+      return { success: false, error: "Nu ai destule puncte!" };
+    }
 
     const userRef = doc(db, 'users', currentUser.uid);
-
     try {
       await updateDoc(userRef, {
-        hearts: increment(-1)
+        puncte: increment(-pretInima),
+        hearts: increment(cantitate)
       });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la cumpărare inimă:", error);
+      return { success: false, error: "Tranzacție eșuată." };
+    }
+  };
+
+  const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+
+    const freezesCurente = currentUser.streakFreezes || 0;
+    if (freezesCurente + cantitate > 6) {
+      return { 
+        success: false, 
+        error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.` 
+      };
+    }
+
+    const puncteCurente = currentUser.puncte || 0;
+    if (puncteCurente < pretFreeze) {
+      return { success: false, error: "Nu ai destule puncte!" };
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, {
+        puncte: increment(-pretFreeze),
+        streakFreezes: increment(cantitate)
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la cumpărare Streak Freeze:", error);
+      return { success: false, error: "Tranzacție eșuată." };
+    }
+  };
+
+  const scadeInima = async () => {
+    if (!currentUser) return;
+    const inimiCurente = currentUser.hearts ?? 3;
+    if (inimiCurente <= 0) return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, { hearts: increment(-1) });
     } catch (error) {
       console.error("Eroare la scădere inimă:", error);
     }
-
   };
 
   const verificaRegenerareInimi = async (userDocData, userRef) => {
@@ -320,8 +315,7 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     const ultimaRegenerare = userDocData.lastHeartRegen ? new Date(userDocData.lastHeartRegen) : acum;
     const inimiCurente = userDocData.hearts ?? 3;
 
-    if (inimiCurente >= 3)
-      return;
+    if (inimiCurente >= 3) return;
 
     const diffInMs = acum - ultimaRegenerare;
     const oreTrecute = Math.floor(diffInMs / (1000 * 60 * 60));
@@ -329,7 +323,6 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     if (oreTrecute >= 24) {
       const inimiDeAdaugat = Math.floor(oreTrecute / 24);
       const noulNumarDeInimi = Math.min(3, inimiCurente + inimiDeAdaugat);
-
       const timpNou = new Date(ultimaRegenerare.getTime() + inimiDeAdaugat * 24 * 60 * 60 * 1000);
 
       await updateDoc(userRef, {
@@ -338,7 +331,6 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
       });
     }
   };
-
 
   const echipeazaTema = async (idTema) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
@@ -350,13 +342,65 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
-      await setDoc(userRef, {
-        temaEchipata: idTema
-      }, { merge: true });
+      await setDoc(userRef, { temaEchipata: idTema }, { merge: true });
       return { success: true };
     } catch (error) {
       console.error("Eroare la echipare:", error);
       return { success: false, error: "Nu s-a putut echipa tema." };
+    }
+  };
+
+  const cumparaTitlu = async (idTitlu, pretTitlu) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+
+    const puncteCurente = currentUser.puncte || 0;
+    if (puncteCurente < pretTitlu) {
+      return { success: false, error: "Nu ai destule puncte în portofel!" };
+    }
+
+    const titluriDeblocate = currentUser.titluriDeblocate || [];
+    if (titluriDeblocate.includes(idTitlu)) {
+      return { success: false, error: "Deții deja acest titlu!" };
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, {
+        puncte: increment(-pretTitlu),
+        titluriDeblocate: arrayUnion(idTitlu)
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la cumpărare titlu:", error);
+      return { success: false, error: "Eroare la procesarea tranzacției." };
+    }
+  };
+
+  const echipeazaTitlu = async (idTitlu) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+
+    if (idTitlu === "") {
+      const userRef = doc(db, 'users', currentUser.uid);
+      try {
+        await updateDoc(userRef, { titluEchipat: "" });
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: "Eroare la eliminarea titlului." };
+      }
+    }
+
+    const titluriDeblocate = currentUser.titluriDeblocate || [];
+    if (!titluriDeblocate.includes(idTitlu)) {
+      return { success: false, error: "Nu deții acest titlu!" };
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, { titluEchipat: idTitlu });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la echipare titlu:", error);
+      return { success: false, error: "Nu s-a putut echipa titlul." };
     }
   };
 
@@ -368,20 +412,15 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const isDev = user.email === "smmaria@gmail.com";
-
             const data = docSnap.data();
 
             if (data.role === 'student' && (data.hearts ?? 3) < 3)
               verificaRegenerareInimi(data, userRef);
 
-
             setCurrentUser({ ...user, ...docSnap.data(), emailVerified: isDev ? true : user.emailVerified });
-
-
-
-          } else
+          } else {
             setCurrentUser(user);
-
+          }
           setLoading(false);
         });
         return () => unsubscribeDb();
@@ -460,8 +499,8 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     try {
       await setDoc(userRef, {
         ...extraData,
-        puncteTotale: increment(puncteDeAdaugat), // Crește poziția în clasament
-        puncte: increment(puncteDeAdaugat)       // Crește portofelul de cumpărături
+        puncteTotale: increment(puncteDeAdaugat),
+        puncte: increment(puncteDeAdaugat)
       }, { merge: true });
     } catch (error) {
       console.error("Eroare la acordarea punctelor:", error);
@@ -489,7 +528,9 @@ const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     echipeazaTema,
     cumparaInima,
     cumparaStreakFreeze,
-    scadeInima
+    scadeInima,
+    cumparaTitlu,    // ADĂUGAT
+    echipeazaTitlu   // ADĂUGAT
   };
 
   return (

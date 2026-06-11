@@ -16,6 +16,9 @@
   /* IMPLICIT: LIGHT MODE */
   background-color: #ffffff;
   color: #1e293b;
+  transform: translateZ(0);
+
+ 
 }
 
 .sidebar-container.open {
@@ -530,7 +533,7 @@
   background-color: #006064; /* O nuanță închisă de cyan, potrivită cu tema ta */
   color: #e0f7fa;            /* Text deschis pentru contrast bun */
   text-transform: uppercase;
-  letterSpacing: 0.5px;
+  letter-spacing: 0.5px;
   display: inline-block;
   margin: 0 !important;      /* Elimină marginile vechi care creau spațiu */
   text-align: center;
@@ -571,3 +574,4 @@
 .sidebar-header span {
   margin: 0 !important;
 }
+
