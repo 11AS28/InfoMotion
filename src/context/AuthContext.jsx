@@ -174,6 +174,7 @@ export function AuthProvider({ children }) {
       userProfile.titluEchipat = "";
       userProfile.hearts = 3;
       userProfile.streakFreezes = 0;
+      userProfile.problemeCustomRezolvate = [];
       userProfile.lastHeartRegen = new Date().toISOString();
     } else if (role === 'teacher') {
       userProfile.clase = [];
@@ -205,6 +206,7 @@ export function AuthProvider({ children }) {
         puncte: 0,
         problemeRezolvateCount: 0,
         hearts: 3,
+        problemeCustomRezolvate: [],
         streakFreezes: 0,
         lastHeartRegen: new Date().toISOString(),
         temeDeblocate: ['theme_default'],

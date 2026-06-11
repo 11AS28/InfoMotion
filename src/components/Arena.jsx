@@ -4,11 +4,13 @@ import { db } from '../firebase';
 import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 import { Toaster, toast } from 'sonner';
-import { Rocket, TriangleAlert, TestTubeDiagonal } from 'lucide-react';
+import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
+import { useNavigate } from 'react-router-dom';
 
 function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
+  const navigate = useNavigate();
   
   const [problems, setProblems] = useState({
     easy: { titlu: "Watermelon (Rating: 800)", link: "https://codeforces.com/problemset/problem/4/A", idCF: "4A" },
@@ -20,6 +22,10 @@ function Arena({ datePreincarcate }) {
   const [userBadgesMap, setUserBadgesMap] = useState({}); 
   const [activeTab, setActiveTab] = useState('easy'); 
   const [isChecking, setIsChecking] = useState(false); 
+
+  // Stări pentru verificarea oricărei probleme de pe Codeforces
+  const [customProblemId, setCustomProblemId] = useState('');
+  const [isCheckingCustom, setIsCheckingCustom] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const solversPerPage = 5;
@@ -44,9 +50,6 @@ function Arena({ datePreincarcate }) {
     return null;
   };
 
-  // =========================================================
-  // OPTIMIZARE SUPREMĂ: Prinde datele din props, fără getDoc!
-  // =========================================================
   useEffect(() => {
     let isMounted = true;
 
@@ -68,7 +71,6 @@ function Arena({ datePreincarcate }) {
         return;
       }
 
-      console.log("Documentul nu există în props, inițiem pachetul din Codeforces...");
       const dataAzi = getSafeDateString();
       const docRef = doc(db, 'dailyChallenges', dataAzi);
 
@@ -112,7 +114,6 @@ function Arena({ datePreincarcate }) {
     };
 
     proceseazaSauGenereaza();
-
     return () => { isMounted = false; };
   }, [datePreincarcate]);
 
@@ -158,7 +159,7 @@ function Arena({ datePreincarcate }) {
         const nouSolver = { 
           nume: currentUser.nume || "Utilizator", 
           uid: currentUser.uid, 
-          dificultate: dificultadesTinta,
+          dificultate: dificultateTinta,
           aPrimitPuncte: !hasAnyPointsToday,
           problemeRezolvateCount: numarCurentProbleme, 
           ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) 
@@ -168,12 +169,60 @@ function Arena({ datePreincarcate }) {
         setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: numarCurentProbleme }));
         setSolvers(prev => [...prev, nouSolver]);
       } else {
-        toast.error("Submisie neidentificată!", { id: idValidare });
+        toast.error("Submisie neidentificată pe Codeforces (trebuie să fie OK)!", { id: idValidare });
       }
     } catch (error) {
       toast.error("Eroare de sistem.", { id: idValidare });
     } finally {
       setIsChecking(false);
+    }
+  };
+
+  // FUNCȚIA NOUĂ: Verifică orice problemă introdusă manual din Codeforces
+  const handleVerifyCustomProblem = async () => {
+    const idCurat = customProblemId.trim().toUpperCase();
+    if (!idCurat) {
+      toast.error("Introdu un ID valid! (ex: 4A, 158B, 1920A)");
+      return;
+    }
+    if (!currentUser?.codeforcesHandle) {
+      toast.error("Setează-ți Codeforces Handle-ul în profil mai întâi!");
+      return;
+    }
+
+    // Verificăm istoricul din profil ca să nu ia puncte de 2 ori pe aceeași problemă liberă
+    const istoricCustom = currentUser.problemeCustomRezolvate || [];
+    if (istoricCustom.includes(idCurat)) {
+      toast.warning("Ai obținut deja puncte pentru problema asta pe InfoMotion!");
+      return;
+    }
+
+    setIsCheckingCustom(true);
+    const idToast = toast.loading(`Se caută submisia OK pentru problema ${idCurat}...`);
+
+    try {
+      const gasitSubmisieOk = await verificaProblemaCodeforces(idCurat);
+      if (gasitSubmisieOk) {
+        // Alocăm un număr fix de puncte, de exemplu 15 XP pentru probleme la alegere
+        const xpDeOferit = 15;
+        await acordaPuncte(xpDeOferit);
+
+        // Adăugăm problema în array-ul de istoric din documentul utilizatorului
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          problemeCustomRezolvate: arrayUnion(idCurat),
+          problemeRezolvateCount: increment(1)
+        });
+
+        toast.success(`Validat! +${xpDeOferit} XP adăugați pentru problema ${idCurat}.`, { id: idToast });
+        setCustomProblemId('');
+      } else {
+        toast.error(`Nu s-a găsit nicio rezolvare cu statusul "OK" pe Codeforces pentru ${idCurat}.`, { id: idToast });
+      }
+    } catch (err) {
+      toast.error("Eroare la conectarea cu API-ul.", { id: idToast });
+    } finally {
+      setIsCheckingCustom(false);
     }
   };
 
@@ -187,6 +236,7 @@ function Arena({ datePreincarcate }) {
   return (
     usePageTitle("InfoMotion - Arena"),
     <div className="arena-wrapper">
+      <Toaster position="top-center" richColors />
       <div className="arena-container">
         <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>
 
@@ -211,8 +261,7 @@ function Arena({ datePreincarcate }) {
               </button>
             </div>
           </div>
-
-          {/* Card Mediu */}
+          
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-medium"> Medie</span>
@@ -227,7 +276,6 @@ function Arena({ datePreincarcate }) {
             </div>
           </div>
 
-          {/* Card Hard */}
           <div className={`arena-custom-card card-hard ${activeTab === 'hard' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-hard"> Grea</span>
@@ -249,10 +297,44 @@ function Arena({ datePreincarcate }) {
           </p>
         )}
 
+        <div className="arena-playground-zone">
+          <div className="playground-box">
+            <div className="box-header">
+              <Code2 size={24} color="#832211" />
+              <h3>Workspace Liber</h3>
+            </div>
+            <p>Vrei să testezi idei rapide sau să îți scrii rezolvările în editorul nostru avansat cu teme de magazin?</p>
+            <button className="btn-open-sandbox" onClick={() => navigate('/compiler/liber')}>
+              Deschide InfoMotion IDE ➔
+            </button>
+          </div>
+
+          <div className="custom-verify-box">
+            <div className="box-header">
+              <CheckCircle2 size={24} color="#10b981" />
+              <h3>Verifică orice problemă Codeforces</h3>
+            </div>
+            <p>Ai rezolvat o problemă care nu se află printre cele zilnice? Bagă ID-ul ei mai jos ca să îți iei punctele.</p>
+            
+            <div className="custom-input-group">
+              <input 
+                type="text" 
+                placeholder="Ex: 4A, 158B, 122A..." 
+                value={customProblemId}
+                onChange={(e) => setCustomProblemId(e.target.value)}
+                disabled={isCheckingCustom}
+              />
+              <button onClick={handleVerifyCustomProblem} disabled={isCheckingCustom}>
+                {isCheckingCustom ? "Verificare..." : "Validează"}
+              </button>
+            </div>
+            <span className="hint-text">* Primești +15 XP pentru fiecare problemă unică aprobată.</span>
+          </div>
+        </div>
+
         <div className="solvers-list">
           <div className="solvers-list-header">
             <h3>Top Solveri - {activeTab === 'easy' ? " Easy" : activeTab === 'medium' ? " Medie" : " Grea"}</h3>
-            {/* BUTOANELE PE CARE LE PIERDUSEȘTI SUNT ÎNAPOI AICI: */}
             <div className="desktop-rank-switch">
               <button className={activeTab === 'easy' ? 'active-mini' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
               <button className={activeTab === 'medium' ? 'active-mini' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
@@ -270,33 +352,25 @@ function Arena({ datePreincarcate }) {
                     <span className="rank">#{realRank}</span>
                     <span className="username">
                       {s.nume} {afiseazaInsignaUtilizator(totalProblemeUser)}
-                      {s.aPrimitPuncte ? (
+                      {s.aPrimitPuncte && (
                         <Rocket size={20} color="#832211" strokeWidth={2} style={{ marginLeft: '6px', display: 'inline' }} />
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '6px', color: '#5ff261', fontSize: '13px' }}>
-                          <TestTubeDiagonal size={16} strokeWidth={2} style={{ marginRight: '4px' }} /> (Antrenament)
-                        </span>
                       )}
                     </span>
-                    <span className="value">{s.ora}</span>
+                    <span className="time">{s.ora}</span>
                   </div>
                 );
               })}
-
+              
               {totalPages > 1 && (
-                <div className="pagination">
-                  <button className="page-btn" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-                    &laquo; Înapoi
-                  </button>
-                  <span className="page-info">{currentPage} / {totalPages}</span>
-                  <button className="page-btn" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-                    Înainte &raquo;
-                  </button>
+                <div className="pagination-controls">
+                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Înapoi</button>
+                  <span>Pagina {currentPage} din {totalPages}</span>
+                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Înainte</button>
                 </div>
               )}
             </>
           ) : (
-            <p className="empty-solvers">Fii primul care sparge gheața la această categorie!</p>
+            <p className="no-solvers">Fii primul care sparge gheața la această categorie!</p>
           )}
         </div>
       </div>
@@ -304,11 +378,4 @@ function Arena({ datePreincarcate }) {
   );
 }
 
-export default function ArenaWithToaster({ datePreincarcate }) {
-  return (
-    <>
-      <Toaster richColors position="top-right" closeButton />
-      <Arena datePreincarcate={datePreincarcate} />
-    </>
-  );
-}
+export default Arena;
