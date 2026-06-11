@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  onAuthStateChanged, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
 
   const getStatistici = () => {
     if (!currentUser) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
-    
+
     const progresUser = currentUser.progres || {};
     const terminate = Object.keys(progresUser).filter(
       id => progresUser[id] && progresUser[id].status === 'complet'
@@ -94,22 +94,35 @@ export function AuthProvider({ children }) {
   };
 
   const actualizeazaStreak = async () => {
-    if (!currentUser) return;
+    if (!currentUser)
+      return;
+
     const userRef = doc(db, 'users', currentUser.uid);
     const azi = new Date().toLocaleDateString("en-US");
     const streakCurent = currentUser.streakCount || 0;
     const ultimaLogare = currentUser.lastLoginDate;
     let noulStreak = streakCurent;
+    let freezesNoi = freezesDisponibile;
 
-    if (!ultimaLogare) {
+    if (!ultimaLogare) 
       noulStreak = 1;
-    } else if (ultimaLogare === azi) {
+    else if (ultimaLogare === azi) 
       return;
-    } else {
+    else {
       const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffZile === 1) noulStreak += 1;
-      else if (diffZile > 1) noulStreak = 1;
+
+      if (diffZile === 1) 
+        noulStreak += 1;
+      else if (diffZile > 1) {
+        if (freezesDisponibile > 0) {
+          freezesNoi -= 1; 
+          noulStreak = streakCurent + 1; 
+          alert("Aproape ai pierdut streak-ul! Un 'Streak Freeze' a fost consumat automat pentru a te salva.");
+        } else 
+          noulStreak = 1; 
+        
+      }
     }
 
     try {
@@ -135,7 +148,7 @@ export function AuthProvider({ children }) {
   async function signup(email, password, username, role = 'student') {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     const userProfile = {
       uid: user.uid,
       nume: username,
@@ -154,6 +167,9 @@ export function AuthProvider({ children }) {
       // Adăugăm câmpurile de personalizare default
       userProfile.temeDeblocate = ['theme_default'];
       userProfile.temaEchipata = 'theme_default';
+      userProfile.hearts = 3;
+      userProfile.streakFreezes = 0;
+      userProfile.lastHeartRegen = new Date().toISOString();
     } else if (role === 'teacher') {
       userProfile.clase = [];
       userProfile.isVerifiedTeacher = false;
@@ -183,20 +199,21 @@ export function AuthProvider({ children }) {
         puncteTotale: 0,
         puncte: 0,
         problemeRezolvateCount: 0,
-        // Adăugăm câmpurile de personalizare default
-        temeDeblocate : ['theme_default'],
-        temaEchipata : 'theme_default'
+        hearts: 3,
+        streakFreezes: 0,
+        lastHeartRegen: new Date().toISOString(),
+        temeDeblocate: ['theme_default'],
+        temaEchipata: 'theme_default'
       });
     }
     return user;
   }
 
-  // IMPLEMENTARE REALĂ: Cumpărare temă din Marketplace
   const cumparaTema = async (idTema, pretTema) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-    
+
     const puncteCurente = currentUser.puncte || 0;
-    
+
     if (puncteCurente < pretTema) {
       return { success: false, error: "Nu ai destule puncte în portofel!" };
     }
@@ -209,8 +226,8 @@ export function AuthProvider({ children }) {
     const userRef = doc(db, 'users', currentUser.uid);
     try {
       await setDoc(userRef, {
-        puncte: increment(-pretTema),            // Scade prețul din portofel (dar lasă puncteTotale intact!)
-        temeDeblocate: arrayUnion(idTema)        // Adaugă ID-ul în inventar
+        puncte: increment(-pretTema),
+        temeDeblocate: arrayUnion(idTema)
       }, { merge: true });
 
       return { success: true };
@@ -220,10 +237,112 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // IMPLEMENTARE REALĂ: Echipare temă din inventar
+const cumparaInima = async (cantitate, pretInima) => {
+  if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+  
+  const inimiCurente = currentUser.hearts ?? 3;
+  if (inimiCurente + cantitate > 3) {
+    return { success: false, error: `Nu poți avea mai mult de 3 inimi! În prezent ai deja ${inimiCurente}.` };
+  }
+
+  const puncteCurente = currentUser.puncte || 0;
+  if (puncteCurente < pretInima) {
+    return { success: false, error: "Nu ai destule puncte!" };
+  }
+
+  const userRef = doc(db, 'users', currentUser.uid);
+  try {
+    await updateDoc(userRef, {
+      puncte: increment(-pretInima),
+      hearts: increment(cantitate)
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Eroare la cumpărare inimă:", error);
+    return { success: false, error: "Tranzacție eșuată." };
+  }
+};
+
+// Cumpărare Streak Freeze (Maxim 6 scuturi în inventar)
+const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
+  if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+
+  const freezesCurente = currentUser.streakFreezes || 0;
+  if (freezesCurente + cantitate > 6) {
+    return { 
+      success: false, 
+      error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.` 
+    };
+  }
+
+  const puncteCurente = currentUser.puncte || 0;
+  if (puncteCurente < pretFreeze) {
+    return { success: false, error: "Nu ai destule puncte!" };
+  }
+
+  const userRef = doc(db, 'users', currentUser.uid);
+  try {
+    await updateDoc(userRef, {
+      puncte: increment(-pretFreeze),
+      streakFreezes: increment(cantitate)
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Eroare la cumpărare Streak Freeze:", error);
+    return { success: false, error: "Tranzacție eșuată." };
+  }
+};
+
+
+
+  const scadeInima = async () => {
+    if (!currentUser)
+      return;
+
+    const inimiCurente = currentUser.hearts ?? 3;
+    if (inimiCurente <= 0)
+      return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+
+    try {
+      await updateDoc(userRef, {
+        hearts: increment(-1)
+      });
+    } catch (error) {
+      console.error("Eroare la scădere inimă:", error);
+    }
+
+  };
+
+  const verificaRegenerareInimi = async (userDocData, userRef) => {
+    const acum = new Date();
+    const ultimaRegenerare = userDocData.lastHeartRegen ? new Date(userDocData.lastHeartRegen) : acum;
+    const inimiCurente = userDocData.hearts ?? 3;
+
+    if (inimiCurente >= 3)
+      return;
+
+    const diffInMs = acum - ultimaRegenerare;
+    const oreTrecute = Math.floor(diffInMs / (1000 * 60 * 60));
+
+    if (oreTrecute >= 24) {
+      const inimiDeAdaugat = Math.floor(oreTrecute / 24);
+      const noulNumarDeInimi = Math.min(3, inimiCurente + inimiDeAdaugat);
+
+      const timpNou = new Date(ultimaRegenerare.getTime() + inimiDeAdaugat * 24 * 60 * 60 * 1000);
+
+      await updateDoc(userRef, {
+        hearts: noulNumarDeInimi,
+        lastHeartRegen: timpNou.toISOString()
+      });
+    }
+  };
+
+
   const echipeazaTema = async (idTema) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-    
+
     const temeDeblocate = currentUser.temeDeblocate || ['theme_default'];
     if (!temeDeblocate.includes(idTema)) {
       return { success: false, error: "Nu deții această temă!" };
@@ -245,13 +364,24 @@ export function AuthProvider({ children }) {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userRef = doc(db, 'users', user.uid);
+
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
-            const isDev = user.email === "smmaria@gmai.com";
+            const isDev = user.email === "smmaria@gmail.com";
+
+            const data = docSnap.data();
+
+            if (data.role === 'student' && (data.hearts ?? 3) < 3)
+              verificaRegenerareInimi(data, userRef);
+
+
             setCurrentUser({ ...user, ...docSnap.data(), emailVerified: isDev ? true : user.emailVerified });
-          } else {
+
+
+
+          } else
             setCurrentUser(user);
-          }
+
           setLoading(false);
         });
         return () => unsubscribeDb();
@@ -356,7 +486,10 @@ export function AuthProvider({ children }) {
     updateUsername,
     updateCodeforcesHandle,
     cumparaTema,
-    echipeazaTema // Exportată cu succes!
+    echipeazaTema,
+    cumparaInima,
+    cumparaStreakFreeze,
+    scadeInima
   };
 
   return (

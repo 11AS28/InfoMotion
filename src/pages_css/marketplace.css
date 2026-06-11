@@ -305,3 +305,39 @@
     padding: 20px;
   }
 }
+
+.market-section-divider {
+  display: flex;
+  align-items: center;
+  margin: 30px 0 20px 0;
+  width: 100%;
+}
+
+.market-section-title {
+  font-size: 1.3rem;
+  color: #e2e8f0;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-right: 20px;
+}
+
+.market-section-line {
+  height: 1px;
+  background: linear-gradient(90deg, #334155 0%, transparent 100%);
+  flex-grow: 1;
+}
+
+.theme-category-tag.functional {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #818cf8 !important;
+}
+
+.color-preview-box.functional-heart {
+  border: 1px solid rgba(250, 82, 82, 0.3);
+  border-radius: 8px;
+}
+
+.color-preview-box.functional-freeze {
+  border: 1px solid rgba(34, 184, 207, 0.3);
+  border-radius: 8px;
+}
