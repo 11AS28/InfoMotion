@@ -100,7 +100,7 @@ export function AuthProvider({ children }) {
     const azi = new Date().toLocaleDateString("en-US");
     const streakCurent = currentUser.streakCount || 0;
     const ultimaLogare = currentUser.lastLoginDate;
-    const freezesDisponibile = currentUser.streakFreezes || 0; // Corectat referința lipsă
+    const freezesDisponibile = currentUser.streakFreezes || 0;
     let noulStreak = streakCurent;
     let freezesNoi = freezesDisponibile;
 
@@ -297,19 +297,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-const scadeInima = async (cantitate = 1) => {
-  if (!currentUser) return;
-  const inimiCurente = currentUser.hearts ?? 3;
-  if (inimiCurente <= 0) return;
-
-  const userRef = doc(db, 'users', currentUser.uid);
-  try {
-
-    await updateDoc(userRef, { hearts: increment(-cantitate) });
-  } catch (error) {
-    console.error("Eroare la scădere inimă:", error);
-  }
-};
+  const scadeInima = async (cantitate = 1) => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+    try {
+      await updateDoc(userRef, { hearts: increment(-cantitate) });
+    } catch (error) {
+      console.error("Eroare la scădere inimă:", error);
+    }
+  };
 
   const verificaRegenerareInimi = async (userDocData, userRef) => {
     const acum = new Date();
@@ -530,8 +526,8 @@ const scadeInima = async (cantitate = 1) => {
     cumparaInima,
     cumparaStreakFreeze,
     scadeInima,
-    cumparaTitlu,    // ADĂUGAT
-    echipeazaTitlu   // ADĂUGAT
+    cumparaTitlu,
+    echipeazaTitlu
   };
 
   return (
