@@ -3,12 +3,15 @@ import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import '../components_css/QuizModal.css';
+import { useWebHaptics } from "web-haptics/react";
+import { Heart, HeartCrack } from 'lucide-react';
 
 function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   const [answers, setAnswers] = useState(Array(quizData.length).fill(null));
   const [isQuizChecked, setIsQuizChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const { currentUser, acordaPuncte, scadeInima } = useAuth();
+  const { trigger } = useWebHaptics();
 
   // Păstrăm inima sincronizată cu ce are userul în momentul deschiderii
   const [localHearts, setLocalHearts] = useState(currentUser?.hearts ?? 3);
@@ -16,6 +19,23 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   const answeredCount = answers.filter(ans => ans !== null).length;
   const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
   const isPerfect = score === quizData.length;
+
+  // Pattern vibrație succes (Test trecut perfect)
+  const triggerSuccessHaptic = () => {
+    trigger([
+      { duration: 30 },
+      { delay: 60, duration: 40, intensity: 1 },
+    ]);
+  };
+
+  // Pattern vibrație eroare (Când se greșește testul, ex: 2/5)
+  const triggerErrorHaptic = () => {
+    trigger([
+      { duration: 50, intensity: 0.8 },
+      { delay: 50, duration: 50, intensity: 0.8 },
+      { delay: 50, duration: 80, intensity: 1 },
+    ]);
+  };
 
   const handleSelect = (qIdx, vIdx) => {
     if (isQuizChecked) return;
@@ -45,9 +65,16 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     setLoading(true);
     try {
       const userRef = doc(db, 'users', currentUser.uid);
+      
+      // CORECTAT: Salvăm în obiectul 'progres' folosind notația cu punct,
+      // pentru a fi citit corect de getStatistici() fără a șterge alte lecții
       await updateDoc(userRef, { 
-        lectiiTerminate: arrayUnion(lessonId) 
+        [`progres.${lessonId}`]: {
+          status: 'complet',
+          terminatLa: new Date() // sau serverTimestamp() dacă îl ai importat
+        }
       });
+
       await acordaPuncte('quiz'); 
       onFinished(); 
     } catch (err) {
@@ -69,6 +96,13 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     }
 
     setIsQuizChecked(true);
+
+    // Declanșăm haptic-ul în funcție de rezultatul scorului calculat pe loc
+    if (score === quizData.length) {
+      triggerSuccessHaptic();
+    } else {
+      triggerErrorHaptic();
+    }
   };
 
   return (
@@ -84,9 +118,9 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
           
           <div className="hearts-indicator" style={{ fontSize: '18px', marginBottom: '15px', textAlign: 'left' }}>
             Inimi rămase: {Array.from({ length: Math.max(0, localHearts) }).map((_, i) => (
-              <span key={i} style={{ color: '#fa5252', marginRight: '4px' }}>❤️</span>
+              <span key={i} style={{ color: '#fa5252', marginRight: '4px' }}><Heart size={20} color="#ae1e1e" strokeWidth={1.75} /></span>
             ))}
-            {localHearts <= 0 && <span style={{ color: '#fa5252', fontWeight: 'bold' }}>💔 Ai rămas fără inimi!</span>}
+            {localHearts <= 0 && <span style={{ color: '#fa5252', fontWeight: 'bold' }}><HeartCrack size={20} color="#ae1e1e" strokeWidth={1.75} /> Ai rămas fără inimi!</span>}
           </div>
 
           {localHearts <= 0 && !isQuizChecked ? (

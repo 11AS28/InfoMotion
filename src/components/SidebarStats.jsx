@@ -40,16 +40,17 @@ function SidebarStats({ isOpen, onClose }) {
     title_jeanG: { name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const q = query(collection(db, "lectii"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (isMounted) {
-        setTotalLectiiDB(snapshot.size);
-      }
-    });
-    return () => { isMounted = false; unsubscribe(); };
-  }, []);
+useEffect(() => {
+  let isMounted = true;
+  const q = query(collection(db, "lectii")); 
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    if (isMounted) {
+      console.log(" snapshot primit! Număr lecții reale în DB:", snapshot.size);
+      setTotalLectiiDB(snapshot.size);
+    }
+  });
+  return () => { isMounted = false; unsubscribe(); };
+}, []);
 
   useEffect(() => {
     if (isOpen && !isTeacher) {
@@ -150,6 +151,11 @@ function SidebarStats({ isOpen, onClose }) {
   };
 
   if (!currentUser) return null;
+
+  // 🧪 TEST DE DEPANARE (Șterge-l după ce rezolvăm)
+  /*console.log("--- DEBUG CONECTARE DATE ---");
+  console.log("Ce conține currentUser.progres:", currentUser?.progres);
+  console.log("Număr total lecții găsite în DB (totalLectiiDB):", totalLectiiDB);*/
 
   const stats = getStatistici();
   const lectiiTerminate = stats.terminate || 0;
@@ -314,6 +320,8 @@ function SidebarStats({ isOpen, onClose }) {
                             marginBottom: '4px'
                           }}>
                             {notif.type === 'lectie_aprobata' ? ' Lecție aprobată' : notif.type === 'lectie_respinsa' ? ' Lecție respinsă' : ' Notificare'}
+                            {notif.type === 'streak_pierdut' && '  Streak Întrerupt'}
+                            {notif.type === 'streak_inghetat' && '  Streak Înghețat'}
                           </div>
                           <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}
@@ -506,6 +514,8 @@ function SidebarStats({ isOpen, onClose }) {
           </button>
           {deleteError && <small style={{ color: '#ff4d4d', textAlign: 'center', display: 'block', padding: '5px' }}>{deleteError}</small>}
         </div>
+
+        
       </div>
     </>
   );

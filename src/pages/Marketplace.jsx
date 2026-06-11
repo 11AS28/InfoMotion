@@ -3,11 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { shopItems } from '../components/shopItems';
 import CoinIcon from '../components/CoinIcon'; 
 import '../pages_css/marketplace.css'; 
+import { useWebHaptics } from "web-haptics/react";
+import { Heart, Snowflake, ThermometerSnowflake, MountainSnow} from 'lucide-react';
 
 export default function Marketplace() {
- const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
+  const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
   const [loadingId, setLoadingId] = useState(null);
   const [mesaj, setMesaj] = useState({ tip: '', text: '' });
+  const { trigger } = useWebHaptics();
 
   const punctePortofel = currentUser?.puncte || 0;
   const temeDeblocate = currentUser?.temeDeblocate || ['theme_default'];
@@ -16,33 +19,49 @@ export default function Marketplace() {
   const inimiCurente = currentUser?.hearts ?? 3;
   const freezeCurente = currentUser?.streakFreezes || 0;
 
-
   const titluriDeblocate = currentUser?.titluriDeblocate || [];
   const titluEchipat = currentUser?.titluEchipat || "";
 
-  // Definim Pachetele de Inimi (exact prețurile tale)
+  // Pattern pentru erori sau atenționări
+  const triggerErrorHaptic = () => {
+    trigger([
+      { duration: 40, intensity: 0.7 },
+      { delay: 40, duration: 40, intensity: 0.7 },
+      { delay: 40, duration: 40, intensity: 0.9 },
+      { delay: 40, duration: 50, intensity: 0.6 },
+    ]);
+  };
+
+  // Pattern-ul tău personalizat pentru succes
+  const triggerSuccessHaptic = () => {
+    trigger([
+      { duration: 30 },
+      { delay: 60, duration: 40, intensity: 1 },
+    ]);
+  };
+
+  // Pachetele de Inimi
   const pacheteInimi = [
-    { id: 'heart_1', name: 'Bandage Pack', qty: 1, price: 50, icon: '❤️', desc: 'Refill rapid pentru o singură greșeală în quiz.' },
-    { id: 'heart_2', name: 'First Aid Kit', qty: 2, price: 100, icon: '❣️', desc: 'Siguranță dublă. Perfect pentru lecțiile mai grele.' },
-    { id: 'heart_3', name: 'Med Kit', qty: 3, price: 120, icon: '💖', desc: 'Full Refill cu reducere! Te încarcă complet la maxim.' }
+    { id: 'heart_1', name: 'Bandage Pack', qty: 1, price: 50, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Refill rapid pentru o singură greșeală în quiz.' },
+    { id: 'heart_2', name: 'First Aid Kit', qty: 2, price: 100, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Siguranță dublă. Perfect pentru lecțiile mai grele.' },
+    { id: 'heart_3', name: 'Med Kit', qty: 3, price: 120, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Full Refill cu reducere! Te încarcă complet la maxim.' }
   ];
 
-  // Definim Pachetele de Streak Freeze (exact prețurile tale)
+  // Pachetele de Streak Freeze
   const pacheteStreak = [
-    { id: 'streak_1', name: 'Streak Guard', qty: 1, price: 150, icon: '❄️', desc: 'Îți salvează streak-ul pentru o singură zi de pauză.' },
-    { id: 'streak_3', name: 'Pachet 3 Streak Guard', qty: 3, price: 430, icon: '🥶', desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
-    { id: 'streak_5', name: 'Mega Streak Guard Pack', qty: 5, price: 610, icon: '🏔️', desc: 'Protecție maximă pe termen lung. Cel mai bun raport preț.' }
+    { id: 'streak_1', name: 'Streak Guard', qty: 1, price: 150, icon: <Snowflake size={60} color="#3498db" strokeWidth={1.75} />, desc: 'Îți salvează streak-ul pentru o singură zi de pauză.' },
+    { id: 'streak_3', name: 'Pachet 3 Streak Guard', qty: 3, price: 430, icon: <MountainSnow size={60} color="#3498db" strokeWidth={1.75} />, desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
+    { id: 'streak_5', name: 'Mega Streak Guard Pack', qty: 5, price: 610, icon: <ThermometerSnowflake size={60} color="#3498db" strokeWidth={1.75} />, desc: 'Protecție maximă pe termen lung. Cel mai bun raport preț.' }
   ];
 
   const pacheteTitluri = [
-  { id: 'title_coders', name: 'Codul e Legea', price: 300, color: '#f1c40f', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', desc: 'Pentru cei care dictează regulile în compilator.' },
-  { id: 'title_toxic', name: 'Zero Erori', price: 500, color: '#2ecc71', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)', desc: 'Titlu legendar pentru cine scrie cod curat din prima.' },
-  { id: 'title_god', name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
-  { id: 'title_noob', name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
-  { id: 'title_grind', name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
-  {id: 'title_jeanG', name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
-];
-
+    { id: 'title_coders', name: 'Codul e Legea', price: 300, color: '#f1c40f', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', desc: 'Pentru cei care dictează regulile în compilator.' },
+    { id: 'title_toxic', name: 'Zero Erori', price: 500, color: '#2ecc71', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)', desc: 'Titlu legendar pentru cine scrie cod curat din prima.' },
+    { id: 'title_god', name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
+    { id: 'title_noob', name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
+    { id: 'title_grind', name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
+    { id: 'title_jeanG', name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
+  ];
 
   const afiseazaMesaj = (tip, text) => {
     setMesaj({ tip, text });
@@ -55,8 +74,10 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
+      triggerSuccessHaptic();
       afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! ');
     } else {
+      triggerErrorHaptic();
       afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
     }
   };
@@ -67,8 +88,10 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
+      triggerSuccessHaptic();
       afiseazaMesaj('succes', 'Tema a fost echipată! ');
     } else {
+      triggerErrorHaptic();
       afiseazaMesaj('eroare', 'Nu s-a putut echipa tema.');
     }
   };
@@ -79,8 +102,10 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
-      afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! ❤️`);
+      triggerSuccessHaptic();
+      afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
+      triggerErrorHaptic();
       afiseazaMesaj('eroare', rezultat?.error || "Eroare la cumpărare.");
     }
   };
@@ -91,28 +116,39 @@ export default function Marketplace() {
     setLoadingId(null);
 
     if (rezultat.success) {
-      afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! ❄️`);
+      triggerSuccessHaptic();
+      afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
+      triggerErrorHaptic();
       afiseazaMesaj('eroare', rezultat?.error || "Eroare la cumpărare.");
     }
   };
 
-
   const handleCumparaTitlu = async (id, pret) => {
-  setLoadingId(id);
-  const rezultat = await cumparaTitlu(id, pret);
-  setLoadingId(null);
-  if (rezultat.success) afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! 🏆');
-  else afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
-};
+    setLoadingId(id);
+    const rezultat = await cumparaTitlu(id, pret);
+    setLoadingId(null);
+    if (rezultat.success) {
+      triggerSuccessHaptic();
+      afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
+    } else {
+      triggerErrorHaptic();
+      afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
+    }
+  };
 
-const handleEchipeazaTitlu = async (id) => {
-  setLoadingId(id);
-  const rezultat = await echipeazaTitlu(id);
-  setLoadingId(null);
-  if (rezultat.success) afiseazaMesaj('succes', id === "" ? 'Titlu dezechipat!' : 'Titlul a fost echipat pe profil! 🎭');
-  else afiseazaMesaj('eroare', 'Nu s-a putut schimba titlul.');
-};
+  const handleEchipeazaTitlu = async (id) => {
+    setLoadingId(id);
+    const rezultat = await echipeazaTitlu(id);
+    setLoadingId(null);
+    if (rezultat.success) {
+      triggerSuccessHaptic();
+      afiseazaMesaj('succes', id === "" ? 'Titlu dezechipat!' : 'Titlul a fost echipat pe profil! 🎭');
+    } else {
+      triggerErrorHaptic();
+      afiseazaMesaj('eroare', 'Nu s-a putut schimba titlul.');
+    }
+  };
 
   return (
     <div className="market-container">
@@ -194,7 +230,7 @@ const handleEchipeazaTitlu = async (id) => {
 
       {/* CATEGORIA 2: PACHETE INIMI */}
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
-        <h2 className="market-section-title">Pachete Inimi Quiz (Actual: {inimiCurente}/3 ❤️)</h2>
+        <h2 className="market-section-title">Pachete Inimi Quiz (Actual: {inimiCurente}/3 <Heart size={20} color="#ae1e1e" strokeWidth={1.75} />)</h2>
         <div className="market-section-line"></div>
       </div>
 
@@ -237,114 +273,104 @@ const handleEchipeazaTitlu = async (id) => {
       </div>
 
       {/* CATEGORIA 3: PACHETE STREAK FREEZE */}
-      
-
-      {/* CATEGORIA 3: PACHETE STREAK FREEZE */}
-<div className="market-section-divider" style={{ marginTop: '50px' }}>
-  <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 ❄️)</h2>
-  <div className="market-section-line"></div>
-</div>
-
-<div className="market-grid">
-  {pacheteStreak.map((pachet) => {
-    const areDestulePuncte = punctePortofel >= pachet.price;
-    // VERIFICARE LIMITĂ ÎN INTERFAȚĂ: Blochează pachetul dacă depășește 6 scuturi
-    const atingeMaximul = freezeCurente + pachet.qty > 6;
-    const seIncarca = loadingId === pachet.id;
-
-    return (
-      <div key={pachet.id} className="shop-card">
-        <div className="card-top-content">
-          <div className="theme-preview-row">
-            <div className="color-preview-box functional-freeze" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', background: '#22b8cf1a' }}>
-              {pachet.icon}
-            </div>
-            <div>
-              <h3 className="theme-card-name">{pachet.name}</h3>
-              <span className="theme-category-tag functional">+{pachet.qty} {pachet.qty === 1 ? 'SCUT' : 'SCUTURI'}</span>
-            </div>
-          </div>
-          <p className="theme-description">{pachet.desc}</p>
-        </div>
-        <div className="card-actions">
-          <button
-            onClick={() => handleCumparaPachetStreak(pachet)}
-            // Butonul devine inactiv dacă nu are puncte, dacă e în loading sau dacă depășește limita de 6
-            disabled={!areDestulePuncte || atingeMaximul || seIncarca}
-            className={`btn-shop ${areDestulePuncte && !atingeMaximul ? 'btn-buy-active' : 'btn-buy-disabled'}`}
-          >
-            {seIncarca ? (
-              'Se procesează...'
-            ) : atingeMaximul ? (
-              'Depășește maximul (6)'
-            ) : areDestulePuncte ? (
-              <>Cumpără cu {pachet.price} <CoinIcon size={16} className="button-coin-icon" /></>
-            ) : (
-              <>Puncte insuficiente ({pachet.price} <CoinIcon size={16} className="button-coin-icon" />)</>
-            )}
-          </button>
-        </div>
+      <div className="market-section-divider" style={{ marginTop: '50px' }}>
+        <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 ❄️)</h2>
+        <div className="market-section-line"></div>
       </div>
-    );
-  })}
-</div>
 
+      <div className="market-grid">
+        {pacheteStreak.map((pachet) => {
+          const areDestulePuncte = punctePortofel >= pachet.price;
+          const atingeMaximul = freezeCurente + pachet.qty > 6;
+          const seIncarca = loadingId === pachet.id;
 
-{/* CATEGORIA 4: TITLURI DE PROFIL STYLE BRAWL STARS */}
-<div className="market-section-divider" style={{ marginTop: '50px' }}>
-  <h2 className="market-section-title">Titluri de Profil Legendare</h2>
-  <div className="market-section-line"></div>
-</div>
-
-<div className="market-grid">
-  {pacheteTitluri.map((titlu) => {
-    const esteDeblocat = titluriDeblocate.includes(titlu.id);
-    const esteEchipat = titluEchipat === titlu.id;
-    const areDestulePuncte = punctePortofel >= titlu.price;
-    const seIncarca = loadingId === titlu.id;
-
-    return (
-      <div key={titlu.id} className={`shop-card ${esteEchipat ? 'card-equipped' : ''}`}>
-        <div className="card-top-content">
-          <div className="theme-preview-row">
-            {/* Vizualizare Titlu exact ca o insignă Brawl Stars */}
-            <div className="title-brawl-badge" style={{ background: titlu.bg }}>
-              {titlu.name}
+          return (
+            <div key={pachet.id} className="shop-card">
+              <div className="card-top-content">
+                <div className="theme-preview-row">
+                  <div className="color-preview-box functional-freeze" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', background: '#22b8cf1a' }}>
+                    {pachet.icon}
+                  </div>
+                  <div>
+                    <h3 className="theme-card-name">{pachet.name}</h3>
+                    <span className="theme-category-tag functional">+{pachet.qty} {pachet.qty === 1 ? 'SCUT' : 'SCUTURI'}</span>
+                  </div>
+                </div>
+                <p className="theme-description">{pachet.desc}</p>
+              </div>
+              <div className="card-actions">
+                <button
+                  onClick={() => handleCumparaPachetStreak(pachet)}
+                  disabled={!areDestulePuncte || atingeMaximul || seIncarca}
+                  className={`btn-shop ${areDestulePuncte && !atingeMaximul ? 'btn-buy-active' : 'btn-buy-disabled'}`}
+                >
+                  {seIncarca ? (
+                    'Se procesează...'
+                  ) : atingeMaximul ? (
+                    'Depășește maximul (6)'
+                  ) : areDestulePuncte ? (
+                    <>Cumpără cu {pachet.price} <CoinIcon size={16} className="button-coin-icon" /></>
+                  ) : (
+                    <>Puncte insuficiente ({pachet.price} <CoinIcon size={16} className="button-coin-icon" />)</>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-          <p className="theme-description" style={{ marginTop: '12px' }}>{titlu.desc}</p>
-        </div>
-
-        <div className="card-actions">
-          {esteEchipat ? (
-            <button onClick={() => handleEchipeazaTitlu("")} disabled={seIncarca} className="btn-shop btn-equipped">
-              {seIncarca ? 'Se procesează...' : 'Dezechipează'}
-            </button>
-          ) : esteDeblocat ? (
-            <button onClick={() => handleEchipeazaTitlu(titlu.id)} disabled={seIncarca} className="btn-shop btn-unlock">
-              {seIncarca ? 'Se aplică...' : 'Echipează Titlu'}
-            </button>
-          ) : (
-            <button
-              onClick={() => handleCumparaTitlu(titlu.id, titlu.price)}
-              disabled={!areDestulePuncte || seIncarca}
-              className={`btn-shop ${areDestulePuncte ? 'btn-buy-active' : 'btn-buy-disabled'}`}
-            >
-              {seIncarca ? 'Se procesează...' : areDestulePuncte ? (
-                <>Cumpără cu {titlu.price} <CoinIcon size={16} className="button-coin-icon" /></>
-              ) : (
-                <>Puncte insuficiente ({titlu.price} <CoinIcon size={16} className="button-coin-icon" />)</>
-              )}
-            </button>
-          )}
-        </div>
+          );
+        })}
       </div>
-    );
-  })}
-</div>
 
+      {/* CATEGORIA 4: TITLURI DE PROFIL STYLE BRAWL STARS */}
+      <div className="market-section-divider" style={{ marginTop: '50px' }}>
+        <h2 className="market-section-title">Titluri de Profil Legendare</h2>
+        <div className="market-section-line"></div>
+      </div>
 
+      <div className="market-grid">
+        {pacheteTitluri.map((titlu) => {
+          const esteDeblocat = titluriDeblocate.includes(titlu.id);
+          const esteEchipat = titluEchipat === titlu.id;
+          const areDestulePuncte = punctePortofel >= titlu.price;
+          const seIncarca = loadingId === titlu.id;
 
+          return (
+            <div key={titlu.id} className={`shop-card ${esteEchipat ? 'card-equipped' : ''}`}>
+              <div className="card-top-content">
+                <div className="theme-preview-row">
+                  <div className="title-brawl-badge" style={{ background: titlu.bg }}>
+                    {titlu.name}
+                  </div>
+                </div>
+                <p className="theme-description" style={{ marginTop: '12px' }}>{titlu.desc}</p>
+              </div>
+
+              <div className="card-actions">
+                {esteEchipat ? (
+                  <button onClick={() => handleEchipeazaTitlu("")} disabled={seIncarca} className="btn-shop btn-equipped">
+                    {seIncarca ? 'Se procesează...' : 'Dezechipează'}
+                  </button>
+                ) : esteDeblocat ? (
+                  <button onClick={() => handleEchipeazaTitlu(titlu.id)} disabled={seIncarca} className="btn-shop btn-unlock">
+                    {seIncarca ? 'Se aplică...' : 'Echipează Titlu'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleCumparaTitlu(titlu.id, titlu.price)}
+                    disabled={!areDestulePuncte || seIncarca}
+                    className={`btn-shop ${areDestulePuncte ? 'btn-buy-active' : 'btn-buy-disabled'}`}
+                  >
+                    {seIncarca ? 'Se procesează...' : areDestulePuncte ? (
+                      <>Cumpără cu {titlu.price} <CoinIcon size={16} className="button-coin-icon" /></>
+                    ) : (
+                      <>Puncte insuficiente ({titlu.price} <CoinIcon size={16} className="button-coin-icon" />)</>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

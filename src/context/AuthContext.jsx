@@ -10,7 +10,21 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc, updateDoc, onSnapshot, collection, query, where, getDocs, increment, arrayUnion } from 'firebase/firestore';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  onSnapshot, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  increment, 
+  arrayUnion,
+  addDoc,
+  serverTimestamp 
+} from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
 
 const AuthContext = createContext();
@@ -22,6 +36,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [totalLectii, setTotalLectii] = useState(0);
 
   const updateCodeforcesHandle = async (handle) => {
     if (!currentUser) return;
@@ -60,19 +75,31 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const getStatistici = () => {
-    if (!currentUser) return { terminate: 0, total: lessonsData.length, progresProcent: 0 };
+const getStatistici = () => {
+    if (!currentUser) return { terminate: 0, total: totalLectii, progresProcent: 0 };
 
     const progresUser = currentUser.progres || {};
-    const terminate = Object.keys(progresUser).filter(
-      id => progresUser[id] && progresUser[id].status === 'complet'
-    ).length;
+    
+    const terminate = Object.keys(progresUser).filter(id => {
+      const dateProgres = progresUser[id];
+      if (!dateProgres) return false;
 
-    const totalLectiiReale = lessonsData.length;
+      // 1. Verifică formatul standard din marcheazaLectieTerminata (cu status === 'complet')
+      if (dateProgres.status === 'complet') return true;
+
+      // 2. Verifică formatul simplu din Quiz (dacă salvezi doar id: true sau id: "complet")
+      if (dateProgres === true || dateProgres === 'complet') return true;
+
+      // 3. Verifică dacă există pur și simplu ID-ul acolo (ajută dacă salvezi doar id: { ... })
+      if (typeof dateProgres === 'object' && !dateProgres.status) return true;
+
+      return false;
+    }).length;
+
     return {
       terminate,
-      total: totalLectiiReale,
-      progresProcent: totalLectiiReale > 0 ? (terminate / totalLectiiReale) * 100 : 0
+      total: totalLectii,
+      progresProcent: totalLectii > 0 ? (terminate / totalLectii) * 100 : 0
     };
   };
 
@@ -86,7 +113,7 @@ export function AuthProvider({ children }) {
     const userRef = doc(db, 'users', currentUser.uid);
     try {
       await updateDoc(userRef, {
-        [`progres.${idLectie}`]: { terminatLa: new Date(), status: 'complet' }
+        [`progres.${idLectie}`]: { terminatLa: serverTimestamp(), status: 'complet' }
       });
     } catch (error) {
       console.error("Eroare la salvarea progresului:", error);
@@ -98,41 +125,69 @@ export function AuthProvider({ children }) {
 
     const userRef = doc(db, 'users', currentUser.uid);
     const azi = new Date().toLocaleDateString("en-US");
+    
     const streakCurent = currentUser.streakCount || 0;
     const ultimaLogare = currentUser.lastLoginDate;
     const freezesDisponibile = currentUser.streakFreezes || 0;
+
     let noulStreak = streakCurent;
     let freezesNoi = freezesDisponibile;
 
-    if (!ultimaLogare) 
+    if (!ultimaLogare) {
+      // Prima logare din istoria contului
       noulStreak = 1;
-    else if (ultimaLogare === azi) 
+    } else if (ultimaLogare === azi) {
+      // S-a logat deja azi, nu facem modificări structurale
       return;
-    else {
+    } else {
       const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      if (diffZile === 1) 
+      if (diffZile === 1) {
+        // Logare consecutivă (ziua următoare)
         noulStreak += 1;
-      else if (diffZile > 1) {
+      } else if (diffZile > 1) {
+        // A trecut mai mult de o zi de la ultima logare
         if (freezesDisponibile > 0) {
           freezesNoi -= 1; 
-          noulStreak = streakCurent + 1; 
-          alert("Aproape ai pierdut streak-ul! Un 'Streak Freeze' a fost consumat automat pentru a te salva.");
+          noulStreak = streakCurent; // Își păstrează streak-ul neatins datorită scutului
+          
           try {
             await updateDoc(userRef, { streakFreezes: freezesNoi });
+            
+            await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
+              type: "streak_inghetat",
+              text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`,
+              read: false,
+              createdAt: serverTimestamp()
+            });
           } catch (e) {
-            console.error("Eroare la scădere freeze:", e);
+            console.error("Eroare trimitere notificare freeze:", e);
           }
-        } else 
+        } else {
+          // Nu are scuturi, streak-ul se resetează la 1 pentru ziua curentă
           noulStreak = 1; 
+          
+          if (streakCurent > 0) {
+            try {
+              await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
+                type: "streak_pierdut",
+                text: ` Ai lipsit prea mult! Din păcate ai pierdut streak-ul tău de ${streakCurent} zile. Capul sus, hai să începem unul nou azi!`,
+                read: false,
+                createdAt: serverTimestamp()
+              });
+            } catch (e) {
+              console.error("Eroare trimitere notificare streak pierdut:", e);
+            }
+          }
+        }
       }
     }
 
     try {
       await setDoc(userRef, { streakCount: noulStreak, lastLoginDate: azi }, { merge: true });
     } catch (error) {
-      console.error("Eroare la actualizarea streak-ului:", error);
+      console.error("Eroare la scrierea streak-ului:", error);
     }
   };
 
@@ -404,10 +459,22 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // Funcția mutată aici pentru a putea fi apelată condiționat
+    const preiaTotalLectii = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'lectii'));
+        setTotalLectii(querySnapshot.size);
+      } catch (error) {
+        console.error("Eroare la preluarea numărului total de lecții:", error);
+      }
+    };
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const userRef = doc(db, 'users', user.uid);
+        // 🔐 Executăm citirea doar ACUM, pentru că știm sigur că user-ul este logat
+        preiaTotalLectii();
 
+        const userRef = doc(db, 'users', user.uid);
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const isDev = user.email === "smmaria@gmail.com";
@@ -425,9 +492,11 @@ export function AuthProvider({ children }) {
         return () => unsubscribeDb();
       } else {
         setCurrentUser(null);
+        setTotalLectii(0); // Resetăm la 0 dacă se dă logout
         setLoading(false);
       }
     });
+
     return unsubscribeAuth;
   }, []);
 

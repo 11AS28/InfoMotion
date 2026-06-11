@@ -27,7 +27,8 @@
     "react-router-sitemap-maker": "^1.1.0",
     "react-simple-wysiwyg": "^3.4.1",
     "sonner": "^2.0.7",
-    "use-streak": "^1.0.4"
+    "use-streak": "^1.0.4",
+    "web-haptics": "^0.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

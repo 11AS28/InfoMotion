@@ -7,10 +7,12 @@ import { Toaster, toast } from 'sonner';
 import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
+import { useWebHaptics } from "web-haptics/react";
 
 function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const navigate = useNavigate();
+  const { trigger } = useWebHaptics();
   
   const [problems, setProblems] = useState({
     easy: { titlu: "Watermelon (Rating: 800)", link: "https://codeforces.com/problemset/problem/4/A", idCF: "4A" },
@@ -29,6 +31,24 @@ function Arena({ datePreincarcate }) {
 
   const [currentPage, setCurrentPage] = useState(1);
   const solversPerPage = 5;
+
+  // Pattern pentru erori, atenționări sau lipsă date
+  const triggerErrorHaptic = () => {
+    trigger([
+      { duration: 40, intensity: 0.7 },
+      { delay: 40, duration: 40, intensity: 0.7 },
+      { delay: 40, duration: 40, intensity: 0.9 },
+      { delay: 40, duration: 50, intensity: 0.6 },
+    ]);
+  };
+
+  // Pattern-ul tău personalizat pentru succes (Când totul este OK)
+  const triggerSuccessHaptic = () => {
+    trigger([
+      { duration: 30 },
+      { delay: 60, duration: 40, intensity: 1 },
+    ]);
+  };
 
   const getSafeDateString = () => {
     const now = new Date();
@@ -119,6 +139,7 @@ function Arena({ datePreincarcate }) {
 
   const handleSolve = async (dificultateTinta) => {
     if (!currentUser || !currentUser.uid) {
+      triggerErrorHaptic();
       toast.error("Eroare de autentificare!");
       return;
     }
@@ -127,6 +148,7 @@ function Arena({ datePreincarcate }) {
 
     const hasSolvedThisOne = solvers.some(s => s.uid === currentUser.uid && s.dificultate === dificultateTinta);
     if (hasSolvedThisOne) {
+      triggerErrorHaptic();
       toast.warning("Ai rezolvat deja această problemă!");
       return;
     }
@@ -148,8 +170,10 @@ function Arena({ datePreincarcate }) {
           else if (dificultateTinta === 'medium') puncteDeAcordat = esteInPrimii3 ? 50 : 40;
           else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
           await acordaPuncte(puncteDeAcordat);
+          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes
           toast.success(`Felicitări! Ai primit +${puncteDeAcordat} XP!`, { id: idValidare });
         } else {
+          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes (antrenament validat)
           toast.info("Antrenament privat validat!", { id: idValidare });
         }
         
@@ -169,30 +193,33 @@ function Arena({ datePreincarcate }) {
         setUserBadgesMap(prev => ({ ...prev, [currentUser.uid]: numarCurentProbleme }));
         setSolvers(prev => [...prev, nouSolver]);
       } else {
+        triggerErrorHaptic();
         toast.error("Submisie neidentificată pe Codeforces (trebuie să fie OK)!", { id: idValidare });
       }
     } catch (error) {
+      triggerErrorHaptic();
       toast.error("Eroare de sistem.", { id: idValidare });
     } finally {
       setIsChecking(false);
     }
   };
 
-  // FUNCȚIA NOUĂ: Verifică orice problemă introdusă manual din Codeforces
   const handleVerifyCustomProblem = async () => {
     const idCurat = customProblemId.trim().toUpperCase();
     if (!idCurat) {
+      triggerErrorHaptic();
       toast.error("Introdu un ID valid! (ex: 4A, 158B, 1920A)");
       return;
     }
     if (!currentUser?.codeforcesHandle) {
+      triggerErrorHaptic();
       toast.error("Setează-ți Codeforces Handle-ul în profil mai întâi!");
       return;
     }
 
-    // Verificăm istoricul din profil ca să nu ia puncte de 2 ori pe aceeași problemă liberă
     const istoricCustom = currentUser.problemeCustomRezolvate || [];
     if (istoricCustom.includes(idCurat)) {
+      triggerErrorHaptic();
       toast.warning("Ai obținut deja puncte pentru problema asta pe InfoMotion!");
       return;
     }
@@ -203,23 +230,24 @@ function Arena({ datePreincarcate }) {
     try {
       const gasitSubmisieOk = await verificaProblemaCodeforces(idCurat);
       if (gasitSubmisieOk) {
-        // Alocăm un număr fix de puncte, de exemplu 15 XP pentru probleme la alegere
         const xpDeOferit = 15;
         await acordaPuncte(xpDeOferit);
 
-        // Adăugăm problema în array-ul de istoric din documentul utilizatorului
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
           problemeCustomRezolvate: arrayUnion(idCurat),
           problemeRezolvateCount: increment(1)
         });
 
+        triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes liber
         toast.success(`Validat! +${xpDeOferit} XP adăugați pentru problema ${idCurat}.`, { id: idToast });
         setCustomProblemId('');
       } else {
+        triggerErrorHaptic();
         toast.error(`Nu s-a găsit nicio rezolvare cu statusul "OK" pe Codeforces pentru ${idCurat}.`, { id: idToast });
       }
     } catch (err) {
+      triggerErrorHaptic();
       toast.error("Eroare la conectarea cu API-ul.", { id: idToast });
     } finally {
       setIsCheckingCustom(false);
@@ -261,6 +289,7 @@ function Arena({ datePreincarcate }) {
               </button>
             </div>
           </div>
+          
           
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
