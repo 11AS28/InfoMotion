@@ -48,26 +48,25 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     setLoading(false);
   };
 
-  const handleCheckQuiz = async () => {
-    if (answers.includes(null)) 
-      return alert("Răspunde la toate întrebările!");
+ const handleCheckQuiz = async () => {
+  if (answers.includes(null)) 
+    return alert("Răspunde la toate întrebările!");
 
-    const inimiCurente = currentUser.inimi ?? 3;
+  const inimiCurente = currentUser?.hearts ?? 3;
 
-    if(inimiCurente <= 0) {
-      alert("Nu mai ai inimi active! Cumpără un Refill din Marketplace sau așteaptă 24h.");
-      return;
-    }
+  if (inimiCurente <= 0) {
+    alert("Nu mai ai inimi active! Cumpără un Refill din Marketplace sau așteaptă 24h.");
+    return;
+  }
 
-    setIsQuizChecked(true);
+  setIsQuizChecked(true);
 
-    const gresite = quizData.length - answers.filter((ans, idx) => ans === quizData[idx].corect).length;
+  const gresite = quizData.length - answers.filter((ans, idx) => ans === quizData[idx].corect).length;
 
-
-    if (gresite > 0) {
-      await scadeInima(gresite);
-    }
-  };
+  if (gresite > 0) {
+    await scadeInima(1); 
+  }
+};
 
  return (
     <div className="modal-overlay">
