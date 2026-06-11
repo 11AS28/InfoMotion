@@ -61,7 +61,7 @@
 .modal-content h3 {
   font-size: 1.5rem;
   color: var(--text-primary);
-  margin-bottom: 25px;
+  margin-bottom: px;
   display: flex;
   align-items: center;
   gap: 10px;

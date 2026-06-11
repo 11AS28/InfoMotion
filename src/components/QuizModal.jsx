@@ -4,12 +4,14 @@ import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import '../components_css/QuizModal.css';
 
-
 function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   const [answers, setAnswers] = useState(Array(5).fill(null));
   const [isQuizChecked, setIsQuizChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const { currentUser, acordaPuncte, scadeInima } = useAuth();
+
+  // O singură sursă de adevăr pentru inimi, cu fallback stabil la 3
+  const inimiCurente = currentUser?.hearts ?? 3;
 
   const answeredCount = answers.filter(ans => ans !== null).length;
   const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
@@ -32,15 +34,11 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     try {
       const userRef = doc(db, 'users', currentUser.uid);
       
-     
       await updateDoc(userRef, { 
         lectiiTerminate: arrayUnion(lessonId) 
       });
       
-      
       await acordaPuncte('quiz'); 
-      
-      
       onFinished(); 
     } catch (e) {
       alert("Eroare la salvarea progresului: " + e.message);
@@ -48,45 +46,42 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     setLoading(false);
   };
 
- const handleCheckQuiz = async () => {
-  if (answers.includes(null)) 
-    return alert("Răspunde la toate întrebările!");
+  const handleCheckQuiz = async () => {
+    if (answers.includes(null)) 
+      return alert("Răspunde la toate întrebările!");
 
-  const inimiCurente = currentUser?.hearts ?? 3;
+    if (inimiCurente <= 0) {
+      alert("Nu mai ai inimi active! Cumpără un Refill din Marketplace sau așteaptă 24h.");
+      return;
+    }
 
-  if (inimiCurente <= 0) {
-    alert("Nu mai ai inimi active! Cumpără un Refill din Marketplace sau așteaptă 24h.");
-    return;
-  }
+    setIsQuizChecked(true);
 
-  setIsQuizChecked(true);
+    const gresite = quizData.length - answers.filter((ans, idx) => ans === quizData[idx].corect).length;
 
-  const gresite = quizData.length - answers.filter((ans, idx) => ans === quizData[idx].corect).length;
+    if (gresite > 0) {
+      await scadeInima(1); 
+    }
+  };
 
-  if (gresite > 0) {
-    await scadeInima(1); 
-  }
-};
-
- return (
+  return (
     <div className="modal-overlay">
       <div className="modal-content">
         <button className="close-x" onClick={onClose}>&times;</button>
         
         <div className="quiz-step">
           <h3>Quiz Finalizare ({answeredCount}/{quizData.length})</h3>
-          
-          {/* AFIȘAREA INIMILOR */}
-          <div className="hearts-indicator" style={{ fontSize: '18px', marginBottom: '15px', textAlign: 'center' }}>
-            Inimi rămase: {Array.from({ length: Math.max(0, currentUser?.hearts ?? 3) }).map((_, i) => (
-              <span key={i} style={{ color: '#fa5252', marginRight: '4px' }}>❤️</span>
+          <p>Finalizeaza lecția pentru a primi cele 10 puncte!</p>
+          <p>Daca răspunzi greșit, vei pierde o inimă. Fiecare inima se regenereaza la 24h.</p>
+          <br />
+          <div className="hearts-indicator" style={{ fontSize: '18px', marginBottom: '15px', textAlign: 'left' }}>
+            Inimi rămase: {Array.from({ length: Math.max(0, inimiCurente) }).map((_, i) => (
+              <span key={i} style={{ color: '#fa5252', marginRight: '4px', textAlign: 'left' }}>❤️</span>
             ))}
-            {(currentUser?.hearts ?? 0) <= 0 && <span style={{ color: '#fa5252', fontWeight: 'bold' }}>💔 Ai rămas fără inimi!</span>}
+            {inimiCurente <= 0 && <span style={{ color: '#fa5252', fontWeight: 'bold' }}>💔 Ai rămas fără inimi!</span>}
           </div>
 
-          {/* LOGICA BUTOANELOR COMPACTATĂ CORECT */}
-          {(currentUser?.hearts ?? 0) <= 0 ? (
-            // DACĂ NU MAI ARE INIMI, ÎL BLOCĂM COMPLET
+          {inimiCurente <= 0 ? (
             <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(250, 82, 82, 0.1)', borderRadius: '8px' }}>
               <p style={{ color: '#fa5252', fontWeight: 'bold' }}>
                 Nu mai poți continua acest quiz deoarece ai 0 inimi. 
@@ -99,7 +94,6 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
               </button>
             </div>
           ) : (
-            // DACĂ ARE INIMI, MERGEM PE FLUXUL NORMAL -> Am pus <> (Fragment) ca să grupăm elementele
             <>
               {quizData.map((q, qIdx) => (
                 <div key={qIdx} className="q-block">

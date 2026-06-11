@@ -22,16 +22,16 @@ export default function Marketplace() {
 
   // Definim Pachetele de Inimi (exact prețurile tale)
   const pacheteInimi = [
-    { id: 'heart_1', name: 'O Inimă', qty: 1, price: 50, icon: '❤️', desc: 'Refill rapid pentru o singură greșeală în quiz.' },
-    { id: 'heart_2', name: 'Pachet Mic Inimi', qty: 2, price: 100, icon: '❣️', desc: 'Siguranță dublă. Perfect pentru lecțiile mai grele.' },
-    { id: 'heart_3', name: 'Pachet Maxim Inimi', qty: 3, price: 120, icon: '💖', desc: 'Full Refill cu reducere! Te încarcă complet la maxim.' }
+    { id: 'heart_1', name: 'Bandage Pack', qty: 1, price: 50, icon: '❤️', desc: 'Refill rapid pentru o singură greșeală în quiz.' },
+    { id: 'heart_2', name: 'First Aid Kit', qty: 2, price: 100, icon: '❣️', desc: 'Siguranță dublă. Perfect pentru lecțiile mai grele.' },
+    { id: 'heart_3', name: 'Med Kit', qty: 3, price: 120, icon: '💖', desc: 'Full Refill cu reducere! Te încarcă complet la maxim.' }
   ];
 
   // Definim Pachetele de Streak Freeze (exact prețurile tale)
   const pacheteStreak = [
-    { id: 'streak_1', name: 'Scut Simplu', qty: 1, price: 150, icon: '❄️', desc: 'Îți salvează streak-ul pentru o singură zi de pauză.' },
-    { id: 'streak_3', name: 'Pachet 3 Scuturi', qty: 3, price: 430, icon: '🥶', desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
-    { id: 'streak_5', name: 'Mega Scut Pack', qty: 5, price: 610, icon: '🏔️', desc: 'Protecție maximă pe termen lung. Cel mai bun raport preț.' }
+    { id: 'streak_1', name: 'Streak Guard', qty: 1, price: 150, icon: '❄️', desc: 'Îți salvează streak-ul pentru o singură zi de pauză.' },
+    { id: 'streak_3', name: 'Pachet 3 Streak Guard', qty: 3, price: 430, icon: '🥶', desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
+    { id: 'streak_5', name: 'Mega Streak Guard Pack', qty: 5, price: 610, icon: '🏔️', desc: 'Protecție maximă pe termen lung. Cel mai bun raport preț.' }
   ];
 
   const pacheteTitluri = [
