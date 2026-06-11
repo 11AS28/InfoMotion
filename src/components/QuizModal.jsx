@@ -54,9 +54,6 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
 
     const inimiCurente = currentUser.inimi ?? 3;
 
-    if(inimiCurente === 3) 
-      return;
-
     if(inimiCurente <= 0) {
       alert("Nu mai ai inimi active! Cumpără un Refill din Marketplace sau așteaptă 24h.");
       return;
