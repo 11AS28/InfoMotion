@@ -275,7 +275,6 @@ function Arena({ datePreincarcate }) {
         </div>
 
         <div className="arena-grid-layout">
-          {/* Card Easy */}
           <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-easy"> Easy</span>
