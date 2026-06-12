@@ -35,7 +35,6 @@ function App() {
   const isAdminPage = location.pathname === '/admin';
   const epagadmin = location.pathname === '/adminusers';
   
-  // Verificăm dacă suntem pe pagina compilatorului ca să ascundem Nav și Footer și să scoatem padding-ul de sus!
   const isCompilerPage = location.pathname.startsWith('/compiler');
 
   return (
@@ -124,7 +123,6 @@ function App() {
         </main>
 
          <Online/>
-        {/* Ascundem footer-ul pe admin și pe compiler */}
         {!isAdminPage && !epagadmin && !isCompilerPage && <Footer />}
         
       </AuthProvider>
