@@ -470,13 +470,9 @@ const getStatistici = () => {
           const dateLectii = JSON.parse(cachedLectii);
           setLectii(dateLectii);
           setTotalLectii(dateLectii.length);
-          // 🟢 LOG PENTRU PROFILUL OPTIMIZAT:
-          console.log("%c🚀 [INFO MOTION CACHE]: Datele vin din LocalStorage! CITIRI FIREBASE = 0", "color: #00ff00; font-weight: bold; font-size: 14px;");
           return;
         }
 
-        // 🔴 LOG PENTRU PRIMA CITIRE DIN FIRESTORE:
-        console.log("%c🔥 [INFO MOTION FIRESTORE]: Cache gol! Se descarcă din Firebase... Se contorizează citiri!", "color: #ff0000; font-weight: bold; font-size: 14px;");
         const querySnapshot = await getDocs(collection(db, 'lectii'));
         const listaLectii = [];
 
@@ -495,7 +491,6 @@ const getStatistici = () => {
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // 🔐 Se execută verificarea/încărcarea doar dacă utilizatorul este logat
         preiaSiIncarcaLectii();
 
         const userRef = doc(db, 'users', user.uid);
