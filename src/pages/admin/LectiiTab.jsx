@@ -29,6 +29,8 @@ export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPas
         throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
       }
 
+      localStorage.removeItem("infoMotion_lectii");
+
       toast.success('Lecție ștearsă cu succes prin API! 🗑️');
       onRefresh();
     } catch (e) {

@@ -116,7 +116,8 @@ export default function AdaugaTab({
         throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
       }
 
-      // Trimitere notificare dacă este o propunere aprobată de la un elev
+      localStorage.removeItem("infoMotion_lectii");
+
       if (propunereInCurs) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {

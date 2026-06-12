@@ -38,6 +38,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [totalLectii, setTotalLectii] = useState(0);
 
+  const [lectii, setLectii] = useState([]);
+
   const updateCodeforcesHandle = async (handle) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
@@ -458,21 +460,43 @@ const getStatistici = () => {
     }
   };
 
-  useEffect(() => {
-    // Funcția mutată aici pentru a putea fi apelată condiționat
-    const preiaTotalLectii = async () => {
+ useEffect(() => {
+    // 🚀 Funcția optimizată care se ocupă de numărare și stocare inteligentă
+    const preiaSiIncarcaLectii = async () => {
       try {
+        const cachedLectii = localStorage.getItem("infoMotion_lectii");
+
+        if (cachedLectii) {
+          const dateLectii = JSON.parse(cachedLectii);
+          setLectii(dateLectii);
+          setTotalLectii(dateLectii.length);
+          // 🟢 LOG PENTRU PROFILUL OPTIMIZAT:
+          console.log("%c🚀 [INFO MOTION CACHE]: Datele vin din LocalStorage! CITIRI FIREBASE = 0", "color: #00ff00; font-weight: bold; font-size: 14px;");
+          return;
+        }
+
+        // 🔴 LOG PENTRU PRIMA CITIRE DIN FIRESTORE:
+        console.log("%c🔥 [INFO MOTION FIRESTORE]: Cache gol! Se descarcă din Firebase... Se contorizează citiri!", "color: #ff0000; font-weight: bold; font-size: 14px;");
         const querySnapshot = await getDocs(collection(db, 'lectii'));
+        const listaLectii = [];
+
+        querySnapshot.forEach((doc) => {
+          listaLectii.push({ id: doc.id, ...doc.data() });
+        });
+
+        localStorage.setItem("infoMotion_lectii", JSON.stringify(listaLectii));
+        
+        setLectii(listaLectii);
         setTotalLectii(querySnapshot.size);
       } catch (error) {
-        console.error("Eroare la preluarea numărului total de lecții:", error);
+        console.error("Eroare:", error);
       }
     };
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // 🔐 Executăm citirea doar ACUM, pentru că știm sigur că user-ul este logat
-        preiaTotalLectii();
+        // 🔐 Se execută verificarea/încărcarea doar dacă utilizatorul este logat
+        preiaSiIncarcaLectii();
 
         const userRef = doc(db, 'users', user.uid);
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
@@ -492,7 +516,8 @@ const getStatistici = () => {
         return () => unsubscribeDb();
       } else {
         setCurrentUser(null);
-        setTotalLectii(0); // Resetăm la 0 dacă se dă logout
+        setLectii([]); // Resetăm array-ul
+        setTotalLectii(0);
         setLoading(false);
       }
     });
@@ -578,6 +603,7 @@ const getStatistici = () => {
   const value = {
     currentUser,
     login,
+    lectii,
     signup,
     logout,
     loginWithGoogle,

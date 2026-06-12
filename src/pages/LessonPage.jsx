@@ -102,43 +102,38 @@ function LessonPage() {
       }
 
       try {
-        const docRef = doc(db, "lectii", idLectie);
-        const docSnap = await getDoc(docRef);
+        // 1. Luăm mega-cache-ul global pe care l-am creat în AuthContext
+        const cachedLessonsRaw = localStorage.getItem('infoMotion_lectii');
+        
+        if (cachedLessonsRaw) {
+          const toateLectiile = JSON.parse(cachedLessonsRaw);
 
-        if (docSnap.exists()) {
-          const dateLectie = docSnap.data();
-          if (isMounted) setLectie(dateLectie);
+          // 2. Găsim lecția curentă direct în cache după ID (Slug) -> 0 Citiri Firestore!
+          const lectieGasita = toateLectiile.find(l => l.id === idLectie);
 
-          const cachedLessonsRaw = localStorage.getItem('infomotion_lessons_cache');
-          let gasitInCache = false;
+          if (lectieGasita) {
+            if (isMounted) setLectie(lectieGasita);
 
-          if (cachedLessonsRaw) {
-            const toateLectiile = JSON.parse(cachedLessonsRaw);
-            const filtrateLocal = toateLectiile.filter(l => l.clasa === dateLectie.clasa);
-            if (filtrateLocal.length > 0) {
-              if (isMounted) setToateLectiileDinClasa(filtrateLocal);
-              gasitInCache = true;
-            }
-          }
-
-          if (!gasitInCache && dateLectie.clasa) {
-            const q = query(collection(db, "lectii"), where("clasa", "==", dateLectie.clasa));
-            const querySnapshot = await getDocs(q);
-            const lista = [];
-            querySnapshot.forEach((d) => {
-              lista.push({ id: d.id, ...d.data() });
-            });
-            if (isMounted) setToateLectiileDinClasa(lista);
-          }
-
-          if (currentUser) {
-            const terminate = currentUser.lectiiTerminate || [];
-            const gasit = terminate.some(id => String(id) === String(idLectie));
-            if (isMounted) setEsteGata(gasit);
+            // 3. Filtrăm tot local lecțiile din aceeași clasă pentru Sidebar -> 0 Citiri Firestore!
+            const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
+            if (isMounted) setToateLectiileDinClasa(filtrateLocal);
+          } else {
+            console.error("Lecția nu a fost găsită în cache-ul local!");
           }
         } else {
-          console.error("Lecția nu a fost găsită!");
+          // Fallback de siguranță extreme în caz că cineva a șters manual cache-ul
+          const docRef = doc(db, "lectii", idLectie);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && isMounted) setLectie(docSnap.data());
         }
+
+        // 4. Verificăm dacă lecția e terminată (rămâne neschimbat)
+        if (currentUser) {
+          const terminate = currentUser.lectiiTerminate || [];
+          const gasit = terminate.some(id => String(id) === String(idLectie));
+          if (isMounted) setEsteGata(gasit);
+        }
+
       } catch (error) {
         console.error("Eroare la încărcarea datelor:", error);
       } finally {
