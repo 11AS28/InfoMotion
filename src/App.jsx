@@ -24,6 +24,9 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
+import EmailNotVerified from './pages/EmailNotVerified';
+
+import ProtectedRoute from './routes/ProtectedRoute';
 
 import './theme.css';
 
@@ -104,27 +107,34 @@ function App() {
             <Route
               path="/lectii"
               element={
+              <ProtectedRoute>
                 <PrivateRoute>
                   <Lectii />
                 </PrivateRoute>
+              </ProtectedRoute>
+                
               }
             />
 
             <Route
               path="/arena"
               element={
+              <ProtectedRoute>
                 <PrivateRoute>
                   <Clasament />
                 </PrivateRoute>
+              </ProtectedRoute>
               }
             />
 
             <Route
               path="/lectie/:idLectie"
               element={
+              <ProtectedRoute>
                 <PrivateRoute>
                   <LessonPage />
                 </PrivateRoute>
+              </ProtectedRoute>
               }
             />
 
@@ -141,9 +151,11 @@ function App() {
             <Route 
               path="/marketplace" 
               element={
+              <ProtectedRoute>
                 <PrivateRoute>
                   <Marketplace />
                 </PrivateRoute>
+              </ProtectedRoute>
               } 
             />
 
@@ -154,6 +166,19 @@ function App() {
                 <PrivateRoute requiredRole="teacher">
                   <TrimiteLectii />
                 </PrivateRoute>
+              }
+            />
+
+
+          {/* RUTĂ VERIFICARE EMAIL */}
+            <Route
+              path="/verifica-email"
+              element=
+              { <div>
+                <Nav />
+                <EmailNotVerified />
+                <Footer />
+              </div>
               }
             />
 
