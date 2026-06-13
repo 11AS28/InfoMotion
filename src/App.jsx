@@ -1,8 +1,7 @@
-// App.js modificat
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, matchPath } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { SpeedInsights } from "@vercel/speed-insights/react"
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster, toast } from 'sonner';
 
 import Nav from './components/nav';
@@ -11,7 +10,6 @@ import PrivateRoute from './components/PrivateRoute';
 import Arena from './components/Arena';
 import CompilerPage from './components/CompilatorTab';
 import Online from './components/online';
-
 
 import MainPage from './pages/mainpage';
 import Contact from './pages/contact';
@@ -29,27 +27,53 @@ import Marketplace from './pages/Marketplace';
 
 import './theme.css';
 
+const SECRET = '/panou-secret-infomotion-77x';
+const SECRETU = '/panou-secret-users-99x';
+
 function App() {
   const location = useLocation();
 
-  const isAdminPage = location.pathname === '/admin';
-  const epagadmin = location.pathname === '/adminusers';
-  
+  const validPaths = [
+    '/',
+    '/auth',
+    '/contact',
+    '/despre',
+    '/termeni',
+    '/confidentialitate',
+    '/lectii',
+    '/arena',
+    '/marketplace',
+    '/trimite-lectie',
+    SECRET,
+    SECRETU,
+  ];
+
+  const isDynamicRouteValid = 
+    matchPath('/lectie/:idLectie', location.pathname) || 
+    matchPath('/compiler/:idLectie', location.pathname);
+
+  // 3. Dacă nu e în listă și nu e nici rută dinamică validă, înseamnă că E PAGINĂ 404!
+  const is404Page = !validPaths.includes(location.pathname) && !isDynamicRouteValid;
+
+  // Paginile specifice unde ascundeai deja elementele
+  const isAdminPage = location.pathname === SECRET;
+  const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
 
   return (
     <ThemeProvider>
       <AuthProvider>
+        <Toaster richColors position="top-right" />
         
-        
-        {/* Ascundem navigația pe admin și pe compiler */}
-        {!isAdminPage && !epagadmin && !isCompilerPage && <Nav />}
+        {/* Navigația DISPARE dacă suntem pe admin, compiler SAU pe o pagină 404 */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Nav />}
         
         <main style={{ 
           minHeight: '100vh', 
-          paddingTop: isAdminPage || epagadmin || isCompilerPage ? '0' : '85px' 
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
         }}>
           <Routes>
+            {/* RUTE PUBLICE */}
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
@@ -57,8 +81,26 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
 
-            <Route path="/admin" element={<Admin />} />
+            {/* RUTELE DE ADMIN SECRETE ȘI PROTEJATE DUR */}
+            <Route
+              path={SECRET}
+              element={
+                <PrivateRoute requiredRole="admin">
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
 
+            <Route
+              path={SECRETU}
+              element={
+                <PrivateRoute requiredRole="admin">
+                  <AdminUsers />
+                </PrivateRoute>
+              }
+            />
+
+            {/* RUTE UTILIZATORI LOGAȚI */}
             <Route
               path="/lectii"
               element={
@@ -86,7 +128,7 @@ function App() {
               }
             />
 
-            {/* RUTA NOUĂ PENTRU TABUL SEPARAT DE COD */}
+            {/* RUTĂ COMPILER TAB SEPARAT */}
             <Route
               path="/compiler/:idLectie"
               element={
@@ -96,20 +138,16 @@ function App() {
               }
             />
 
-              <Route path="/marketplace" element={
-               <PrivateRoute>
-                <Marketplace />
-                </PrivateRoute>
-                } />
-
-            <Route
-              path="/adminusers/"
+            <Route 
+              path="/marketplace" 
               element={
                 <PrivateRoute>
-                  <AdminUsers />
+                  <Marketplace />
                 </PrivateRoute>
-              }
+              } 
             />
+
+            {/* RUTĂ PROFESORI */}
             <Route
               path="/trimite-lectie"
               element={
@@ -118,12 +156,84 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* RUTA FALLBACK 404 */}
+            <Route 
+              path="*" 
+              element={
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  minHeight: '85vh',
+                  color: '#ffffff',
+                  fontFamily: 'sans-serif',
+                  textAlign: 'center',
+                  padding: '20px'
+                }}>
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', opacity: 0.85
+                  }}>
+                    <img 
+                      src="/logo-infomotion.svg?v=2" 
+                      alt="InfoMotion Logo" 
+                      style={{ width: '42px', height: 'auto', display: 'block' }} 
+                    />
+                    <span style={{ 
+                      fontSize: '1.6rem', fontWeight: '600', letterSpacing: '-0.5px' 
+                    }}>
+                      InfoMotion<span style={{ color: '#00f3ff', fontWeight: 'bold' }}>.</span>
+                    </span>
+                  </div>
+
+                  <h1 style={{ 
+                    fontSize: '6rem', fontWeight: '800', letterSpacing: '-2px',
+                    margin: '0 0 10px 0', background: 'linear-gradient(180deg, #ffffff 0%, #3a4750 100%)',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                  }}>
+                    404
+                  </h1>
+                  
+                  <p style={{ 
+                    color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0' 
+                  }}>
+                    Pagina pe care o cauți nu există, a fost ștearsă sau mutată într-o zonă securizată.
+                  </p>
+
+                  <a 
+                    href="/" 
+                    style={{
+                      color: '#00f3ff',
+                      textDecoration: 'none',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      border: '1px solid rgba(0, 243, 255, 0.2)',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(0, 243, 255, 0.03)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.6)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.03)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.2)';
+                    }}
+                  >
+                    Înapoi la pagina principală
+                  </a>
+                </div>
+              } 
+            />
           </Routes>
-        
         </main>
 
-         <Online/>
-        {!isAdminPage && !epagadmin && !isCompilerPage && <Footer />}
+        <Online />
+        {/* Footer-ul rămâne peste tot, mai puțin pe admin și compiler (cum ai vrut tu) */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
         
       </AuthProvider>
       <SpeedInsights />
