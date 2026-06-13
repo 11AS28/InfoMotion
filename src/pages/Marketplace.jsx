@@ -5,6 +5,7 @@ import CoinIcon from '../components/CoinIcon';
 import '../pages_css/marketplace.css'; 
 import { useWebHaptics } from "web-haptics/react";
 import { Heart, Snowflake, ThermometerSnowflake, MountainSnow} from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 export default function Marketplace() {
   const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
@@ -21,6 +22,8 @@ export default function Marketplace() {
 
   const titluriDeblocate = currentUser?.titluriDeblocate || [];
   const titluEchipat = currentUser?.titluEchipat || "";
+
+  usePageTitle("InfoMotion - Marketplace");
 
   // Pattern pentru erori sau atenționări
   const triggerErrorHaptic = () => {
@@ -230,7 +233,7 @@ export default function Marketplace() {
 
       {/* CATEGORIA 2: PACHETE INIMI */}
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
-        <h2 className="market-section-title">Pachete Inimi Quiz (Actual: {inimiCurente}/3 <Heart size={20} color="#ae1e1e" strokeWidth={1.75} />)</h2>
+        <h2 className="market-section-title">Pachete Inimi Quiz (Actual: {inimiCurente}/3 )</h2>
         <div className="market-section-line"></div>
       </div>
 
@@ -274,7 +277,7 @@ export default function Marketplace() {
 
       {/* CATEGORIA 3: PACHETE STREAK FREEZE */}
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
-        <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 ❄️)</h2>
+        <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 )</h2>
         <div className="market-section-line"></div>
       </div>
 
