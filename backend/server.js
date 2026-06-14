@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const path = require('path'); 
 const crypto = require('crypto'); 
 
-// Importurile pentru simulatoare
+
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
@@ -14,23 +14,24 @@ const { simulateCautareBinaraDivImpJS } = require('./simulators/cautareBinaraDiv
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// Permite doar site-ului tău de pe Vercel să vorbească cu serverul de Render
+
+
 app.use(cors({
-  origin: ['https://info-motion.vercel.app', 'http://localhost:3000'], // Pune aici domeniul tău oficial de Vercel + localhost pentru când testezi local
+  origin: ['https://info-motion.vercel.app', 'http://localhost:3000'], 
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));         
 app.use(express.json());  
 
-// =========================================================================
-// RUTA 1: Pentru animații (Neschimbată)
-// =========================================================================
+
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithmType, inputData } = req.body;
-    if (!inputData || !Array.isArray(inputData)) {
+    
+    if (!inputData || !Array.isArray(inputData)) 
       return res.status(400).json({ error: "Datele de intrare lipsesc sau sunt invalide!" });
-    }
+    
+
     let steps = [];
     switch (algorithmType) {
       case 'bubbleSort':
@@ -54,27 +55,21 @@ app.post('/api/simulate', async (req, res) => {
   }
 });
 
-// =========================================================================
-// RUTA 2: Super-ruta securizată industrial (Docker Sandbox)
-// =========================================================================
 app.post('/api/run-cpp', (req, res) => {
   const { code, input } = req.body; 
 
-  if (!code) {
+  if (!code) 
     return res.status(400).json({ error: "Nu ai trimis niciun cod!" });
-  }
 
-  // PASUL 1: ID unic și izolat în folderul Linux /tmp
+
   const uniqueId = crypto.randomBytes(8).toString('hex');
   const targetDir = '/tmp'; 
   const fileName = path.join(targetDir, `cod_${uniqueId}.cpp`);
   const exeName = path.join(targetDir, `program_${uniqueId}`);
   const inputFileName = path.join(targetDir, `input_${uniqueId}.txt`);
 
-  // Scriem fișierul de cod local pe server în folderul /tmp
+
   fs.writeFileSync(fileName, code);
-  
-  // Creăm fișierul de input (chiar dacă e gol, ca să nu crape redirectarea < în Docker)
   fs.writeFileSync(inputFileName, input || "");
 
   // PASUL 2: Compilarea inițială direct pe server (pentru viteză)
@@ -89,7 +84,7 @@ app.post('/api/run-cpp', (req, res) => {
         status: "Eroare de compilare",
         error: stderr 
       });
-    }
+    } 
 
     // PASUL 3: CONSTRUIREA CUȘTII DOCKER (Aici se întâmplă magia)
     // --rm                 -> Șterge containerul în milisecunda în care codul s-a oprit
@@ -101,7 +96,7 @@ app.post('/api/run-cpp', (req, res) => {
     const binarContainer = `/sandbox/program_${uniqueId}`;
     const inputContainer = `/sandbox/input_${uniqueId}.txt`;
     
-    const dockerCommand = `docker run --rm --net=none -m 64m --cpus="0.5" -v /tmp:/sandbox infomotion-sandbox sh -c "${binarContainer} < ${inputContainer}"`;
+    const dockerCommand = `docker run --rm --net=none -m 64m --cpus="0.5" -v /tmp:/sandbox infomotion-sandbox sh -c "/usr/bin/time -f 'PERF_STATS MEM:%M TIME:%e' ${binarContainer} < ${inputContainer}"`;
 
     const runBinaryDirectly = () => {
       const fallbackCommand = `${exeName} < ${inputFileName}`;
@@ -214,15 +209,28 @@ app.post('/api/run-cpp', (req, res) => {
         });
       }
 
-      // PASUL E: Totul a rulat impecabil!
+      // PASUL E: Totul e bine
+      const match = runStderr.match(/PERF_STATS MEM:(\d+) TIME:([\d.]+)/);
+
+      let memoriemb = 0;
+      let time = 0;
+
+      if(match) {
+        const memoriekb = parseInt(match[1]);
+        time = parseFloat(match[2]);
+
+        memoriemb = parseFloat((memoriekb / 1024).toFixed(2));
+      }
       return res.json({
         status: "Succes",
-        output: runStdout
+        output: runStdout,
+        memory: memoriemb,
+        time: time
       });
     });
   });
 });
 
 app.listen(PORT, () => {
-    console.log(`Serverul InfoMotion de Ultra-Securitate rulează pe portul ${PORT}`);
+    console.log(`Serverul rulează pe portul ${PORT}`);
 });

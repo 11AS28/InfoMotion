@@ -10,26 +10,21 @@ import { useAuth } from '../context/AuthContext';
 import { customThemes } from './shopItems';  
 import '../components_css/compiler.css';
 
-// --- FUNCȚIE GLOBALĂ DE CURĂȚARE NUME TEMĂ ---
-// Elimină orice caracter care nu este literă sau cifră (ex: "theme_matrix" devine "themematrix")
 const sanitizeThemeName = (name) => {
   if (!name) return 'vsdark';
   return name.replace(/[^a-zA-Z0-9]/g, ''); 
 };
 
-//  INIȚIALIZARE GLOBALĂ A TEMELOR
-// Forțăm Monaco să încarce temele noastre custom în nucleul lui înainte de randarea paginii
 loader.init().then((monacoInstance) => {
   if (customThemes && typeof customThemes === 'object') {
     Object.keys(customThemes).forEach((themeKey) => {
-      // Ignorăm temele native din Monaco
+      
       if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
         return; 
       }
 
       try {
         if (customThemes[themeKey]) {
-          // REPARARE ACUM: Curățăm cheia și la înregistrarea globală ca să nu mai dea crash!
           const cleanKey = sanitizeThemeName(themeKey);
           monacoInstance.editor.defineTheme(cleanKey, customThemes[themeKey]);
         }
@@ -48,6 +43,8 @@ function CompilerPage() {
   const [editorCode, setEditorCode] = useState("");
   const [compilerInput, setCompilerInput] = useState("");
   const [compilerOutput, setCompilerOutput] = useState("");
+  const [executionTime, setExecutionTime] = useState(null);
+  const [executionMemory, setExecutionMemory] = useState(null);
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
 
@@ -199,6 +196,10 @@ function CompilerPage() {
   const handleRunCompilerCode = async () => {
     setLoadingCompiler(true);
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
+
+    setExecutionTime(null);
+    setExecutionMemory(null);
+    
     try {
       const response = await fetch(`${baseUrl}/api/run-cpp`, {
         method: 'POST',
@@ -206,8 +207,13 @@ function CompilerPage() {
         body: JSON.stringify({ code: editorCode, input: compilerInput })
       });
       const data = await response.json();
+
       if (data.status === "Succes") {
         setCompilerOutput(data.output);
+        
+        setExecutionTime(data.time);
+        setExecutionMemory(data.memory);
+
         toast.success("Rulare încheiată cu succes!");
       } else {
         setCompilerOutput(`${data.status}:\n${data.error}`);
@@ -310,6 +316,24 @@ function CompilerPage() {
           {/* Caseta STDOUT */}
           <div className="panel-box" style={{ height: `calc(100% - ${topHeight}px - 8px)` }}>
             <div className="box-header-title">CONSOLĂ REZULTAT (STDOUT)</div>
+            
+            {/* --- MODIFICĂ AICI: ADAUGĂ BARA DE STATISTICI --- */}
+            {executionTime !== null && executionMemory !== null && (
+              <div className="performance-stats-bar" style={{
+                display: 'flex',
+                gap: '15px',
+                padding: '6px 12px',
+                background: '#1e1e2e',
+                borderBottom: '1px solid #2d2d3d',
+                fontFamily: 'monospace',
+                fontSize: '13px',
+                color: '#a6adc8'
+              }}>
+                <span>Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
+                <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
+              </div>
+            )}
+
             <pre className="box-console-output">
               {compilerOutput || "Apasă pe 'Rulează'."}
             </pre>
