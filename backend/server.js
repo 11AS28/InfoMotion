@@ -21,7 +21,7 @@ app.use(cors({
 }));         
 app.use(express.json());  
 
-app.post('/api/simulate', async (req, res) => {
+app.post('api/simulate', async (req, res) => {
   try {
     const { algorithmType, inputData } = req.body;
     
