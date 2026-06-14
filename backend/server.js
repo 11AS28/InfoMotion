@@ -51,7 +51,7 @@ app.post('/api/simulate', async (req, res) => {
   }
 });
 
-app.post('/api/run-cpp', (req, res) => {
+app.post('api/run-cpp', (req, res) => {
   const { code, input } = req.body; 
 
   if (!code) 
