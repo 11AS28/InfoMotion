@@ -1,9 +1,9 @@
 # 1. Luăm o imagine oficială de Node.js (un Linux mini)
 FROM node:18-slim
 
-# 2. Rulăm comenzi de terminal ca să instalăm g++ (exact ca pe Fedora ta)
+# 2. Rulăm comenzi de terminal ca să instalăm g++, build-essential ȘI time
 RUN apt-get update && \
-    apt-get install -y g++ build-essential && \
+    apt-get install -y g++ build-essential time && \
     rm -rf /var/lib/apt/lists/*
 
 # 3. Creăm folderul aplicației în serverul din cloud
