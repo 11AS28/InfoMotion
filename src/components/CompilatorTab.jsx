@@ -330,8 +330,8 @@ function CompilerPage() {
                 color: '#a6adc8'
               }}>{executionTime && executionMemory && (
   <div className="performance-stats-bar">
-    <span>⏱️ Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
-    <span>💾 Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
+    <span>Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
+    <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
   </div>
 )}
               </div>
