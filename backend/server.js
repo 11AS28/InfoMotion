@@ -141,7 +141,9 @@ app.post('/api/run-cpp', (req, res) => {
     // Rulăm executabilul în container cu un timeout strâns de 2000ms (TLE Protection)
     // maxBuffer împiedică blocarea serverului în cazul în care consola dă un text infinit
     exec(dockerCommand, { timeout: 2000, maxBuffer: 1024 * 512 }, (runError, runStdout, runStderr) => {
-      
+      console.log("STDOUT COMPLET:", runStdout);
+console.log("STDERR COMPLET:", runStderr);
+
       const isDockerMissing = runError && (
         runError.code === 127 ||
         (runStderr && (
@@ -210,6 +212,9 @@ app.post('/api/run-cpp', (req, res) => {
       }
 
       // PASUL E: Totul e bine
+console.log("Stderr primit:", JSON.stringify(runStderr)); 
+
+
       const match = runStderr.match(/PERF_STATS MEM:(\d+) TIME:([\d.]+)/);
 
       let memoriemb = 0;
