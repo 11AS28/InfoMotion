@@ -37,9 +37,31 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [totalLectii, setTotalLectii] = useState(0);
-
   const [lectii, setLectii] = useState([]);
 
+  // ─── 🛡️ FUNCȚIE AJUTĂTOARE PENTRU LOGURI DE SECURITATE (VPS / LOCAL) ──────────
+  const trimiteLogSecuritate = async (action, username, message) => {
+  try {
+    // 1. Încearcă să ia URL-ul din variabilele de mediu (Vite folosește import.meta.env în loc de process.env)
+    // 2. Dacă nu găsește nimic, face fallback automat pe origin-ul curent al paginii sau pe localhost:5000
+    const API_URL = import.meta.env?.VITE_API_URL || 
+                    (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+                      ? 'http://localhost:5000' 
+                      : window.location.origin);
+    
+    await fetch(`${API_URL}/api/security-log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        username: username || 'ANONYMOUS',
+        message
+      })
+    });
+  } catch (error) {
+    console.error("Eroare silențioasă la trimiterea logului de securitate:", error);
+  }
+};
   const updateCodeforcesHandle = async (handle) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
@@ -67,8 +89,14 @@ export function AuthProvider({ children }) {
         if (isMatch) {
           const userRef = doc(db, 'users', currentUser.uid);
           await updateDoc(userRef, { codeforcesHandle: handle, cfValidat: true });
+          
+          // 📝 LOG: Validare cu succes
+          await trimiteLogSecuritate('CF_HANDLE_VALIDATED', currentUser.nume, `A asociat cu succes handle-ul Codeforces: [${handle}]`);
           return { success: true };
         }
+        
+        // 🚨 LOG: Încercare eșuată (Posibil ca cineva să încerce să fure contul altui elev)
+        await trimiteLogSecuritate('CF_VALIDATION_FAILED', currentUser.nume, `Tentativă eșuată de asociere pentru handle-ul [${handle}] - Codul secret lipsește din Organization.`);
         return { success: false, error: "Codul nu a fost găsit în câmpul 'Organization'. Ai apăsat 'Save' pe Codeforces?" };
       }
       return { success: false, error: "Handle-ul nu există pe Codeforces." };
@@ -77,24 +105,16 @@ export function AuthProvider({ children }) {
     }
   };
 
-const getStatistici = () => {
+  const getStatistici = () => {
     if (!currentUser) return { terminate: 0, total: totalLectii, progresProcent: 0 };
-
     const progresUser = currentUser.progres || {};
     
     const terminate = Object.keys(progresUser).filter(id => {
       const dateProgres = progresUser[id];
       if (!dateProgres) return false;
-
-      // 1. Verifică formatul standard din marcheazaLectieTerminata (cu status === 'complet')
       if (dateProgres.status === 'complet') return true;
-
-      // 2. Verifică formatul simplu din Quiz (dacă salvezi doar id: true sau id: "complet")
       if (dateProgres === true || dateProgres === 'complet') return true;
-
-      // 3. Verifică dacă există pur și simplu ID-ul acolo (ajută dacă salvezi doar id: { ... })
       if (typeof dateProgres === 'object' && !dateProgres.status) return true;
-
       return false;
     }).length;
 
@@ -117,6 +137,8 @@ const getStatistici = () => {
       await updateDoc(userRef, {
         [`progres.${idLectie}`]: { terminatLa: serverTimestamp(), status: 'complet' }
       });
+      // 📝 LOG OPTIONAL: Să știi când un elev termină o lecție
+      await trimiteLogSecuritate('LESSON_COMPLETED', currentUser.nume, `A terminat lecția cu ID: ${idLectie}`);
     } catch (error) {
       console.error("Eroare la salvarea progresului:", error);
     }
@@ -136,40 +158,35 @@ const getStatistici = () => {
     let freezesNoi = freezesDisponibile;
 
     if (!ultimaLogare) {
-      // Prima logare din istoria contului
       noulStreak = 1;
     } else if (ultimaLogare === azi) {
-      // S-a logat deja azi, nu facem modificări structurale
       return;
     } else {
       const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffZile === 1) {
-        // Logare consecutivă (ziua următoare)
         noulStreak += 1;
       } else if (diffZile > 1) {
-        // A trecut mai mult de o zi de la ultima logare
         if (freezesDisponibile > 0) {
           freezesNoi -= 1; 
-          noulStreak = streakCurent; // Își păstrează streak-ul neatins datorită scutului
+          noulStreak = streakCurent; 
           
           try {
             await updateDoc(userRef, { streakFreezes: freezesNoi });
-            
             await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
               type: "streak_inghetat",
               text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`,
               read: false,
               createdAt: serverTimestamp()
             });
+            // 📝 LOG: Activare freeze
+            await trimiteLogSecuritate('STREAK_FROZEN', currentUser.nume, `S-a activat scutul de streak. Scuturi rămase: ${freezesNoi}`);
           } catch (e) {
             console.error("Eroare trimitere notificare freeze:", e);
           }
         } else {
-          // Nu are scuturi, streak-ul se resetează la 1 pentru ziua curentă
           noulStreak = 1; 
-          
           if (streakCurent > 0) {
             try {
               await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
@@ -178,6 +195,8 @@ const getStatistici = () => {
                 read: false,
                 createdAt: serverTimestamp()
               });
+              // 🚨 LOG: Resetare streak
+              await trimiteLogSecuritate('STREAK_LOST', currentUser.nume, `A pierdut un streak de ${streakCurent} zile.`);
             } catch (e) {
               console.error("Eroare trimitere notificare streak pierdut:", e);
             }
@@ -193,17 +212,33 @@ const getStatistici = () => {
     }
   };
 
-  function logout() { return signOut(auth); }
+  function logout() { 
+    if (currentUser) {
+      trimiteLogSecuritate('USER_LOGOUT', currentUser.nume, 'Utilizatorul s-a delogat manual.');
+    }
+    return signOut(auth); 
+  }
 
   async function login(identificator, password) {
     let emailDeLogare = identificator;
     if (!identificator.includes('@')) {
       const q = query(collection(db, 'users'), where("nume", "==", identificator));
       const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) throw new Error("auth/user-not-found");
+      if (querySnapshot.empty) {
+        await trimiteLogSecuritate('LOGIN_FAILED', identificator, `Tentativă de autentificare cu username inexistent.`);
+        throw new Error("auth/user-not-found");
+      }
       emailDeLogare = querySnapshot.docs[0].data().email;
     }
-    return signInWithEmailAndPassword(auth, emailDeLogare, password);
+    
+    try {
+      const cred = await signInWithEmailAndPassword(auth, emailDeLogare, password);
+      await trimiteLogSecuritate('LOGIN_SUCCESS', identificator, `Autentificare reușită.`);
+      return cred;
+    } catch (err) {
+      await trimiteLogSecuritate('LOGIN_FAILED', identificator, `Parolă greșită la logare.`);
+      throw err;
+    }
   }
 
   async function signup(email, password, username, role = 'student') {
@@ -239,6 +274,10 @@ const getStatistici = () => {
     }
 
     await setDoc(doc(db, 'users', user.uid), userProfile);
+    
+    // 📝 LOG SECURE: Cont nou înregistrat
+    await trimiteLogSecuritate('USER_SIGNUP', username, `Cont nou creat cu succes [Rol: ${role}] [Email: ${email}]`);
+    
     await sendEmailVerification(user);
     return userCredential;
   }
@@ -271,6 +310,9 @@ const getStatistici = () => {
         titluriDeblocate: [],
         titluEchipat: ""
       });
+      await trimiteLogSecuritate('GOOGLE_SIGNUP', user.displayName, `Cont nou înregistrat prin Google.`);
+    } else {
+      await trimiteLogSecuritate('GOOGLE_LOGIN', user.displayName, `Logare reușită prin intermediul Google.`);
     }
     return user;
   }
@@ -279,14 +321,9 @@ const getStatistici = () => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
     const puncteCurente = currentUser.puncte || 0;
 
-    if (puncteCurente < pretTema) {
-      return { success: false, error: "Nu ai destule puncte în portofel!" };
-    }
-
+    if (puncteCurente < pretTema) return { success: false, error: "Nu ai destule puncte în portofel!" };
     const temeDeblocate = currentUser.temeDeblocate || ['theme_default'];
-    if (temeDeblocate.includes(idTema)) {
-      return { success: false, error: "Ai cumpărat deja această temă!" };
-    }
+    if (temeDeblocate.includes(idTema)) return { success: false, error: "Ai cumpărat deja această temă!" };
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
@@ -294,25 +331,21 @@ const getStatistici = () => {
         puncte: increment(-pretTema),
         temeDeblocate: arrayUnion(idTema)
       }, { merge: true });
+      
+      await trimiteLogSecuritate('SHOP_THEME_BUY', currentUser.nume, `A cumpărat tema [${idTema}] pentru ${pretTema} puncte.`);
       return { success: true };
     } catch (error) {
-      console.error("Eroare la cumpărare:", error);
       return { success: false, error: "Eroare la procesarea tranzacției." };
     }
   };
 
   const cumparaInima = async (cantitate, pretInima) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-    
     const inimiCurente = currentUser.hearts ?? 3;
-    if (inimiCurente + cantitate > 3) {
-      return { success: false, error: `Nu poți avea mai mult de 3 inimi! În prezent ai deja ${inimiCurente}.` };
-    }
+    if (inimiCurente + cantitate > 3) return { success: false, error: `Nu poți avea mai mult de 3 inimi!` };
 
     const puncteCurente = currentUser.puncte || 0;
-    if (puncteCurente < pretInima) {
-      return { success: false, error: "Nu ai destule puncte!" };
-    }
+    if (puncteCurente < pretInima) return { success: false, error: "Nu ai destule puncte!" };
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
@@ -320,28 +353,20 @@ const getStatistici = () => {
         puncte: increment(-pretInima),
         hearts: increment(cantitate)
       });
+      await trimiteLogSecuritate('SHOP_HEART_BUY', currentUser.nume, `A cumpărat ${cantitate} inimi.`);
       return { success: true };
     } catch (error) {
-      console.error("Eroare la cumpărare inimă:", error);
       return { success: false, error: "Tranzacție eșuată." };
     }
   };
 
   const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-
     const freezesCurente = currentUser.streakFreezes || 0;
-    if (freezesCurente + cantitate > 6) {
-      return { 
-        success: false, 
-        error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.` 
-      };
-    }
+    if (freezesCurente + cantitate > 6) return { success: false, error: `Nu poți avea mai mult de 6 scuturi Streak Freeze!` };
 
     const puncteCurente = currentUser.puncte || 0;
-    if (puncteCurente < pretFreeze) {
-      return { success: false, error: "Nu ai destule puncte!" };
-    }
+    if (puncteCurente < pretFreeze) return { success: false, error: "Nu ai destule puncte!" };
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
@@ -349,9 +374,9 @@ const getStatistici = () => {
         puncte: increment(-pretFreeze),
         streakFreezes: increment(cantitate)
       });
+      await trimiteLogSecuritate('SHOP_FREEZE_BUY', currentUser.nume, `A cumpărat ${cantitate} scuturi Streak Freeze.`);
       return { success: true };
     } catch (error) {
-      console.error("Eroare la cumpărare Streak Freeze:", error);
       return { success: false, error: "Tranzacție eșuată." };
     }
   };
@@ -361,6 +386,7 @@ const getStatistici = () => {
     const userRef = doc(db, 'users', currentUser.uid);
     try {
       await updateDoc(userRef, { hearts: increment(-cantitate) });
+      await trimiteLogSecuritate('USER_LOST_HEART', currentUser.nume, `A greșit și a pierdut ${cantitate} inimă/inimi.`);
     } catch (error) {
       console.error("Eroare la scădere inimă:", error);
     }
@@ -385,39 +411,31 @@ const getStatistici = () => {
         hearts: noulNumarDeInimi,
         lastHeartRegen: timpNou.toISOString()
       });
+      await trimiteLogSecuritate('HEART_AUTO_REGEN', userDocData.nume, `Inimile s-au regenerat automat la numărul de: ${noulNumarDeInimi}`);
     }
   };
 
   const echipeazaTema = async (idTema) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-
     const temeDeblocate = currentUser.temeDeblocate || ['theme_default'];
-    if (!temeDeblocate.includes(idTema)) {
-      return { success: false, error: "Nu deții această temă!" };
-    }
+    if (!temeDeblocate.includes(idTema)) return { success: false, error: "Nu deții această temă!" };
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
       await setDoc(userRef, { temaEchipata: idTema }, { merge: true });
       return { success: true };
     } catch (error) {
-      console.error("Eroare la echipare:", error);
       return { success: false, error: "Nu s-a putut echipa tema." };
     }
   };
 
   const cumparaTitlu = async (idTitlu, pretTitlu) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-
     const puncteCurente = currentUser.puncte || 0;
-    if (puncteCurente < pretTitlu) {
-      return { success: false, error: "Nu ai destule puncte în portofel!" };
-    }
+    if (puncteCurente < pretTitlu) return { success: false, error: "Nu ai destule puncte în portofel!" };
 
     const titluriDeblocate = currentUser.titluriDeblocate || [];
-    if (titluriDeblocate.includes(idTitlu)) {
-      return { success: false, error: "Deții deja acest titlu!" };
-    }
+    if (titluriDeblocate.includes(idTitlu)) return { success: false, error: "Deții deja acest titlu!" };
 
     const userRef = doc(db, 'users', currentUser.uid);
     try {
@@ -425,9 +443,9 @@ const getStatistici = () => {
         puncte: increment(-pretTitlu),
         titluriDeblocate: arrayUnion(idTitlu)
       });
+      await trimiteLogSecuritate('SHOP_TITLE_BUY', currentUser.nume, `A cumpărat titlul de profil [${idTitlu}]`);
       return { success: true };
     } catch (error) {
-      console.error("Eroare la cumpărare titlu:", error);
       return { success: false, error: "Eroare la procesarea tranzacției." };
     }
   };
@@ -435,37 +453,29 @@ const getStatistici = () => {
   const echipeazaTitlu = async (idTitlu) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
 
+    const userRef = doc(db, 'users', currentUser.uid);
     if (idTitlu === "") {
-      const userRef = doc(db, 'users', currentUser.uid);
       try {
         await updateDoc(userRef, { titluEchipat: "" });
         return { success: true };
-      } catch (error) {
-        return { success: false, error: "Eroare la eliminarea titlului." };
-      }
+      } catch (error) { return { success: false, error: "Eroare" }; }
     }
 
     const titluriDeblocate = currentUser.titluriDeblocate || [];
-    if (!titluriDeblocate.includes(idTitlu)) {
-      return { success: false, error: "Nu deții acest titlu!" };
-    }
+    if (!titluriDeblocate.includes(idTitlu)) return { success: false, error: "Nu deții acest titlu!" };
 
-    const userRef = doc(db, 'users', currentUser.uid);
     try {
       await updateDoc(userRef, { titluEchipat: idTitlu });
       return { success: true };
     } catch (error) {
-      console.error("Eroare la echipare titlu:", error);
       return { success: false, error: "Nu s-a putut echipa titlul." };
     }
   };
 
- useEffect(() => {
-    // 🚀 Funcția optimizată care se ocupă de numărare și stocare inteligentă
+  useEffect(() => {
     const preiaSiIncarcaLectii = async () => {
       try {
         const cachedLectii = localStorage.getItem("infoMotion_lectii");
-
         if (cachedLectii) {
           const dateLectii = JSON.parse(cachedLectii);
           setLectii(dateLectii);
@@ -475,13 +485,11 @@ const getStatistici = () => {
 
         const querySnapshot = await getDocs(collection(db, 'lectii'));
         const listaLectii = [];
-
         querySnapshot.forEach((doc) => {
           listaLectii.push({ id: doc.id, ...doc.data() });
         });
 
         localStorage.setItem("infoMotion_lectii", JSON.stringify(listaLectii));
-        
         setLectii(listaLectii);
         setTotalLectii(querySnapshot.size);
       } catch (error) {
@@ -492,7 +500,6 @@ const getStatistici = () => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         preiaSiIncarcaLectii();
-
         const userRef = doc(db, 'users', user.uid);
         const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -511,7 +518,7 @@ const getStatistici = () => {
         return () => unsubscribeDb();
       } else {
         setCurrentUser(null);
-        setLectii([]); // Resetăm array-ul
+        setLectii([]); 
         setTotalLectii(0);
         setLoading(false);
       }
@@ -548,6 +555,9 @@ const getStatistici = () => {
     if (cleanUsername.length < 3) throw new Error("Username-ul trebuie să aibă cel puțin 3 caractere.");
     try {
       await updateDoc(doc(db, 'users', currentUser.uid), { nume: cleanUsername });
+      
+      // 📝 LOG SECURE: Schimbare nume utilizator
+      await trimiteLogSecuritate('USER_NAME_CHANGED', currentUser.nume, `Și-a modificat username-ul în: [${cleanUsername}]`);
     } catch (error) {
       console.error("Eroare la actualizarea username-ului:", error);
       throw error;
@@ -557,6 +567,7 @@ const getStatistici = () => {
   async function resetPassword(email) {
     try {
       await sendPasswordResetEmail(auth, email);
+      await trimiteLogSecuritate('PASSWORD_RESET_REQUEST', email, `A cerut un email de resetare a parolei.`);
     } catch (error) {
       alert("Eroare la trimiterea email-ului de resetare: " + error.message);
       throw error;
