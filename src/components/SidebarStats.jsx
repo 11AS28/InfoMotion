@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { getAuth, deleteUser } from 'firebase/auth'; 
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
@@ -17,7 +17,7 @@ function SidebarStats({ isOpen, onClose }) {
   const [usernameError, setUsernameError] = useState("");
   const [deleteError, setDeleteError] = useState(""); 
 
-  const [totalLectiiDB, setTotalLectiiDB] = useState(0);
+  // totalLectiiDB state removed to optimize reads
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
  
@@ -40,17 +40,6 @@ function SidebarStats({ isOpen, onClose }) {
     title_jeanG: { name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
   };
 
-useEffect(() => {
-  let isMounted = true;
-  const q = query(collection(db, "lectii")); 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    if (isMounted) {
-      console.log(" snapshot primit! Număr lecții reale în DB:", snapshot.size);
-      setTotalLectiiDB(snapshot.size);
-    }
-  });
-  return () => { isMounted = false; unsubscribe(); };
-}, []);
 
   useEffect(() => {
     if (isOpen && !isTeacher) {
@@ -70,7 +59,8 @@ useEffect(() => {
 
     const q = query(
       collection(db, "users", currentUser.uid, "notifications"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(8)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -152,14 +142,9 @@ useEffect(() => {
 
   if (!currentUser) return null;
 
-  // 🧪 TEST DE DEPANARE (Șterge-l după ce rezolvăm)
-  /*console.log("--- DEBUG CONECTARE DATE ---");
-  console.log("Ce conține currentUser.progres:", currentUser?.progres);
-  console.log("Număr total lecții găsite în DB (totalLectiiDB):", totalLectiiDB);*/
-
   const stats = getStatistici();
   const lectiiTerminate = stats.terminate || 0;
-  const progresReal = totalLectiiDB > 0 ? (lectiiTerminate / totalLectiiDB) * 100 : 0;
+  const progresReal = stats.total > 0 ? (lectiiTerminate / stats.total) * 100 : 0;
 
   let nivel = "Începător";
   if (progresReal >= 80) nivel = "Expert";
@@ -341,7 +326,7 @@ useEffect(() => {
               <div className="stats-grid">
                 <div className="stat-box">
                   <span className="stat-label">Lecții Terminate</span>
-                  <span className="stat-value">{lectiiTerminate} / {totalLectiiDB}</span>
+                  <span className="stat-value">{lectiiTerminate} / {stats.total}</span>
                 </div>
                 <div className="stat-box">
                   <span className="stat-label">XP Total</span>

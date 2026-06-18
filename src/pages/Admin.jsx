@@ -97,14 +97,71 @@ function Dashboard({ adminInfo, onLogout }) {
   const [propunereInCurs, setPropunereInCurs] = useState(null);
   const [editData, setEditData] = useState(null);
 
-  const refreshData = async () => {
-    try { const snapLectii = await getDocs(collection(db, 'lectii')); setFirebaseLessons(snapLectii.docs.map((d) => ({ id: d.id, ...d.data() }))); } catch (e) { console.error(e); }
-    try { const snapUsers = await getDocs(collection(db, 'users')); setFirebaseUsers(snapUsers.docs.map((d) => ({ id: d.id, ...d.data() }))); } catch (e) { console.error(e); }
-    try { const snapPropuneri = await getDocs(collection(db, 'propuneri_lectii')); setPropuneri(snapPropuneri.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.status === 'in_asteptare')); } catch (e) { console.error(e); }
-    try { const snapTodo = await getDocs(query(collection(db, 'admin_todo'), orderBy('createdAt', 'desc'))); setTodos(snapTodo.docs.map((d) => ({ id: d.id, ...d.data() }))); } catch (e) { console.error(e); }
+  const loadLessons = async () => {
+    try {
+      const snapLectii = await getDocs(collection(db, 'lectii'));
+      setFirebaseLessons(snapLectii.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  useEffect(() => { refreshData(); }, [activeTab]);
+  const loadUsers = async () => {
+    try {
+      const snapUsers = await getDocs(collection(db, 'users'));
+      setFirebaseUsers(snapUsers.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadProposals = async () => {
+    try {
+      const snapPropuneri = await getDocs(collection(db, 'propuneri_lectii'));
+      setPropuneri(snapPropuneri.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.status === 'in_asteptare'));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadTodos = async () => {
+    try {
+      const snapTodo = await getDocs(query(collection(db, 'admin_todo'), orderBy('createdAt', 'desc')));
+      setTodos(snapTodo.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const refreshData = async () => {
+    await Promise.all([
+      loadLessons(),
+      loadUsers(),
+      loadProposals(),
+      loadTodos()
+    ]);
+  };
+
+  useEffect(() => {
+    const initTab = async () => {
+      if (activeTab === 'overview' || activeTab === 'lectii') {
+          if (firebaseLessons.length === 0) 
+            await loadLessons();
+      } else if (activeTab === 'utilizatori') {
+          if (firebaseUsers.length === 0) 
+            await loadUsers();
+      } else if (activeTab === 'aprobari') {
+          if (propuneri.length === 0) 
+            await loadProposals();
+          if (firebaseLessons.length === 0) 
+            await loadLessons();
+      } else if (activeTab === 'todo') {
+          if (todos.length === 0) 
+            await loadTodos();
+      }
+    };
+    initTab();
+  }, [activeTab]);
 
   const resetEdit = () => { setIsEditing(false); setPropunereInCurs(null); setEditData(null); };
   const handleTabChange = (tab) => { setActiveTab(tab); if (tab !== 'adauga') resetEdit(); };
@@ -176,6 +233,7 @@ function Dashboard({ adminInfo, onLogout }) {
         <div className="admin-header-logo">InfoMotion<span>.</span> <em>Admin</em></div>
         <div className="admin-header-right">
           <span className="admin-user-pill">👤 {username}</span>
+          <button className="admin-btn-refresh" onClick={async () => { await refreshData(); toast.success('Date reîncărcate! 🔄'); }} style={{ marginRight: '10px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 Refresh</button>
           <button className="admin-btn-logout" onClick={() => { onLogout(); toast.info('Te-ai deconectat.'); }}>Deconectare</button>
         </div>
       </header>

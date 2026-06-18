@@ -112,6 +112,13 @@ function AdminUsers() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loggedAdmin, setLoggedAdmin] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const USERS_PER_PAGE = 30;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy]);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -225,6 +232,11 @@ function AdminUsers() {
 
   const displayedUsers = getProcessedUsers();
 
+  const totalPages = Math.ceil(displayedUsers.length / USERS_PER_PAGE);
+  const indexOfLastUser = currentPage * USERS_PER_PAGE;
+  const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
+  const paginatedUsers = displayedUsers.slice(indexOfFirstUser, indexOfLastUser);
+
   if (!isAuthorized) {
     return (
       <LoginScreen
@@ -306,8 +318,8 @@ function AdminUsers() {
           </tr>
         </thead>
         <tbody>
-          {displayedUsers.length > 0 ? (
-            displayedUsers.map((user) => {
+          {paginatedUsers.length > 0 ? (
+            paginatedUsers.map((user) => {
               const isEditing = editUserId === user.id;
               const isExpanded = expandedUserId === user.id;
               return (
@@ -450,8 +462,8 @@ function AdminUsers() {
       </table>
 
       <div className="mobile-cards">
-        {displayedUsers.length > 0 ? (
-          displayedUsers.map((user) => {
+        {paginatedUsers.length > 0 ? (
+          paginatedUsers.map((user) => {
             const isEditing = editUserId === user.id;
             const isExpanded = expandedUserId === user.id;
             return (
@@ -520,6 +532,38 @@ function AdminUsers() {
           <div style={{ textAlign: 'center', padding: '20px', color: '#aaa', background: '#1a1a24', borderRadius: '6px' }}>Niciun utilizator găsit pentru criteriile introduse.</div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', margin: '20px 0' }}>
+          <button 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+            disabled={currentPage === 1}
+            style={{ 
+              ...btnStyle, 
+              background: currentPage === 1 ? '#333' : '#378ADD', 
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            Înapoi
+          </button>
+          <span style={{ color: '#aaa', fontSize: '0.9rem', fontWeight: 'bold' }}>
+            Pagina {currentPage} din {totalPages}
+          </span>
+          <button 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+            disabled={currentPage === totalPages}
+            style={{ 
+              ...btnStyle, 
+              background: currentPage === totalPages ? '#333' : '#378ADD', 
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            Înainte
+          </button>
+        </div>
+      )}
     </div>
   );
 }
