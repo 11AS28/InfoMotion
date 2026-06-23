@@ -4,16 +4,24 @@ import { db } from '../firebase';
 import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 import { Toaster, toast } from 'sonner';
-import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
+import { Rocket, TriangleAlert, Code2, CheckCircle2, Swords, Loader2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
 import { useWebHaptics } from "web-haptics/react";
+import { useSocket } from '../context/SocketContext';
 
 function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const navigate = useNavigate();
   const { trigger } = useWebHaptics();
   
+  // EXTRAGEM SOCKET-UL ȘI STAREA CONEXIUNII
+  const { socket, isConnected } = useSocket();
+  
+  // Stări noi pentru logica de matchmaking
+  const [isInQueue, setIsInQueue] = useState(false);
+  const [queueTimer, setQueueTimer] = useState(0);
+
   const [problems, setProblems] = useState({
     easy: { titlu: "Watermelon (Rating: 800)", link: "https://codeforces.com/problemset/problem/4/A", idCF: "4A" },
     medium: { titlu: "Taxi (Rating: 1100)", link: "https://codeforces.com/problemset/problem/158/B", idCF: "158B" },
@@ -25,14 +33,12 @@ function Arena({ datePreincarcate }) {
   const [activeTab, setActiveTab] = useState('easy'); 
   const [isChecking, setIsChecking] = useState(false); 
 
-  // Stări pentru verificarea oricărei probleme de pe Codeforces
   const [customProblemId, setCustomProblemId] = useState('');
   const [isCheckingCustom, setIsCheckingCustom] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const solversPerPage = 5;
 
-  // Pattern pentru erori, atenționări sau lipsă date
   const triggerErrorHaptic = () => {
     trigger([
       { duration: 40, intensity: 0.7 },
@@ -42,13 +48,73 @@ function Arena({ datePreincarcate }) {
     ]);
   };
 
-  // Pattern-ul tău personalizat pentru succes (Când totul este OK)
   const triggerSuccessHaptic = () => {
     trigger([
       { duration: 30 },
       { delay: 60, duration: 40, intensity: 1 },
     ]);
   };
+
+  // --- LOGICA DE WEBSOCKETS (MATCHMAKING) ---
+  useEffect(() => {
+    if (!socket) return;
+
+    // Ascultăm când serverul ne anunță că s-a găsit un oponent
+    socket.on('match_found', (matchData) => {
+      triggerSuccessHaptic();
+      toast.success("Meci găsit! Intri în arenă...");
+      setIsInQueue(false);
+      
+      // Navigăm către pagina specială a meciului și pasăm datele prin state-ul din router
+      // O să creăm această pagină (ex: ArenaDuel.jsx) în pasul următor
+      navigate(`/arena/duel/${matchData.roomId}`, { state: { matchData } });
+    });
+
+    return () => {
+      socket.off('match_found');
+    };
+  }, [socket, navigate]);
+
+  // Timer-ul pentru coadă (să vadă userul de câte secunde așteaptă)
+  useEffect(() => {
+    let interval;
+    if (isInQueue) {
+      interval = setInterval(() => {
+        setQueueTimer((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setQueueTimer(0);
+    }
+    return () => clearInterval(interval);
+  }, [isInQueue]);
+
+  const handleToggleQueue = () => {
+  if (!currentUser) {
+    triggerErrorHaptic();
+    toast.error("Trebuie să fii logat pentru a participa la dueluri!");
+    return;
+  }
+
+  if (!isConnected) {
+    triggerErrorHaptic();
+    toast.error("Conexiunea cu serverul de dueluri a picat. Reîncearcă.");
+    return;
+  }
+
+  if (isInQueue) {
+    // Dacă este deja în coadă, îl scoatem
+    socket.emit('leave_queue');
+    setIsInQueue(false);
+    toast.info("Ai ieșit din coada de așteptare.");
+  } else { // <--- AICI lipsea cuvântul 'else'!
+    // Dacă nu este în coadă, îl adăugăm
+    socket.emit('join_queue', {
+      username: currentUser.nume || currentUser.email || "Jucător InfoMotion"
+    });
+    setIsInQueue(true);
+    toast.success("Ai intrat în coada de matchmaking!");
+  }
+};
 
   const getSafeDateString = () => {
     const now = new Date();
@@ -170,10 +236,10 @@ function Arena({ datePreincarcate }) {
           else if (dificultateTinta === 'medium') puncteDeAcordat = esteInPrimii3 ? 50 : 40;
           else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
           await acordaPuncte(puncteDeAcordat);
-          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes
+          triggerSuccessHaptic();
           toast.success(`Felicitări! Ai primit +${puncteDeAcordat} XP!`, { id: idValidare });
         } else {
-          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes (antrenament validat)
+          triggerSuccessHaptic();
           toast.info("Antrenament privat validat!", { id: idValidare });
         }
         
@@ -239,7 +305,7 @@ function Arena({ datePreincarcate }) {
           problemeRezolvateCount: increment(1)
         });
 
-        triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes liber
+        triggerSuccessHaptic();
         toast.success(`Validat! +${xpDeOferit} XP adăugați pentru problema ${idCurat}.`, { id: idToast });
         setCustomProblemId('');
       } else {
@@ -268,6 +334,44 @@ function Arena({ datePreincarcate }) {
       <div className="arena-container">
         <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>
 
+        {/* --- NOUA SECȚIUNE: ZONA DE DUELURI REAL-TIME --- */}
+        <div className="arena-duel-section" style={{ marginBottom: '30px' }}>
+          <div className="playground-box duel-box" style={{ background: 'linear-gradient(135deg, #1e1212 0%, #120a0a 100%)', border: '1px solid #832211' }}>
+            <div className="box-header">
+              <Swords size={28} color="#e63946" className={isInQueue ? "animate-pulse" : ""} />
+              <h3>Dueluri de Debugging 1v1 (Real-Time)</h3>
+            </div>
+            <p>Intră în arenă împotriva unui alt programator! Amândoi primiți același cod plin de bug-uri. Primul care rezolvă bug-urile și trece toate testele câștigă duelul.</p>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '15px', flexWrap: 'wrap' }}>
+              <button 
+                className={`btn-open-sandbox ${isInQueue ? 'cancel-queue-btn' : ''}`} 
+                onClick={handleToggleQueue}
+                style={{ backgroundColor: isInQueue ? '#e63946' : '#832211', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {isInQueue ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Anulează Căutarea ({queueTimer}s)
+                  </>
+                ) : (
+                  <>
+                    <Swords size={18} />
+                    Caută meci rapid ➔
+                  </>
+                )}
+              </button>
+              
+              {isInQueue && (
+                <span style={{ color: '#aaa', fontSize: '14px' }} className="animate-pulse">
+                  Se caută un oponent compatibil...
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* --- SFÂRȘIT SECȚIUNE DUELURI --- */}
+
         <div className="arena-mobile-tabs">
           <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
           <button className={activeTab === 'medium' ? 'active' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
@@ -288,7 +392,6 @@ function Arena({ datePreincarcate }) {
               </button>
             </div>
           </div>
-          
           
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">

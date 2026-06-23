@@ -5,6 +5,8 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
 const crypto = require('crypto');
+const http = require('http'); // Modul nativ din Node.js
+const { Server } = require('socket.io'); // Importăm Socket.io
 
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
@@ -144,6 +146,69 @@ app.post('/api/run-cpp', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Serverul InfoMotion rulează pe portul ${PORT}`);
+// --- CONFIGURARE ȘI LOGICĂ SOCKET.IO ---
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ['https://info-motion.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST']
+  }
+});
+
+// Aici ținem utilizatorii care sunt în căutare de meci
+let matchmakingQueue = [];
+
+io.on('connection', (socket) => {
+  console.log(`Utilizator conectat la dueluri: ${socket.id}`);
+
+  // 1. Când un user apasă pe "Caută Duel"
+  socket.on('join_queue', (userData) => {
+    if (matchmakingQueue.find(p => p.id === socket.id)) return;
+
+    console.log(`Userul ${userData?.username || socket.id} a intrat în coadă.`);
+    
+    matchmakingQueue.push({
+      id: socket.id,
+      username: userData?.username || "Anonim"
+    });
+
+    if (matchmakingQueue.length >= 2) {
+      const player1 = matchmakingQueue.shift();
+      const player2 = matchmakingQueue.shift();
+      const roomId = `room_${player1.id}_${player2.id}`;
+
+      io.in(player1.id).socketsJoin(roomId);
+      io.in(player2.id).socketsJoin(roomId);
+
+      console.log(`🚀 Meci creat în camera ${roomId} între ${player1.username} și ${player2.username}`);
+
+      io.to(roomId).emit('match_found', {
+        roomId: roomId,
+        players: { p1: player1, p2: player2 },
+        problem: {
+          title: "Bug în Bubble Sort",
+          description: "Algoritmul de mai jos sortează descrescător în loc de crescător. Repară-l!",
+          startingCode: `void bubbleSort(int arr[], int n) { ... }`
+        }
+      });
+    }
+  }); // <-- ACUM SE ÎNCHIDE CORECT JOIN_QUEUE
+
+  // 2. Când un user părăsește coada
+  socket.on('leave_queue', () => {
+    matchmakingQueue = matchmakingQueue.filter(p => p.id !== socket.id);
+    console.log(`Un utilizator a ieșit manual din coadă: ${socket.id}`);
+  });
+
+  // 3. Când se deconectează complet
+  socket.on('disconnect', () => {
+    matchmakingQueue = matchmakingQueue.filter(p => p.id !== socket.id);
+    console.log(`Utilizator deconectat de la dueluri: ${socket.id}`);
+  });
+}); // <-- ACUM SE ÎNCHIDE CORECT IO.ON CONNECTION
+
+// Nu uita să pornești serverul la final în loc de app.listen!
+server.listen(PORT, () => {
+  console.log(`Serverul rulează pe portul ${PORT}`);
 });

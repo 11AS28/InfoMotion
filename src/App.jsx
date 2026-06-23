@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation, matchPath } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { SocketProvider } from './context/SocketContext';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster, toast } from 'sonner';
 
@@ -25,6 +26,8 @@ import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
 import EmailNotVerified from './pages/EmailNotVerified';
+// 1. IMPORTĂM NOUA PAGINĂ DE DUEL
+import ArenaDuel from './pages/ArenaDuel';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -51,9 +54,11 @@ function App() {
     SECRETU,
   ];
 
+  // 2. ADĂUGĂM RUTA DINAMICĂ DE DUEL ÎN VALIDARE (Prevenim eroarea 404)
   const isDynamicRouteValid = 
     matchPath('/lectie/:idLectie', location.pathname) || 
-    matchPath('/compiler/:idLectie', location.pathname);
+    matchPath('/compiler/:idLectie', location.pathname) ||
+    matchPath('/arena/duel/:roomId', location.pathname);
 
   // 3. Dacă nu e în listă și nu e nici rută dinamică validă, înseamnă că E PAGINĂ 404!
   const is404Page = !validPaths.includes(location.pathname) && !isDynamicRouteValid;
@@ -62,18 +67,21 @@ function App() {
   const isAdminPage = location.pathname === SECRET;
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
+  // Adăugăm verificare pentru pagina de duel, ca să îi ascundem Nav-ul și Footer-ul (la fel ca la compiler)
+  const isDuelPage = location.pathname.startsWith('/arena/duel');
 
   return (
     <ThemeProvider>
       <AuthProvider>
+        <SocketProvider>
         <Toaster richColors position="top-right" />
         
-        {/* Navigația DISPARE dacă suntem pe admin, compiler SAU pe o pagină 404 */}
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Nav />}
+        {/* Navigația DISPARE dacă suntem pe admin, compiler, duel SAU pe o pagină 404 */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDuelPage && !is404Page && <Nav />}
         
         <main style={{ 
           minHeight: '100vh', 
-          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || isDuelPage || is404Page ? '0' : '85px' 
         }}>
           <Routes>
             {/* RUTE PUBLICE */}
@@ -121,9 +129,22 @@ function App() {
               element={
               <ProtectedRoute>
                 <PrivateRoute>
+                  {/* Observație: Aici ai componenta Clasament în loc de Arena, bănuiesc că așa ai vrut structura inițială */}
                   <Clasament />
                 </PrivateRoute>
               </ProtectedRoute>
+              }
+            />
+
+            {/* 3. NOUA RUTĂ PENTRU DUELUL LIVE PROTEJAT */}
+            <Route
+              path="/arena/duel/:roomId"
+              element={
+                <ProtectedRoute>
+                  <PrivateRoute>
+                    <ArenaDuel />
+                  </PrivateRoute>
+                </ProtectedRoute>
               }
             />
 
@@ -257,9 +278,9 @@ function App() {
         </main>
 
         <Online />
-        {/* Footer-ul rămâne peste tot, mai puțin pe admin și compiler (cum ai vrut tu) */}
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
-        
+        {/* Footer-ul dispare de asemenea de pe pagina de duel */}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDuelPage && !is404Page && <Footer />}
+        </SocketProvider>
       </AuthProvider>
       <SpeedInsights />
     </ThemeProvider>

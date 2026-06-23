@@ -1,0 +1,5 @@
+simplu prima si prima oara in server.js 
+
+am facut frumos doar am facut un mic setup pentru websocket uri
+si acum poate sa asculte serverul si conexiuni telefonice ca asa functioneaza web soketurile 
+si cam atat da
