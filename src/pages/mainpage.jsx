@@ -72,8 +72,8 @@ function MainPage() {
         
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '40px' }}>
           {currentUser 
-            ? "Mă bucur să te văd! Ești deja logat, alege o lecție și începe să înveți." 
-            : "Alătură-te elevilor de elită. Creează un cont gratuit și deblochează lecțiile!"}
+            ? "Mă bucur să te văd! Ești deja logat, alege o lecție, rezolvă o problemă din Arena sau descoperă ce e nou în Marketplace." 
+            : "Alătură-te elevilor de elită. Creează un cont gratuit și deblochează lecțiile, arena si multe pagini!"}
         </p>
 
         
@@ -129,7 +129,7 @@ function MainPage() {
         
         <div className="hero-right">
           <div className="visualizer-container">
-            <h3>Visualizer Algoritm</h3>
+            <h3>Vizualizeaza Algoritmul</h3>
             
             <div className="bars-container">
               {array.map((value, index) => {
@@ -175,7 +175,7 @@ function MainPage() {
           <li className="feature-card">
             <div className="feature-icon"><Eye size={100} color="#23a9b3" strokeWidth={0.75} /></div> 
             <strong>Vizualizare Interactivă</strong>
-            <p>Înțelege algoritmii și structurile de date prin animații clare și intuitive.</p>
+            <p>Înțelege algoritmii și structurile de date prin animații interactive, clare și intuitive.</p>
           </li>
           <li className="feature-card">
             <div className="feature-icon"><ClipboardPenLine size={100} color="#23a9b3" strokeWidth={0.75} /></div>
@@ -185,7 +185,7 @@ function MainPage() {
           <li className="feature-card">
             <div className="feature-icon"><LibraryBig size={100} color="#23a9b3" strokeWidth={0.75} /></div>
             <strong>Resurse Educaționale</strong>
-            <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme de algoritmi.</p>
+            <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme interesante de algoritmica care te ajuta sa treci la nivelul urmator.</p>
           </li>
         </ul>
       </section>

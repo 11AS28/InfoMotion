@@ -34,6 +34,11 @@ const FAQ_ITEMS = [
         question: "Pot propune o problemă sau o lecție?",
         answer: "Această funcționalitate este în curs de dezvoltare! În curând elevii vor putea propune probleme inspirate din Codeforces sau PbInfo, însoțite de un mesaj scurt pentru colegi."
     },
+    {
+        question:"Cum functioneaza punctele din marketplace?",
+        answer:"La fiecare quiz finalizat sau problema verificata in arena, primitii pe langa xp si infomotion coins, 1 xp = 1 infomotion coin"
+
+    }
 ];
 
 function FaqItem({ question, answer }) {
