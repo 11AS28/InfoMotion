@@ -5,8 +5,8 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
 const crypto = require('crypto');
-const http = require('http'); // Modul nativ din Node.js
-const { Server } = require('socket.io'); // Importăm Socket.io
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
@@ -17,12 +17,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: ['https://info-motion.vercel.app', 'http://localhost:3000'],
+  origin: ['https://info-motion.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json());
+
+const arenaProblems = {
+  bubble_sort: {
+    tests: [
+      { input: "5\n5 4 3 2 1", expected: "1 2 3 4 5" },
+      { input: "4\n-3 2 0 -1", expected: "-3 -1 0 2" },
+      { input: "6\n9 1 4 9 2 0", expected: "0 1 2 4 9 9" }
+    ]
+  }
+};
+
+// --- RUTE API EXISTENTE (PĂSTRATE 100%) ---
 
 app.post('/api/simulate', async (req, res) => {
   try {
@@ -146,7 +158,115 @@ app.post('/api/run-cpp', (req, res) => {
   });
 });
 
-// --- CONFIGURARE ȘI LOGICĂ SOCKET.IO ---
+// --- RUTA COMPILARE PENTRU DUELURI (CU FIX DE CURĂȚARE REZULTATE) ---
+
+app.post('/api/compile-duel', (req, res) => {
+  const { code, roomId } = req.body;
+  console.log(`[SANDBOX] Primit cod pentru compilare în camera: ${roomId}`);
+
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Codul nu poate fi gol!" });
+  }
+
+  const problemConfig = arenaProblems.bubble_sort;
+  const uniqueId = crypto.randomBytes(8).toString('hex');
+  const targetDir = '/tmp';
+  
+  const fileName = path.join(targetDir, `duel_${uniqueId}.cpp`);
+  const exeName = path.join(targetDir, `duel_prog_${uniqueId}`);
+
+  const fullCodeWithMain = `
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+${code}
+
+int main() {
+    int n;
+    if (!(cin >> n)) return 0;
+    int arr[n];
+    for(int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+    
+    bubbleSort(arr, n);
+    
+    for(int i = 0; i < n; i++) {
+        cout << arr[i] << (i == n - 1 ? "" : " ");
+    }
+    cout << endl;
+    return 0;
+}
+  `;
+
+  fs.writeFileSync(fileName, fullCodeWithMain);
+
+  exec(`g++ ${fileName} -o ${exeName}`, async (compileError, stdout, stderr) => {
+    if (compileError) {
+      if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+      console.log(`[SANDBOX] Eroare de compilare g++!`);
+      return res.json({ success: false, error: "Eroare de compilare:\n" + stderr });
+    }
+
+    let testsPassedCount = 0;
+    let allTestsPassed = true;
+    let errorMessage = "";
+
+    for (let i = 0; i < problemConfig.tests.length; i++) {
+      const currentTest = problemConfig.tests[i];
+      const inputFileName = path.join(targetDir, `duel_in_${uniqueId}_${i}.txt`);
+      
+      fs.writeFileSync(inputFileName, currentTest.input);
+
+      try {
+        await new Promise((resolve, reject) => {
+          exec(`${exeName} < ${inputFileName}`, { timeout: 1500 }, (runError, runStdout, runStderr) => {
+            if (fs.existsSync(inputFileName)) fs.unlinkSync(inputFileName);
+
+            if (runError) {
+              allTestsPassed = false;
+              errorMessage = `Testul ${i + 1} a eșuat (Runtime Error / TLE).`;
+              reject();
+              return;
+            }
+
+            // Fix spații și linii noi (\n)
+            const userOutput = runStdout.replace(/\s+/g, ' ').trim();
+            const expectedOutput = currentTest.expected.replace(/\s+/g, ' ').trim();
+
+            if (userOutput !== expectedOutput) {
+              allTestsPassed = false;
+              errorMessage = `Testul ${i + 1} greșit!\nInput: ${currentTest.input.replace('\n', ' | ')}\nOutput-ul tău: "${userOutput}"\nOutput așteptat: "${expectedOutput}"`;
+              reject();
+              return;
+            }
+
+            testsPassedCount++;
+            resolve();
+          });
+        });
+      } catch (e) {
+        break; 
+      }
+    }
+
+    if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+    if (fs.existsSync(exeName)) fs.unlinkSync(exeName);
+
+    const realProgressPercent = Math.round((testsPassedCount / problemConfig.tests.length) * 100);
+    console.log(`[SANDBOX] Rezultat: ${testsPassedCount}/${problemConfig.tests.length} teste trecute.`);
+
+    return res.json({
+      success: true,
+      allTestsPassed: allTestsPassed,
+      progressPercent: realProgressPercent,
+      error: errorMessage
+    });
+  });
+});
+
+// --- CONFIGURARE ȘI LOGICĂ SOCKET.IO (PĂSTRATĂ ȘI SECURIZATĂ) ---
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -156,13 +276,11 @@ const io = new Server(server, {
   }
 });
 
-// Aici ținem utilizatorii care sunt în căutare de meci
 let matchmakingQueue = [];
 
 io.on('connection', (socket) => {
-  console.log(`Utilizator conectat la dueluri: ${socket.id}`);
+  console.log(`[SOCKET CONNECT] Utilizator conectat: ${socket.id}`);
 
-  // 1. Când un user apasă pe "Caută Duel"
   socket.on('join_queue', (userData) => {
     if (matchmakingQueue.find(p => p.id === socket.id)) return;
 
@@ -178,37 +296,52 @@ io.on('connection', (socket) => {
       const player2 = matchmakingQueue.shift();
       const roomId = `room_${player1.id}_${player2.id}`;
 
-      io.in(player1.id).socketsJoin(roomId);
-      io.in(player2.id).socketsJoin(roomId);
-
       console.log(`🚀 Meci creat în camera ${roomId} între ${player1.username} și ${player2.username}`);
 
-      io.to(roomId).emit('match_found', {
+      // Trimitem direct pe id-urile unice ca să evităm desincronizarea camerelor native
+      const matchPayload = {
         roomId: roomId,
         players: { p1: player1, p2: player2 },
         problem: {
-          title: "Bug în Bubble Sort",
-          description: "Algoritmul de mai jos sortează descrescător în loc de crescător. Repară-l!",
-          startingCode: `void bubbleSort(int arr[], int n) { ... }`
+          title: "Bug în Bubble Sort (C++)",
+          description: "Algoritmul primit sortează elementele descrescător în loc de crescător. Modifică-l astfel încât vectorul să fie sortat corect în ordine crescătoare și să treacă toate testele sandbox-ului.",
+          startingCode: `void bubbleSort(int arr[], int n) {\n    for (int i = 0; i < n - 1; i++) {\n        for (int j = 0; j < n - i - 1; j++) {\n            if (arr[j] < arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n            }\n        }\n    }\n}`
         }
-      });
-    }
-  }); // <-- ACUM SE ÎNCHIDE CORECT JOIN_QUEUE
+      };
 
-  // 2. Când un user părăsește coada
+      io.to(player1.id).emit('match_found', matchPayload);
+      io.to(player2.id).emit('match_found', matchPayload);
+    }
+  });
+
+// Actualizare progres live (acum declanșat doar la rularea testelor)
+  socket.on('update_progress', (data) => {
+    io.emit('opponent_updated_progress_broadcast', data);
+  });
+
+  // Când cineva chiar trimite soluția salvată cu toate testele luate
+  socket.on('player_solved', (data) => {
+    const { roomId, username } = data;
+    console.log(`[REAL WIN] Jucătorul ${username} a învins în camera ${roomId}`);
+    
+    // Serverul dă semnalul de stop global transmițând exact cine e campionul
+    io.emit('duel_ended_broadcast', { 
+      roomId, 
+      winnerUsername: username 
+    });
+  });
+
   socket.on('leave_queue', () => {
     matchmakingQueue = matchmakingQueue.filter(p => p.id !== socket.id);
     console.log(`Un utilizator a ieșit manual din coadă: ${socket.id}`);
   });
 
-  // 3. Când se deconectează complet
   socket.on('disconnect', () => {
     matchmakingQueue = matchmakingQueue.filter(p => p.id !== socket.id);
-    console.log(`Utilizator deconectat de la dueluri: ${socket.id}`);
+    console.log(`Utilizator deconectat: ${socket.id}`);
   });
-}); // <-- ACUM SE ÎNCHIDE CORECT IO.ON CONNECTION
+});
 
-// Nu uita să pornești serverul la final în loc de app.listen!
 server.listen(PORT, () => {
-  console.log(`Serverul rulează pe portul ${PORT}`);
+  console.log(`Serverul InfoMotion rulează pe portul ${PORT} (complet cu simulări și rute)`);
 });
