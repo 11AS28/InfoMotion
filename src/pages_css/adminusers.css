@@ -1,303 +1,324 @@
+/* ============================================
+   InfoMotion Admin — Login Screen (Light Mode)
+   ============================================ */
 
-/* Stil pentru body când suntem pe admin, ca să nu strice restul site-ului */
-body.admin-layout-activ { 
-  background-color: #0b0b0e !important; 
-  margin: 0; 
-  padding: 0; 
+html:has(.admin-login-overlay),
+body:has(.admin-login-overlay) {
+  background-color: #f4f4f5 !important;
+  background: #f4f4f5 !important;
 }
 
-/* Ecranul de Login Admin */
+body.admin-layout-activ {
+  background-color: #f4f4f5 !important;
+  background: #f4f4f5 !important;
+  margin: 0;
+  padding: 0;
+}
+
 .admin-login-overlay {
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  height: 100vh; 
-  background-color: #0b0b0e; 
-  font-family: sans-serif; 
-  padding: 20px; 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100vw; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f5 !important;
+  background: #f4f4f5 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 99999;
-}
-
-.admin-login-form {
-  background: #1a1a20; 
-  padding: 30px; 
-  border-radius: 12px; 
-  border: 1px solid #333; 
-  width: 100%; 
-  max-width: 340px; 
-  box-sizing: border-box; 
-  text-align: center;
-}
-
-/* Structura Container Principală */
-.admin-panel-container {
-  max-width: 1400px; 
-  margin: 0 auto; 
-  padding: 30px 15px; 
-  color: white; 
-  font-family: sans-serif; 
-  min-height: 100vh; 
   box-sizing: border-box;
 }
 
-/* Tabel Desktop */
-.desktop-table { 
-  display: table; 
-  width: 100%; 
-  border-collapse: collapse; 
-  margin-top: 20px; 
-  background: #1a1a20; 
-  border-radius: 8px; 
-  overflow: hidden; 
+.admin-login-form {
+  background: #ffffff;
+  border: 0.5px solid #e4e4e7;
+  border-radius: 16px;
+  padding: 32px 32px 36px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  text-align: left;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }
 
-.clickable-row { 
-  cursor: pointer; 
-  transition: background 0.2s; 
+/* Brand header */
+.login-header {
+  margin-bottom: 28px;
 }
 
-.clickable-row:hover { 
-  background: rgba(255, 255, 255, 0.03) !important; 
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.4px;
+  margin: 0 0 4px 0;
 }
 
-.expanded-zone { 
-  background: #15151a; 
-  padding: 20px; 
-  border-bottom: 2px solid #378ADD; 
+.login-title span {
+  color: #0d9488;
 }
 
-.grid-detalii { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-  gap: 15px; 
-  margin-top: 10px; 
+.login-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: #71717a;
+  margin: 0;
 }
 
-.detaliu-field { 
-  background: #1e1e24; 
-  padding: 10px; 
-  border-radius: 6px; 
-  border: 1px solid #2d2d35; 
-  display: flex; 
-  flex-direction: column; 
-  gap: 5px; 
+.login-header::after {
+  content: '';
+  display: block;
+  height: 0.5px;
+  background: #e4e4e7;
+  margin-top: 24px;
 }
 
-.detaliu-label { 
-  color: #378ADD; 
-  font-size: 0.8rem; 
-  font-weight: bold; 
-  text-transform: uppercase; 
+/* Field groups */
+.input-group {
+  margin-bottom: 14px;
 }
 
-/* Carduri Mobile */
-.mobile-cards { 
-  display: none; 
+.input-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 7px;
 }
 
-/* Responsive Styles */
-@media (max-width: 950px) {
-  .desktop-table { 
-    display: none; 
-  }
-  
-  .mobile-cards { 
-    display: block; 
-    margin-top: 20px; 
-  }
-  
-  .user-card { 
-    background: #1a1a20; 
-    border: 1px solid #333; 
-    border-radius: 8px; 
-    padding: 15px; 
-    margin-bottom: 15px; 
-    cursor: pointer; 
-  }
-  
-  .card-row { 
-    display: flex; 
-    justify-content: space-between; 
-    margin-bottom: 8px; 
-    font-size: 0.9rem; 
-    border-bottom: 1px solid #25252d; 
-    padding-bottom: 4px; 
-    align-items: center; 
-  }
-  
-  .card-label { 
-    color: #378ADD; 
-    font-weight: bold; 
-  }
-  
-  .card-actions { 
-    display: flex; 
-    gap: 10px; 
-    margin-top: 15px; 
-  }
-  
-  .header-container { 
-    flex-direction: column; 
-    gap: 15px; 
-    align-items: flex-start !important; 
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Stil curat pentru containerul paginii de admin */
-.admin-panel-container {
-  max-width: 1400px; 
-  margin: 0 auto; 
-  padding: 30px 15px; 
-  color: white; 
-  font-family: sans-serif; 
-  min-height: 100vh; 
+.login-input {
+  width: 100%;
+  background: #fafafa;
+  border: 0.5px solid #d4d4d8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #18181b;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
 }
 
-/* Ecranul de Login Admin */
-.admin-login-overlay {
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  height: 100vh; 
-  background-color: #0b0b0e; 
-  font-family: sans-serif; 
-  padding: 20px; 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100vw; 
-  z-index: 99999;
+.login-input::placeholder {
+  color: #a1a1aa;
 }
 
-.admin-login-form {
-  background: #1a1a20; 
-  padding: 30px; 
-  border-radius: 12px; 
-  border: 1px solid #333; 
-  width: 100%; 
-  max-width: 340px; 
-  box-sizing: border-box; 
-  text-align: center;
+.login-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+  background: #ffffff;
 }
 
-/* Tabel Desktop */
-.desktop-table { 
-  display: table; 
-  width: 100%; 
-  border-collapse: collapse; 
-  margin-top: 20px; 
-  background: #1a1a20; 
-  border-radius: 8px; 
-  overflow: hidden; 
+.login-input:hover:not(:focus) {
+  border-color: #a1a1aa;
 }
 
-.clickable-row { 
-  cursor: pointer; 
-  transition: background 0.2s; 
+/* Submit button */
+.login-submit-btn {
+  width: 100%;
+  margin-top: 22px;
+  padding: 11px 16px;
+  background: #0d9488;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.1px;
+  transition: background 0.15s, transform 0.1s;
 }
 
-.clickable-row:hover { 
-  background: rgba(255, 255, 255, 0.03) !important; 
+.login-submit-btn:hover {
+  background: #0f766e;
 }
 
-.expanded-zone { 
-  background: #15151a; 
-  padding: 20px; 
-  border-bottom: 2px solid #378ADD; 
+.login-submit-btn:active {
+  transform: scale(0.99);
 }
 
-.grid-detalii { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-  gap: 15px; 
-  margin-top: 10px; 
+.login-submit-btn:disabled {
+  background: #99f6e4;
+  color: #5eead4;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.detaliu-field { 
-  background: #1e1e24; 
-  padding: 10px; 
-  border-radius: 6px; 
-  border: 1px solid #2d2d35; 
-  display: flex; 
-  flex-direction: column; 
-  gap: 5px; 
+/* ============================================
+   Admin Panel — Container Principal
+   ============================================ */
+
+.admin-panel-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  color: #18181b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #f4f4f5;
 }
 
-.detaliu-label { 
-  color: #378ADD; 
-  font-size: 0.8rem; 
-  font-weight: bold; 
-  text-transform: uppercase; 
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 0.5px solid #e4e4e7;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-/* Carduri Mobile */
-.mobile-cards { 
-  display: none; 
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 0 24px 0;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 10px;
+  border: 0.5px solid #e4e4e7;
 }
 
-/* Responsive Styles */
+.desktop-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 0.5px solid #e4e4e7;
+}
+
+.desktop-table thead tr {
+  background: #fafafa;
+}
+
+.desktop-table thead th {
+  padding: 11px 14px;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: left;
+  border-bottom: 0.5px solid #e4e4e7;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 0.5px solid #f4f4f5;
+}
+
+.clickable-row:hover {
+  background: #fafafa !important;
+}
+
+.clickable-row td {
+  padding: 11px 14px;
+  font-size: 13.5px;
+  color: #52525b;
+}
+
+.expanded-zone {
+  background: #f9fafb;
+  padding: 20px 20px 24px;
+  border-bottom: 1.5px solid #0d9488;
+}
+
+.grid-detalii {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.detaliu-field {
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 0.5px solid #e4e4e7;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detaliu-label {
+  color: #71717a;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.mobile-cards {
+  display: none;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0 8px;
+}
+
 @media (max-width: 950px) {
-  .desktop-table { 
-    display: none; 
+  .desktop-table { display: none; }
+
+  .mobile-cards {
+    display: block;
+    margin-top: 16px;
   }
-  
-  .mobile-cards { 
-    display: block; 
-    margin-top: 20px; 
+
+  .user-card {
+    background: #ffffff;
+    border: 0.5px solid #e4e4e7;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
   }
-  
-  .user-card { 
-    background: #1a1a20; 
-    border: 1px solid #333; 
-    border-radius: 8px; 
-    padding: 15px; 
-    margin-bottom: 15px; 
-    cursor: pointer; 
+
+  .user-card:hover { border-color: #0d9488; }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    border-bottom: 0.5px solid #f4f4f5;
+    padding-bottom: 8px;
+    align-items: center;
+    color: #52525b;
   }
-  
-  .card-row { 
-    display: flex; 
-    justify-content: space-between; 
-    margin-bottom: 8px; 
-    font-size: 0.9rem; 
-    border-bottom: 1px solid #25252d; 
-    padding-bottom: 4px; 
-    align-items: center; 
+
+  .card-label {
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  
-  .card-label { 
-    color: #378ADD; 
-    font-weight: bold; 
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
   }
-  
-  .card-actions { 
-    display: flex; 
-    gap: 10px; 
-    margin-top: 15px; 
-  }
-  
-  .header-container { 
-    flex-direction: column; 
-    gap: 15px; 
-    align-items: flex-start !important; 
+
+  .header-container {
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start !important;
   }
 }
