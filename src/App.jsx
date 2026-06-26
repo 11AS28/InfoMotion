@@ -30,8 +30,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 import './theme.css';
 
-const SECRET = '/panou-secret-infomotion-77x';
-const SECRETU = '/panou-secret-users-99x';
+const SECRET = process.env.VITE_SECRET_ADMIN_PATH || '/ruta-generica-inutila-1a2b3c';
+const SECRETU = process.env.VITE_SECRET_USERS_PATH || '/ruta-generica-inutila-4e5f6g';
 
 function App() {
   const location = useLocation();
