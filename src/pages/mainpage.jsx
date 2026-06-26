@@ -187,6 +187,7 @@ function MainPage() {
             <strong>Resurse Educaționale</strong>
             <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme interesante de algoritmica care te ajuta sa treci la nivelul urmator.</p>
           </li>
+          
         </ul>
       </section>
 
