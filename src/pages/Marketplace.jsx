@@ -6,6 +6,9 @@ import '../pages_css/marketplace.css';
 import { useWebHaptics } from "web-haptics/react";
 import { Heart, Snowflake, ThermometerSnowflake, MountainSnow} from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
+import moneymusic from '../assets/ksjsbwuil-cash-register-1-513922.mp3';
+import moneykabing from '../assets/shelvis_makes_games-i-see-money-181273.mp3';
+
 
 export default function Marketplace() {
   const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
@@ -24,6 +27,11 @@ export default function Marketplace() {
   const titluEchipat = currentUser?.titluEchipat || "";
 
   usePageTitle("InfoMotion - Marketplace");
+
+  const playSound = (src) => {
+  const audio = new Audio(src);
+  audio.play();
+};
 
   // Pattern pentru erori sau atenționări
   const triggerErrorHaptic = () => {
@@ -78,6 +86,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
+       playSound(moneymusic);
       afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! ');
     } else {
       triggerErrorHaptic();
@@ -92,6 +101,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
+       playSound(moneymusic);
       afiseazaMesaj('succes', 'Tema a fost echipată! ');
     } else {
       triggerErrorHaptic();
@@ -106,6 +116,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
+       playSound(moneymusic);
       afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
       triggerErrorHaptic();
@@ -120,6 +131,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
+       playSound(moneymusic);
       afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
       triggerErrorHaptic();
@@ -127,18 +139,19 @@ export default function Marketplace() {
     }
   };
 
-  const handleCumparaTitlu = async (id, pret) => {
-    setLoadingId(id);
-    const rezultat = await cumparaTitlu(id, pret);
-    setLoadingId(null);
-    if (rezultat.success) {
-      triggerSuccessHaptic();
-      afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
-    } else {
-      triggerErrorHaptic();
-      afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
-    }
-  };
+const handleCumparaTitlu = async (id, pret) => {
+  setLoadingId(id);
+  const rezultat = await cumparaTitlu(id, pret);
+  setLoadingId(null);
+  if (rezultat.success) {
+    triggerSuccessHaptic();
+    playSound(id === 'title_jeanG' ? moneykabing : moneymusic); // ← adaugă
+    afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
+  } else {
+    triggerErrorHaptic();
+    afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
+  }
+};
 
   const handleEchipeazaTitlu = async (id) => {
     setLoadingId(id);
@@ -146,6 +159,7 @@ export default function Marketplace() {
     setLoadingId(null);
     if (rezultat.success) {
       triggerSuccessHaptic();
+      if (id !== "") playSound(id === 'title_jeanG' ? moneykabing : moneymusic);
       afiseazaMesaj('succes', id === "" ? 'Titlu dezechipat!' : 'Titlul a fost echipat pe profil! 🎭');
     } else {
       triggerErrorHaptic();
@@ -155,14 +169,13 @@ export default function Marketplace() {
 
   return (
     <div className="market-container">
-      {/* Header Magazin */}
       <div className="market-header">
         <div className="market-title-zone">
           <h1 className="market-main-title">InfoMotion<span id="dot">.</span> Marketplace</h1>
           <p className="market-subtitle">Personalizează-ți experiența de codare și asigură-ți progresul.</p>
         </div>
         
-        {/* Portofel */}
+
         <div className="wallet-card">
           <CoinIcon size={28} className="wallet-coin-icon" /> 
           <div className="wallet-info">
@@ -172,14 +185,14 @@ export default function Marketplace() {
         </div>
       </div>
 
-      {/* Alerte */}
+
       {mesaj.text && (
         <div className={`market-alert ${mesaj.tip === 'succes' ? 'alert-success' : 'alert-error'}`}>
           {mesaj.text}
         </div>
       )}
 
-      {/* CATEGORIA 1: TEME EDITOR */}
+
       <div className="market-section-divider">
         <h2 className="market-section-title">Personalizare Editor</h2>
         <div className="market-section-line"></div>

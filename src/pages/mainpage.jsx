@@ -165,8 +165,6 @@ function MainPage() {
 
 
 
-
-
       
 
       <section id="Features" className="features-section">
@@ -187,7 +185,15 @@ function MainPage() {
             <strong>Resurse Educaționale</strong>
             <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme interesante de algoritmica care te ajuta sa treci la nivelul urmator.</p>
           </li>
-          
+          {/*<li className="feature-card">
+              <blockquote className="tiktok-embed" cite="https://www.tiktok.com/@uuhvfhn/video/7655357448777125138" data-video-id="7655357448777125138"> <section> <a target="_blank" title="@uuhvfhn" href="https://www.tiktok.com/@uuhvfhn?refer=embed">@uuhvfhn</a> <p></p> <a target="_blank" title="♬ оригинальный звук - 𝘾𝙖𝙧𝙨𝘽𝙚𝙡𝙖𝙧𝙪𝙨" href="https://www.tiktok.com/music/оригинальный-звук-7647234034774346513?refer=embed">♬ оригинальный звук - 𝘾𝙖𝙧𝙨𝘽𝙚𝙡𝙖𝙧𝙪𝙨</a> </section> </blockquote> <script async src="https://www.tiktok.com/embed.js"></script>
+          </li>
+          <li className="feature-card">
+            <blockquote className='tiktok-embed' cite="https://www.tiktok.com/@niconurofen/video/7655638936978607382" data-video-id="7655638936978607382"> <section> <a target="_blank" title="@niconurofen" href="https://www.tiktok.com/@niconurofen?refer=embed">@niconurofen</a> <a title="foryou" target="_blank" href="https://www.tiktok.com/tag/foryou?refer=embed">#foryou</a> <a target="_blank" title="♬ sunet original - Bianca Stoian" href="https://www.tiktok.com/music/sunet-original-7569208129130842902?refer=embed">♬ sunet original - Bianca Stoian</a> </section> </blockquote> <script async src="https://www.tiktok.com/embed.js"></script>
+          </li>
+          <li className="feature-card">
+              <blockquote className="tiktok-embed" cite="https://www.tiktok.com/@1ariadnaa3/video/7654683771987447062" data-video-id="7654683771987447062" style={{ maxWidth: "605px", minWidth: "325px" }} > </blockquote> <script async src="https://www.tiktok.com/embed.js"></script>
+          </li>*/}
         </ul>
       </section>
 
