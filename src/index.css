@@ -2,3 +2,49 @@ html, body {
   overflow-x: clip !important; 
   max-width: 100vw;
 }
+
+
+/* Google Translate widget custom styling overrides to hide default toolbar */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  z-index: -9999 !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+/* Hide Google Translate tooltips and highlights on translation hover */
+.goog-te-balloon-frame,
+.goog-tooltip,
+#goog-gt-tt,
+.goog-te-balloon-frame.skiptranslate,
+.goog-tooltip.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Custom language select dropdown entry animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

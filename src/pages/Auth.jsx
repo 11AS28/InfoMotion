@@ -5,6 +5,7 @@ import '../pages_css/auth.css';
 import { FaGoogle } from "react-icons/fa";
 import { sendEmailVerification } from "firebase/auth";
 import usePageTitle from '../hooks/usePageTitle';
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 function Auth() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ function Auth() {
   
 
   const [isRegistering, setIsRegistering] = useState(false); 
-  const [role, setRole] = useState('student'); //  STATE NOU: 'student' sau 'teacher'
+  const [role, setRole] = useState('student'); 
   const [identificator, setIdentificator] = useState(''); 
   const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
@@ -137,9 +138,14 @@ usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autent
       <div className="auth-card">
         <div className="auth-header">
           <h1>InfoMotion<span>.</span></h1>
-          {/*  Text dinamic în funcție de rol */}
+
           <p>{isRegistering ? `Creează un cont de ${role === 'student' ? 'elev' : 'profesor'}` : "Intră în contul tău"}</p>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+  <LanguageSwitcher />
+</div>
           <br />
+          
+
         </div>
 
         {successMsg && (

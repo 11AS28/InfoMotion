@@ -8,6 +8,7 @@ import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound, Coins } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import LanguageSelect from './LanguageSwitcher';
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
@@ -215,6 +216,9 @@ function SidebarStats({ isOpen, onClose }) {
               )}
             </span>
             {!isTeacher && <span className="badge-nivel">{nivel}</span>}
+             <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+            <LanguageSelect />
+          </div>
           </div>
         </div>
 
