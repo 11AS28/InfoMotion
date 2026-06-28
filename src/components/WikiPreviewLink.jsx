@@ -60,12 +60,10 @@ export default function WikiPreviewLink({ href, idLectieTinta, children }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Link-ul nativ pe care dă click */}
       <a href={href} className="wiki-interactive-link">
         {children}
       </a>
 
-      {/* Căsuța mică tip Wikipedia */}
       {visible && (
         <span className="wiki-popup-box">
           {loading ? (

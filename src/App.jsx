@@ -56,10 +56,8 @@ function App() {
     matchPath('/lectie/:idLectie', location.pathname) || 
     matchPath('/compiler/:idLectie', location.pathname);
 
-  // 3. Dacă nu e în listă și nu e nici rută dinamică validă, înseamnă că E PAGINĂ 404!
   const is404Page = !validPaths.includes(location.pathname) && !isDynamicRouteValid;
 
-  // Paginile specifice unde ascundeai deja elementele
   const isAdminPage = location.pathname === SECRET;
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
@@ -69,7 +67,6 @@ function App() {
       <AuthProvider>
         <Toaster richColors position="top-right" />
         
-        {/* Navigația DISPARE dacă suntem pe admin, compiler SAU pe o pagină 404 */}
         {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Nav />}
         
         <main style={{ 
@@ -77,7 +74,7 @@ function App() {
           paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
         }}>
           <Routes>
-            {/* RUTE PUBLICE */}
+
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
@@ -85,7 +82,6 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
 
-            {/* RUTELE DE ADMIN SECRETE ȘI PROTEJATE DUR */}
             <Route
               path={SECRET}
               element={
@@ -104,7 +100,6 @@ function App() {
               }
             />
 
-            {/* RUTE UTILIZATORI LOGAȚI */}
             <Route
               path="/lectii"
               element={
@@ -139,7 +134,6 @@ function App() {
               }
             />
 
-            {/* RUTĂ COMPILER TAB SEPARAT */}
             <Route
               path="/compiler/:idLectie"
               element={
@@ -160,7 +154,6 @@ function App() {
               } 
             />
 
-            {/* RUTĂ PROFESORI */}
             <Route
               path="/trimite-lectie"
               element={
@@ -171,7 +164,6 @@ function App() {
             />
 
 
-          {/* RUTĂ VERIFICARE EMAIL */}
             <Route
               path="/verifica-email"
               element=
@@ -183,7 +175,6 @@ function App() {
               }
             />
 
-            {/* RUTA FALLBACK 404 */}
             <Route 
               path="*" 
               element={
@@ -258,7 +249,6 @@ function App() {
         </main>
 
         <Online />
-        {/* Footer-ul rămâne peste tot, mai puțin pe admin și compiler (cum ai vrut tu) */}
         {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
         
       </AuthProvider>

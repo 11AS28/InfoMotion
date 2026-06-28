@@ -489,7 +489,6 @@ html:not(.dark) .page-info {
     color: #475569;
 }
 
-/* FIX-UL LIGHT MODE PENTRU ZONA NOUĂ DE PLAYGROUND */
 html:not(.dark) .playground-box, 
 html:not(.dark) .custom-verify-box {
   background: #ffffff;

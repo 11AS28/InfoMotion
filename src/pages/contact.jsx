@@ -4,10 +4,10 @@ import Footer from "../components/footer";
 import '../pages_css/contact.css';
 import { FaDiscord, FaGithub, FaInstagram, FaChevronDown } from "react-icons/fa";
 import { CgMail } from "react-icons/cg";
-import { db } from "../firebase"; 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import usePageTitle from '../hooks/usePageTitle';
-
+import { useAuth } from "../context/AuthContext";
 
 const FAQ_ITEMS = [
     {
@@ -35,8 +35,8 @@ const FAQ_ITEMS = [
         answer: "Această funcționalitate este în curs de dezvoltare! În curând elevii vor putea propune probleme inspirate din Codeforces sau PbInfo, însoțite de un mesaj scurt pentru colegi."
     },
     {
-        question:"Cum functioneaza punctele din marketplace?",
-        answer:"La fiecare quiz finalizat sau problema verificata in arena, primitii pe langa xp si infomotion coins, 1 xp = 1 infomotion coin"
+        question: "Cum functioneaza punctele din marketplace?",
+        answer: "La fiecare quiz finalizat sau problema verificata in arena, primitii pe langa xp si infomotion coins, 1 xp = 1 infomotion coin"
 
     }
 ];
@@ -45,7 +45,7 @@ function FaqItem({ question, answer }) {
     const [open, setOpen] = useState(false);
     usePageTitle("InfoMotion - Contact");
     return (
-        
+
         <div className={`faq-item ${open ? "open" : ""}`} onClick={() => setOpen(!open)}>
             <div className="faq-question">
                 <span>{question}</span>
@@ -57,8 +57,9 @@ function FaqItem({ question, answer }) {
 }
 
 function Contact() {
-    const [form, setForm] = useState({ name: "", email: "", message: "" });
-    const [status, setStatus] = useState(null); // null | "loading" | "success" | "error"
+    const [form, setForm] = useState({ message: "" });
+    const [status, setStatus] = useState(null); 
+    const { currentUser } = useAuth();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -66,16 +67,30 @@ function Contact() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.name || !form.email || !form.message) return;
+        if (!form.message.trim()) return;
+
+        const key = `contact_limit_${currentUser.uid}`;
+        const stored = JSON.parse(localStorage.getItem(key) || "[]");
+        const acum = Date.now();
+        const ultimaOra = stored.filter(t => acum - t < 60 * 60 * 1000);
+
+        if (ultimaOra.length >= 3) {
+            setStatus("limit");
+            return;
+        }
 
         setStatus("loading");
         try {
             await addDoc(collection(db, "contact_messages"), {
-                ...form,
+                name: currentUser.nume,
+                email: currentUser.email,
+                message: form.message,
+                uid: currentUser.uid,
                 createdAt: serverTimestamp(),
             });
+            localStorage.setItem(key, JSON.stringify([...ultimaOra, acum]));
             setStatus("success");
-            setForm({ name: "", email: "", message: "" });
+            setForm({ message: "" });
         } catch (err) {
             console.error(err);
             setStatus("error");
@@ -85,14 +100,10 @@ function Contact() {
     return (
         <div className="page-wrapper">
             <main className="contact-container">
-
-                {/* Header */}
                 <div className="contact-header">
                     <h1>Contactează-ne<span>.</span></h1>
                     <h2>Hai să discutăm!</h2>
                 </div>
-
-                {/* Linkuri sociale */}
                 <section className="contact-section">
                     <p className="contact-description">
                         Dacă ai întrebări, sugestii sau vrei să ne spui ceva, nu ezita să ne contactezi.
@@ -125,9 +136,8 @@ function Contact() {
                         </li>
                     </ul>
                 </section>
-                {/* FAQ */}
                 <section className="faq-section">
-                    
+
                     <h2 className="section-title"> Întrebări frecvente</h2>
                     <div className="faq-list">
                         {FAQ_ITEMS.map((item, index) => (
@@ -135,6 +145,45 @@ function Contact() {
                         ))}
                     </div>
                 </section>
+
+                {currentUser && (
+                    <section className="contact-section contact-form-section">
+                        <h2 className="section-title">Trimite-ne un mesaj</h2>
+                        <p className="contact-description" style={{ marginBottom: "24px" }}>
+                            Îți vom răspunde în cel mai scurt timp posibil. Sa verifici notificarile periodic!
+                        </p>
+                        <form className="contact-form" onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Utilizator</label>
+                                <input
+                                    type="text"
+                                    value={currentUser.nume}
+                                    disabled
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Mesajul tău</label>
+                                <textarea
+                                    name="message"
+                                    placeholder="Spune-ne ce gândești..."
+                                    rows={5}
+                                    value={form.message}
+                                    onChange={(e) => setForm({ message: e.target.value })}
+                                    maxLength={1000}
+                                />
+                                <span style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", textAlign: "right" }}>
+                                    {form.message.length}/1000
+                                </span>
+                            </div>
+                            <button className="form-submit-btn" type="submit" disabled={status === "loading"}>
+                                {status === "loading" ? "Se trimite..." : "Trimite mesajul"}
+                            </button>
+                            {status === "success" && <p className="form-feedback success">Mesaj trimis! Îți mulțumim, îți vom răspunde în curând.</p>}
+                            {status === "limit" && <p className="form-feedback error">Poți trimite maxim 3 mesaje pe oră.</p>}
+                            {status === "error" && <p className="form-feedback error">Ceva nu a mers. Încearcă din nou.</p>}
+                        </form>
+                    </section>
+                )}
 
             </main>
         </div>

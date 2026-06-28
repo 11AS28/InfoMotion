@@ -33,7 +33,6 @@ export default function Marketplace() {
   audio.play();
 };
 
-  // Pattern pentru erori sau atenționări
   const triggerErrorHaptic = () => {
     trigger([
       { duration: 40, intensity: 0.7 },
@@ -43,7 +42,6 @@ export default function Marketplace() {
     ]);
   };
 
-  // Pattern-ul tău personalizat pentru succes
   const triggerSuccessHaptic = () => {
     trigger([
       { duration: 30 },
@@ -51,14 +49,12 @@ export default function Marketplace() {
     ]);
   };
 
-  // Pachetele de Inimi
   const pacheteInimi = [
     { id: 'heart_1', name: 'Bandage Pack', qty: 1, price: 50, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Refill rapid pentru o singură greșeală în quiz.' },
     { id: 'heart_2', name: 'First Aid Kit', qty: 2, price: 100, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Siguranță dublă. Perfect pentru lecțiile mai grele.' },
     { id: 'heart_3', name: 'Med Kit', qty: 3, price: 120, icon: <Heart size={60} color="#ae1e1e" strokeWidth={1.75} />, desc: 'Full Refill cu reducere! Te încarcă complet la maxim.' }
   ];
 
-  // Pachetele de Streak Freeze
   const pacheteStreak = [
     { id: 'streak_1', name: 'Streak Guard', qty: 1, price: 150, icon: <Snowflake size={60} color="#3498db" strokeWidth={1.75} />, desc: 'Îți salvează streak-ul pentru o singură zi de pauză.' },
     { id: 'streak_3', name: 'Pachet 3 Streak Guard', qty: 3, price: 430, icon: <MountainSnow size={60} color="#3498db" strokeWidth={1.75} />, desc: 'Protecție pentru un weekend prelungit sau vacanță.' },
@@ -145,7 +141,7 @@ const handleCumparaTitlu = async (id, pret) => {
   setLoadingId(null);
   if (rezultat.success) {
     triggerSuccessHaptic();
-    playSound(id === 'title_jeanG' ? moneykabing : moneymusic); // ← adaugă
+    playSound(id === 'title_jeanG' ? moneykabing : moneymusic); 
     afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
   } else {
     triggerErrorHaptic();
@@ -244,7 +240,6 @@ const handleCumparaTitlu = async (id, pret) => {
         })}
       </div>
 
-      {/* CATEGORIA 2: PACHETE INIMI */}
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
         <h2 className="market-section-title">Pachete Inimi Quiz (Actual: {inimiCurente}/3 )</h2>
         <div className="market-section-line"></div>
@@ -288,7 +283,7 @@ const handleCumparaTitlu = async (id, pret) => {
         })}
       </div>
 
-      {/* CATEGORIA 3: PACHETE STREAK FREEZE */}
+
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
         <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 )</h2>
         <div className="market-section-line"></div>
@@ -336,7 +331,6 @@ const handleCumparaTitlu = async (id, pret) => {
         })}
       </div>
 
-      {/* CATEGORIA 4: TITLURI DE PROFIL STYLE BRAWL STARS */}
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
         <h2 className="market-section-title">Titluri de Profil Legendare</h2>
         <div className="market-section-line"></div>

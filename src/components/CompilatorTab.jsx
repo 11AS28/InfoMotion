@@ -247,7 +247,6 @@ function CompilerPage() {
   return (
     <div className={`compiler-page-container ${isResizingH ? 'resizing-h-active' : ''} ${isResizingV ? 'resizing-v-active' : ''}`}>
       
-      {/* HEADER IDE */}
       <div className="ide-header">
         <div className="header-dots-zone">
           <span className="dot dot-red"></span>
@@ -264,10 +263,8 @@ function CompilerPage() {
         </div>
       </div>
 
-      {/* CORPUL IDE-ului */}
       <div className="ide-main-body" ref={containerRef}>
         
-        {/* PARTEA 1: EDITORUL MONACO */}
         <div className="ide-editor-section" style={mainSplitStyle}>
           <Editor
             height="100%"
@@ -285,17 +282,14 @@ function CompilerPage() {
           />
         </div>
 
-        {/* BARA PRINCIPALA */}
         <div 
           className={`resizer-horizontal ${isResizingH ? 'active' : ''}`} 
           onMouseDown={() => setIsResizingH(true)}
           onTouchStart={() => setIsResizingH(true)} 
         />
 
-        {/* PARTEA 2: PANOU REZULTATE */}
         <div className="ide-side-panel" ref={sidePanelRef} style={sidePanelStyle}>
           
-          {/* Caseta STDIN */}
           <div className="panel-box" style={{ height: `${topHeight}px` }}>
             <div className="box-header-title">DATE DE INTRARE (STDIN)</div>
             <textarea
@@ -306,18 +300,15 @@ function CompilerPage() {
             />
           </div>
 
-          {/* BARA VERTICALĂ DE RESIZE INTERNĂ */}
           <div 
             className={`resizer-vertical ${isResizingV ? 'active' : ''}`} 
             onMouseDown={() => setIsResizingV(true)}
             onTouchStart={() => setIsResizingV(true)} 
           />
 
-          {/* Caseta STDOUT */}
           <div className="panel-box" style={{ height: `calc(100% - ${topHeight}px - 8px)` }}>
             <div className="box-header-title">CONSOLĂ REZULTAT (STDOUT)</div>
             
-            {/* --- MODIFICĂ AICI: ADAUGĂ BARA DE STATISTICI --- */}
             {executionTime !== null && executionMemory !== null && (
               <div className="performance-stats-bar" style={{
                 display: 'flex',

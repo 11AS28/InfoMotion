@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import '../components_css/SidebarStats.css';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { getAuth, deleteUser } from 'firebase/auth'; 
+import { getAuth, deleteUser } from 'firebase/auth';
 import { db } from '../firebase';
 import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound, Coins } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
@@ -15,18 +16,19 @@ function SidebarStats({ isOpen, onClose }) {
   const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
   const [usernameInput, setUsernameInput] = useState(currentUser?.nume || "");
   const [usernameError, setUsernameError] = useState("");
-  const [deleteError, setDeleteError] = useState(""); 
+  const [deleteError, setDeleteError] = useState("");
+
 
   // totalLectiiDB state removed to optimize reads
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
- 
+  const [modalRaspuns, setModalRaspuns] = useState(null);
   const isTeacher = currentUser?.role === 'teacher';
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
   const puncteTotale = currentUser?.puncteTotale || 0;
-  
+
   // CORECTAT: Folosim 'puncte' în loc de 'monede' pentru a se sincroniza cu portofelul din AuthContext
   const baniUtilizator = currentUser?.puncte || 0;
 
@@ -88,7 +90,7 @@ function SidebarStats({ isOpen, onClose }) {
         if (usernameInput.trim().length < 3) { setUsernameError("Username prea scurt!"); return; }
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where("nume", "==", usernameInput.trim()));
-        
+
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           setUsernameError("Acest username este deja folosit!");
@@ -164,7 +166,7 @@ function SidebarStats({ isOpen, onClose }) {
     { id: 'b1', icon: <Leaf size={16} color="#7dc931" strokeWidth={2.5} />, nume: 'Primul Craft', cerinta: 1, desc: 'Rezolvă prima ta problemă în Arenă' },
     { id: 'b2', icon: <Flame size={16} color="#f2ae1c" strokeWidth={2.5} />, nume: 'Scânteia Arenei', cerinta: 5, desc: 'Rezolvă 5 probleme în Arenă' },
     { id: 'b3', icon: <HandFist size={16} color="#af0e0e" strokeWidth={2.5} />, nume: 'Fierarul Codului', cerinta: 15, desc: 'Rezolvă 15 probleme în Arenă' },
-    { id: 'b4', icon: <Swords size={16} color="#adadad" strokeWidth={2.5} />, nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' }, 
+    { id: 'b4', icon: <Swords size={16} color="#adadad" strokeWidth={2.5} />, nume: 'Gladiatorul Arenei', cerinta: 30, desc: 'Rezolvă 30 de probleme în Arenă' },
     { id: 'b5', icon: <WandSparkles size={16} color="#acc91d" strokeWidth={2.5} />, nume: 'Mage de Algoritmi', cerinta: 50, desc: 'Rezolvă 50 de probleme în Arenă' },
     { id: 'b6', icon: <Crown size={16} color="#fff700" strokeWidth={2.5} />, nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
@@ -178,17 +180,17 @@ function SidebarStats({ isOpen, onClose }) {
         <div className="sidebar-header">
           <div className="user-avatar-placeholder"><UserRound size={30} color="#8f4ebb" strokeWidth={2.5} /></div>
           <h3>
-            {currentUser.nume || currentUser.email.split('@')[0]}{""}              
-          </h3> 
+            {currentUser.nume || currentUser.email.split('@')[0]}{""}
+          </h3>
 
 
           {currentUser?.titluEchipat && dictionarTitluri[currentUser.titluEchipat] && (
-              <div className="sidebar-brawl-title-badge" style={{ background: dictionarTitluri[currentUser.titluEchipat].bg }}>
-                {dictionarTitluri[currentUser.titluEchipat].name}
-              </div>
-            )}
-          
-          
+            <div className="sidebar-brawl-title-badge" style={{ background: dictionarTitluri[currentUser.titluEchipat].bg }}>
+              {dictionarTitluri[currentUser.titluEchipat].name}
+            </div>
+          )}
+
+
           <div style={{ marginTop: '0px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
             <span style={{
               fontSize: '11px',
@@ -200,17 +202,17 @@ function SidebarStats({ isOpen, onClose }) {
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}>
-                {isTeacher ? (
-                  <>
-                    <Coffee size={16} color="#23a9b3" strokeWidth={2.5} />
-                    {" "}Profesor
-                  </>
-                ) : (
-                  <>
-                    <GraduationCap size={16} color="#23a9b3" strokeWidth={2.5} />
-                    {" "}Elev
-                  </>
-                )}
+              {isTeacher ? (
+                <>
+                  <Coffee size={16} color="#23a9b3" strokeWidth={2.5} />
+                  {" "}Profesor
+                </>
+              ) : (
+                <>
+                  <GraduationCap size={16} color="#23a9b3" strokeWidth={2.5} />
+                  {" "}Elev
+                </>
+              )}
             </span>
             {!isTeacher && <span className="badge-nivel">{nivel}</span>}
           </div>
@@ -218,27 +220,27 @@ function SidebarStats({ isOpen, onClose }) {
 
         <div className="sidebar-content">
           <h4>Centru Statistici</h4>
-        
-            <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={() => setShowNotifications((v) => !v)}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  background: unreadCount > 0 ? '#fef2f2' : '#ecfdf5',
-                  color: unreadCount > 0 ? '#dc2626' : '#166534',
-                  border: unreadCount > 0 ? '1px solid #fecaca' : '1px solid #bbf7d0',
-                  cursor: 'pointer'
-                }}
-              >
-                {unreadCount > 0 ? ` ${unreadCount} notificări noi` : ' Nicio notificare nouă'}
-              </button>
-            </div>
 
-            {showNotifications && (
+          <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setShowNotifications((v) => !v)}
+              style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                padding: '6px 12px',
+                borderRadius: '999px',
+                background: unreadCount > 0 ? '#fef2f2' : '#ecfdf5',
+                color: unreadCount > 0 ? '#dc2626' : '#166534',
+                border: unreadCount > 0 ? '1px solid #fecaca' : '1px solid #bbf7d0',
+                cursor: 'pointer'
+              }}
+            >
+              {unreadCount > 0 ? ` ${unreadCount} notificări noi` : ' Nicio notificare nouă'}
+            </button>
+          </div>
+
+          {showNotifications && (
             <div
               style={{
                 marginBottom: '18px',
@@ -285,7 +287,12 @@ function SidebarStats({ isOpen, onClose }) {
                     <button
                       key={notif.id}
                       type="button"
-                      onClick={() => markNotificationAsRead(notif.id)}
+                      onClick={() => {
+                        markNotificationAsRead(notif.id);
+                        if (notif.type === 'contact_raspuns') {
+                          setModalRaspuns(notif);
+                        }
+                      }}
                       style={{
                         textAlign: 'left',
                         width: '100%',
@@ -307,6 +314,7 @@ function SidebarStats({ isOpen, onClose }) {
                             {notif.type === 'lectie_aprobata' ? ' Lecție aprobată' : notif.type === 'lectie_respinsa' ? ' Lecție respinsă' : ' Notificare'}
                             {notif.type === 'streak_pierdut' && '  Streak Întrerupt'}
                             {notif.type === 'streak_inghetat' && '  Streak Înghețat'}
+                            {notif.type === 'contact_raspuns' && '💬 Răspuns la mesajul tău'}
                           </div>
                           <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}
@@ -367,7 +375,7 @@ function SidebarStats({ isOpen, onClose }) {
               <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#0d47a1' }}>Panou Profesor Activ</p>
             </div>
           )}
-          
+
           <br />
 
           <div className="info-list">
@@ -410,7 +418,7 @@ function SidebarStats({ isOpen, onClose }) {
                       handleInput !== "" && <small style={{ color: '#ff4500', fontSize: '0.7rem' }}>NEVERIFICAT</small>
                     )}
                   </div>
-                  
+
                   <div className="handle-input-group">
                     <input
                       type="text"
@@ -428,11 +436,11 @@ function SidebarStats({ isOpen, onClose }) {
                       <div className="verification-code-display">
                         {generateVerificationCode()}
                       </div>
-                      <button 
+                      <button
                         className="verify-btn-outline"
                         onClick={async () => {
                           const res = await verifyHandleOwnership(handleInput);
-                          if(res.success) alert("✅ Cont verificat!");
+                          if (res.success) alert("✅ Cont verificat!");
                           else alert("❌ " + res.error);
                         }}
                       >
@@ -451,8 +459,8 @@ function SidebarStats({ isOpen, onClose }) {
                       const esteDeblocat = totalProblemeDB >= badge.cerinta;
                       const maiAreNevoie = badge.cerinta - totalProblemeDB;
                       return (
-                        <div 
-                          key={badge.id} 
+                        <div
+                          key={badge.id}
                           className={`sidebar-badge-item ${esteDeblocat ? 'unlocked' : 'locked'}`}
                           title={esteDeblocat ? `Deblocat! ${badge.desc}` : `Blocat. Mai ai nevoie de ${maiAreNevoie} probleme.`}
                         >
@@ -485,12 +493,12 @@ function SidebarStats({ isOpen, onClose }) {
           <button className="logout-btn-sidebar" onClick={() => { logout(); onClose(); }}>
             Deconectare Cont
           </button>
-          <button 
+          <button
             onClick={handleDeleteAccount}
-            style={{ 
-              width: '100%', padding: '12px', backgroundColor: 'transparent', 
-              color: '#ff4d4d', border: '1px solid #ff4d4d', borderRadius: '8px', 
-              cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.3s ease' 
+            style={{
+              width: '100%', padding: '12px', backgroundColor: 'transparent',
+              color: '#ff4d4d', border: '1px solid #ff4d4d', borderRadius: '8px',
+              cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.3s ease'
             }}
             onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#ff4d4d'; e.currentTarget.style.color = '#fff'; }}
             onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#ff4d4d'; }}
@@ -500,8 +508,72 @@ function SidebarStats({ isOpen, onClose }) {
           {deleteError && <small style={{ color: '#ff4d4d', textAlign: 'center', display: 'block', padding: '5px' }}>{deleteError}</small>}
         </div>
 
-        
+
       </div>
+
+      {modalRaspuns && createPortal(
+    <div
+        onClick={() => setModalRaspuns(null)}
+        style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
+            backdropFilter: 'blur(4px)',
+        }}
+    >
+        <div
+            onClick={e => e.stopPropagation()}
+            style={{
+                background: '#fff', borderRadius: '24px',
+                padding: '40px 36px', maxWidth: '480px', width: '100%',
+                boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <div style={{
+                    width: '40px', height: '40px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '18px', flexShrink: 0,
+                }}>
+                    💬
+                </div>
+                <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Răspuns de la echipa InfoMotion
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                        Mesajul tău a primit un răspuns
+                    </div>
+                </div>
+            </div>
+
+            <div style={{
+                background: '#f8fafc', borderRadius: '14px',
+                padding: '20px', marginBottom: '24px',
+                border: '1.5px solid #e2e8f0',
+                fontSize: '16px', fontWeight: '500',
+                color: '#1e293b', lineHeight: '1.7',
+            }}>
+                {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
+            </div>
+
+            <button
+                onClick={() => setModalRaspuns(null)}
+                style={{
+                    width: '100%', padding: '14px', borderRadius: '30px',
+                    border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                    color: '#fff', fontWeight: '700', fontSize: '15px',
+                    cursor: 'pointer', letterSpacing: '0.3px',
+                }}
+            >
+                Am înțeles
+            </button>
+        </div>
+    </div>,
+    document.body
+)}
     </>
   );
 }

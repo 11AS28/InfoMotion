@@ -37,12 +37,12 @@ function ArrayVisualizer({ steps }) {
   return (
     <div className="visualizer-container">
       
-      {/* 1. Caseta de Explicații */}
+
       <div className="visualizer-explanation">
         💡 <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation}
       </div>
 
-      {/* 2. Barele pentru Vector */}
+
       <div className="visualizer-bars-area">
         {currentData.array.map((value, index) => {
           const calculatedHeight = (value / maxVal) * 160 + 20;
@@ -71,7 +71,6 @@ function ArrayVisualizer({ steps }) {
         })}
       </div>
 
-      {/*  3. Zona pentru Stiva de Apeluri Recursive (Așezată curat sub bare) */}
       {steps[currentStep]?.apelCurent && (
         <div className="recursion-stack-zone" style={{
           marginTop: '25px',
@@ -104,7 +103,6 @@ function ArrayVisualizer({ steps }) {
         </div>
       )}
 
-      {/* 4. Butoanele de Control */}
       <div className="visualizer-controls">
         <button 
           className="visualizer-btn"

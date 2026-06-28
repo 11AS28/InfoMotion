@@ -8,7 +8,6 @@ import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
 import { useWebHaptics } from "web-haptics/react";
-
 function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const navigate = useNavigate();

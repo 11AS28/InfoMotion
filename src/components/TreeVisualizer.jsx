@@ -8,10 +8,10 @@ function TreeNode({ node }) {
 
   const getNodeClass = (status) => {
     switch (status) {
-      case 'active': return 'tr-node-active';     // Cyan strălucitor (pasul curent)
-      case 'processed': return 'tr-node-parent';  // Părinte care a generat apeluri
-      case 'solved': return 'tr-node-success';    // Verde (Aici s-a găsit elementul)
-      case 'failed': return 'tr-node-failed';     // Roșu (Ramură eșuată/vidă)
+      case 'active': return 'tr-node-active';     
+      case 'processed': return 'tr-node-parent';  
+      case 'solved': return 'tr-node-success';   
+      case 'failed': return 'tr-node-failed';     
       default: return '';
     }
   };
@@ -65,19 +65,15 @@ function TreeVisualizer({ steps }) {
 
   const currentData = steps[currentStep];
 
-  //  DETECTARE AUTOMATĂ A STRUCTURII DE ARBORE
-  // Încercăm să luăm structura din treeStructure, direct din rădăcina pasului sau din proprietatea .tree
   const validTreeNode = currentData.treeStructure || currentData.tree || (currentData.children ? currentData : null);
 
   return (
     <div className="tree-visualizer-container" style={{ width: '100%', background: '#070a13', padding: '20px', borderRadius: '12px' }}>
       
-      {/* Caseta de Explicații */}
       <div className="visualizer-explanation" style={{ background: '#111625', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#fff', borderLeft: '4px solid #1fe0f9' }}>
          <strong>Pasul {currentStep + 1} / {steps.length}:</strong> {currentData.explanation || "Se execută pasul algoritmului..."}
       </div>
 
-      {/* Spațiul de desenare al Arborelui */}
       <div className="tree-canvas" style={{ display: 'flex', justifyContent: 'center', width: '100%', overflowX: 'auto', padding: '30px 0', minHeight: '200px' }}>
         {validTreeNode ? (
           <TreeNode node={validTreeNode} />
@@ -89,7 +85,6 @@ function TreeVisualizer({ steps }) {
         )}
       </div>
 
-      {/* Butoanele de Control */}
       <div className="visualizer-controls" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
         <button 
           className="visualizer-btn"

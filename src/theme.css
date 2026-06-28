@@ -1,9 +1,4 @@
-/* ============================================================
-   theme.css — Variabile de culoare pentru InfoMotion
-   Importă acest fișier în main.jsx sau App.jsx (primul import)
-   ============================================================ */
 
-/* ── MODUL LUMINOS (implicit) ─────────────────────────────── */
 :root {
   --bg-color:        #fafafa;
   --bg-card:        #ffffff;
@@ -44,7 +39,6 @@
   
 }
 
-/* ── MODUL ÎNTUNECAT ──────────────────────────────────────── */
 .dark {
   --bg-color:        #0d1117;
   --bg-card:        #161b22;
@@ -80,7 +74,6 @@
   --toggle-thumb:   #0d1117;
 }
 
-/* ── APLICARE GLOBALĂ ─────────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -94,9 +87,6 @@ html, body {
   justify-content: center;
 }
 
-/* ============================================================
-   NAVBAR
-   ============================================================ */
 .navbar {
   background-color: var(--nav-bg);
   border-bottom: 1px solid var(--border);
@@ -119,7 +109,6 @@ html, body {
   background-color: var(--text-primary);
 }
 
-/* ── Toggle buton dark mode ── */
 .theme-toggle {
   display: flex;
   align-items: center;
@@ -166,9 +155,6 @@ html, body {
   user-select: none;
 }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
 .site-footer {
   background-color: var(--footer-bg) !important;
 }
@@ -177,9 +163,6 @@ html, body {
   border-top: 1px solid var(--border);
 }
 
-/* ============================================================
-   PAGINA PRINCIPALĂ
-   ============================================================ */
 body {
   background-color: var(--bg-color);
   color: var(--text-primary);
@@ -216,9 +199,6 @@ body {
 .feature-card strong { color: var(--text-heading); }
 .feature-card p      { color: var(--text-muted); }
 
-/* ============================================================
-   PAGINA LECTII
-   ============================================================ */
 .lectii-header h1  { color: var(--text-primary); }
 .lectii-header p   { color: var(--text-muted); }
 
@@ -283,9 +263,6 @@ body {
 .no-results h3 { color: var(--text-primary); }
 .no-results p  { color: var(--text-muted); }
 
-/* ============================================================
-   PAGINA LECTIE INDIVIDUALĂ
-   ============================================================ */
 .lesson-header { border-bottom-color: var(--border); }
 .lesson-header h1 { color: var(--text-primary); }
 .back-link        { color: var(--text-muted); }
@@ -324,9 +301,6 @@ body {
 .pbinfo-arrow { color: var(--text-faint); }
 .pbinfo-card:hover .pbinfo-arrow { color: var(--accent); }
 
-/* ============================================================
-   PAGINA INTRO (DESPRE)
-   ============================================================ */
 .intro-hero h1          { color: var(--text-primary); }
 .intro-subtitle         { color: var(--text-muted); }
 
@@ -366,9 +340,6 @@ body {
   color: #ffffff;
 }
 
-/* ============================================================
-   PAGINA CONTACT
-   ============================================================ */
 .contact-header h1  { color: var(--text-primary); }
 .contact-header h2  { color: var(--text-secondary); }
 .contact-description { color: var(--text-muted); }
@@ -379,9 +350,6 @@ body {
   color: var(--text-primary);
 }
 
-/* ============================================================
-   COD SNIPPET
-   ============================================================ */
 code, pre {
   background-color: var(--code-bg);
   color: var(--code-color);

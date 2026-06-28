@@ -1,4 +1,4 @@
 html, body {
-  overflow-x: clip !important; /* Taie orice element care iese în afara ecranului pe orizontală */
+  overflow-x: clip !important; 
   max-width: 100vw;
 }

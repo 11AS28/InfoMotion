@@ -1,6 +1,4 @@
-/* --- MODAL WRAPPER --- */
 .modal-overlay {
-  /* Nu mai e fix, ci ocupă locul lui în pagină sub buton */
   position: relative; 
   width: 100%;
   background: transparent;

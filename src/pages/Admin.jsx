@@ -11,7 +11,7 @@ import UtilizatoriTab from './admin/UtilizatoriTab';
 import TodoTab from './admin/TodoTab';
 import LectiiTab from './admin/LectiiTab';
 import AdaugaTab from './admin/AdaugaTab';
-
+import MesajeTab from './admin/MesajeTab';
 // ─── Login Screen (Verificare în Firestore) ───────────────────────────────────
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -239,16 +239,24 @@ function Dashboard({ adminInfo, onLogout }) {
       </header>
 
       <div className="admin-tabs-bar">
-        {['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga'].map((t) => (
+        {['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga', 'mesaje'].map((t) => (
           <button key={t} className={`admin-tab ${activeTab === t ? 'active' : ''}`} onClick={() => handleTabChange(t)}>
-            { { overview: 'Prezentare generală', utilizatori: 'Utilizatori', aprobari: `Aprobări (${propuneri.length})`, todo: `To-Do (${activeTodoCount})`, lectii: 'Lecțiile mele', adauga: isEditing ? '📝 Editare' : '➕ Adaugă' }[t] }
-          </button>
+{ {
+  overview: 'Prezentare generală',
+  utilizatori: 'Utilizatori',
+  aprobari: `Aprobări (${propuneri.length})`,
+  todo: `To-Do (${activeTodoCount})`,
+  lectii: 'Lecțiile mele',
+  adauga: isEditing ? '📝 Editare' : '➕ Adaugă',
+  mesaje: 'Mesaje'
+}[t] }          </button>
         ))}
       </div>
 
       <main className="admin-main">
         {activeTab === 'overview' && <OverviewTab firebaseLessons={firebaseLessons} />}
         {activeTab === 'utilizatori' && <UtilizatoriTab firebaseUsers={firebaseUsers} />}
+{activeTab === 'mesaje' && <MesajeTab adminUsername={username} adminPassword={adminPassword} sendUserNotification={sendUserNotification} />}
         {activeTab === 'aprobari' && (
           <div className="admin-card">
             <div className="admin-section-title">Lecții propuse</div>

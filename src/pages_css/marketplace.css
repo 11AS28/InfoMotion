@@ -32,7 +32,7 @@
 .market-main-title {
  font-size: 3.5rem;
   font-weight: 800;
-  color: var(--text-primary); /* AM SCHIMBAT AICI (în loc de #0f172a) */
+  color: var(--text-primary);
   margin-bottom: 15px;
   opacity: 0;
   animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -40,7 +40,7 @@
 
 .market-subtitle {
   font-size: 1.5rem;
-  color: var(--text-secondary); /* AM SCHIMBAT AICI (în loc de #475569) */
+  color: var(--text-secondary); 
   font-weight: 500;
   margin-bottom: 10px;
   opacity: 0;
@@ -266,13 +266,11 @@
 }
 
 
-/* Alinierea monedei în interiorul butoanelor */
 .button-coin-icon {
   margin-left: 6px;
-  margin-top: -2px; /* Ajustare fină pe verticală */
+  margin-top: -2px; 
 }
 
-/* Dacă vrei să adaugi un efect subtil de strălucire monedei din portofel */
 .wallet-coin-icon {
   filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
   transition: transform 0.3s ease;
@@ -343,11 +341,10 @@
 }
 
 
-/* Stil pentru insigna din magazin și sidebar */
 .title-brawl-badge, .sidebar-brawl-title-badge {
   display: inline-block;
   padding: 6px 14px;
-  font-family: 'Impact', 'Arial Black', sans-serif; /* Oferă acel aer boldat de joc mobil */
+  font-family: 'Impact', 'Arial Black', sans-serif; 
   font-size: 14px;
   text-transform: uppercase;
   color: #fff;
@@ -359,7 +356,6 @@
   max-width: 100%;
 }
 
-/* Modificator specific pentru sidebar ca să se așeze frumos sub nume */
 .sidebar-brawl-title-badge {
   margin-top: 6px;
   font-size: 12px;

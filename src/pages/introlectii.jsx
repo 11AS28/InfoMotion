@@ -3,7 +3,7 @@ import Nav from '../components/nav';
 import Footer from '../components/footer';
 import '../pages_css/intro.css';
 import usePageTitle from '../hooks/usePageTitle';
-import { Goal, Sparkles, Gamepad2, Laptop, Zap, Rocket, Bot, PenTool, ChartNoAxesCombined, PencilRuler, Code2, Swords,ShoppingBag } from 'lucide-react';
+import { Goal, Sparkles, Gamepad2, Laptop, Zap, Rocket, Bot, PenTool, ChartNoAxesCombined, PencilRuler, Code2, Swords, ShoppingBag, Trophy, Users } from 'lucide-react';
 
 function Intro() {
   usePageTitle("InfoMotion - Despre Proiect");
@@ -62,9 +62,9 @@ function Intro() {
             </div>
 
             <div className="feature-card">
-              <span className="feature-icon"><Rocket size={70} color="#23a9b3" strokeWidth={0.75} /></span>
-              <h3>Performanță & Viteză</h3>
-              <p>Arhitectură modernă de tip Single Page Application (SPA), configurată pentru ca lecțiile și compilatorul să se încarce instant.</p>
+              <span className="feature-icon"><Code2 size={70} color="#23a9b3" strokeWidth={0.75} /></span>
+              <h3>Compilator Integrat</h3>
+              <p>Scrii și rulezi cod C++ direct în platformă, fără să deschizi un editor extern — rezultatul apare instant, cu mesaje de eroare clare.</p>
             </div>
 
           </div>
@@ -103,11 +103,40 @@ function Intro() {
                 rezolvate și puncte slabe identificate automat.
               </p>
             </div>
+            <div className="feature-card">
+              <span className="feature-icon"><Swords size={70} color="#23a9b3" strokeWidth={0.75} /></span>
+              <h3>Arena — Dueluri de Debugging</h3>
+              <p>
+                Lucrăm la un mod competitiv în secțiunea Arena: doi elevi primesc același algoritm
+                stricat și concurează în timp real să găsească bug-ul primul. Cel mai rapid câștigă
+                puncte și urcă în clasament.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <span className="feature-icon"><Bot size={70} color="#23a9b3" strokeWidth={0.75} /></span>
+              <h3>Recapitulări Automate</h3>
+              <p>
+                Platforma îți va trimite periodic mini-teste cu concepte pe care le-ai studiat
+                demult, ca să nu uiți ce ai învățat și să îți consolidezi cunoștințele pe termen lung.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <span className="feature-icon"><Zap size={70} color="#23a9b3" strokeWidth={0.75} /></span>
+              <h3>Mod Examen</h3>
+              <p>
+                Un simulator de examen de bacalaureat și admitere, cu timp limitat și subiecte
+                generate aleatoriu din materia parcursă — ca să te obișnuiești cu presiunea
+                înainte de ziua cea mare.
+              </p>
+            </div>
+
+
           </div>
         </section>
 
 
-        {/* Secțiunea 4: Tehnologii */}
         <section className="intro-section tech-section">
           <h2><PencilRuler size={70} color="#23a9b3" strokeWidth={0.75} /> Tehnologii Folosite</h2>
           <div className="tech-tags">
