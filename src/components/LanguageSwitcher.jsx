@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-
-
 const LANGUAGES = [
-    { code: 'ro', label: 'RO', flag: '🇷🇴', name: 'Română' },
-    { code: 'en', label: 'EN', flag: '🇬🇧', name: 'English' },
-    { code: 'hu', label: 'HU', flag: '🇭🇺', name: 'Magyar' }
+    { code: 'ro', label: 'RO', flag: '🇷🇴', name: 'Română'},
+    { code: 'en', label: 'EN', flag: '🇬🇧', name: 'English'},
+    { code: 'hu', label: 'HU', flag: '🇭🇺', name: 'Magyar'}
 ];
+
 export default function LanguageSelect() {
     const [activeLang, setActiveLang] = useState('ro');
     const [isOpen, setIsOpen] = useState(false);
