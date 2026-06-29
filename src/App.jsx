@@ -31,8 +31,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 import './theme.css';
 
-const SECRET = import.meta.env.VITE_SECRET_ADMIN_PATH || '/panouadmininfomotion';
-const SECRETU = import.meta.env.VITE_SECRET_USERS_PATH || '/panouadminuserinfomotion';
+const SECRET =  '/panouadmininfomotion'; //import.meta.env.VITE_SECRET_ADMIN_PATH ||
+const SECRETU =  '/panouadminuserinfomotion';// import.meta.env.VITE_SECRET_USERS_PATH ||
 
 function App() {
   const location = useLocation();
