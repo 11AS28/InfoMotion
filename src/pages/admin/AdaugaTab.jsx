@@ -71,7 +71,7 @@ export default function AdaugaTab({
   const handlePublish = async () => {
     if (!fId || !fTitlu) return toast.warning('Completează ID și Titlu!');
     setLoading(true);
-    
+
     try {
       let categorieVal = null;
       let clasaFinala = fClasa;
@@ -87,7 +87,7 @@ export default function AdaugaTab({
         teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
         problemePbinfo: esteConcept ? [] : pbRows.filter((r) => r.id || r.titlu),
-        quiz: esteConcept ? [] : quiz, 
+        quiz: esteConcept ? [] : quiz,
         codeforces: esteConcept ? [] : cfProblems,
         dataModificarii: new Date().toISOString()
       };
@@ -221,7 +221,23 @@ export default function AdaugaTab({
         {/* Cod C++ */}
         <div className="admin-field admin-field--full">
           <label>Cod C++ (Lasă gol dacă nu e nevoie)</label>
-          <textarea className="admin-textarea-code" value={fCod} onChange={(e) => setFCod(e.target.value)} rows={8} />
+          <textarea
+            className="admin-textarea-code"
+            value={fCod}
+            onChange={(e) => setFCod(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                const val = e.target.value;
+                e.target.value = val.substring(0, s) + '    ' + val.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = s + 4;
+                setFCod(e.target.value);
+              }
+            }}
+            rows={8}
+          />
         </div>
 
         {/* SECȚIUNI ASCUNSE PENTRU CONCEPTE */}

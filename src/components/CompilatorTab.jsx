@@ -277,7 +277,9 @@ function CompilerPage() {
               minimap: { enabled: false },
               automaticLayout: true,
               scrollbar: { vertical: 'visible', handleMouseWheel: true },
-              fontFamily: "'Fira Code', Consolas, monospace"
+              tabSize: 4,
+              fontFamily: "'Fira Code', Consolas, monospace",
+              tabFocusMode: false,
             }}
           />
         </div>
