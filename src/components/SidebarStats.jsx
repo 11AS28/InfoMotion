@@ -52,6 +52,7 @@ function SidebarStats({ isOpen, onClose }) {
     }
   }, [currentUser, isOpen]);
 
+  // Sincronizare: Citim din DB doar cele cu read == false, dar le păstrăm pe cele vechi în LocalStorage
   useEffect(() => {
     if (!currentUser?.uid) return;
 
@@ -73,6 +74,7 @@ function SidebarStats({ isOpen, onClose }) {
 
       const mapIdToNotif = new Map();
       localNotif.forEach(n => mapIdToNotif.set(n.id, n));
+      
       dbUnreadNotif.forEach(n => mapIdToNotif.set(n.id, { ...n, read: false }));
 
       let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
@@ -140,12 +142,17 @@ function SidebarStats({ isOpen, onClose }) {
       }
     }
   };
+
   const markNotificationAsRead = async (notifId) => {
     if (!currentUser?.uid) return;
     try {
       const localKey = `notifications_${currentUser.uid}`;
       
-      await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notifId));
+      try {
+        await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notifId));
+      } catch (dbErr) {
+        console.log("Notificarea era deja ștearsă din DB sau e doar locală.");
+      }
 
       const updated = notifications.map(n => 
         n.id === notifId ? { ...n, read: true } : n
@@ -153,7 +160,7 @@ function SidebarStats({ isOpen, onClose }) {
 
       localStorage.setItem(localKey, JSON.stringify(updated));
       setNotifications(updated);
-    } catch (e) { console.error("Eroare la ștergerea notificării din DB:", e); }
+    } catch (e) { console.error("Eroare la procesarea notificării:", e); }
   };
 
   const markAllNotificationsAsRead = async () => {
