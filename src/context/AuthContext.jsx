@@ -23,6 +23,7 @@ import {
   increment, 
   arrayUnion,
   addDoc,
+  deleteDoc, // Integrat pentru curățarea notificărilor vechi
   serverTimestamp 
 } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
@@ -40,6 +41,37 @@ export function AuthProvider({ children }) {
   const isUpdatingStreak = useRef(false);
 
   const [lectii, setLectii] = useState([]);
+
+  const trimiteNotificareCuLimita = async (userId, notifData) => {
+    try {
+      const notifRef = collection(db, "users", userId, "notifications");
+      
+      const q = query(
+        notifRef,
+        where("read", "==", false),
+        orderBy("createdAt", "asc")
+      );
+      
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.size >= 5) {
+        const nrDeSters = snapshot.size - 5 + 1; 
+        const docsDeSters = snapshot.docs.slice(0, nrDeSters);
+        
+        for (const docSters of docsDeSters) {
+          await deleteDoc(doc(db, "users", userId, "notifications", docSters.id));
+        }
+      }
+
+      await addDoc(notifRef, {
+        ...notifData,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Eroare la trimiterea notificării cu limită:", e);
+    }
+  };
 
   const updateCodeforcesHandle = async (handle) => {
     if (!currentUser) return;
@@ -78,7 +110,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-const getStatistici = () => {
+  const getStatistici = () => {
     if (!currentUser) return { terminate: 0, total: totalLectii, progresProcent: 0 };
 
     const progresUser = currentUser.progres || {};
@@ -87,13 +119,8 @@ const getStatistici = () => {
       const dateProgres = progresUser[id];
       if (!dateProgres) return false;
 
-      // 1. Verifică formatul standard din marcheazaLectieTerminata (cu status === 'complet')
       if (dateProgres.status === 'complet') return true;
-
-      // 2. Verifică formatul simplu din Quiz (dacă salvezi doar id: true sau id: "complet")
       if (dateProgres === true || dateProgres === 'complet') return true;
-
-      // 3. Verifică dacă există pur și simplu ID-ul acolo (ajută dacă salvezi doar id: { ... })
       if (typeof dateProgres === 'object' && !dateProgres.status) return true;
 
       return false;
@@ -147,47 +174,31 @@ const getStatistici = () => {
     };
 
     if (!ultimaLogare) {
-      // Prima logare din istoria contului
       dataToUpdate.streakCount = 1;
     } else {
       const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffZile === 1) {
-        // Logare consecutivă (ziua următoare)
         dataToUpdate.streakCount = streakCurent + 1;
       } else if (diffZile > 1) {
-        // A trecut mai mult de o zi de la ultima logare
         if (freezesDisponibile > 0) {
           freezesNoi -= 1; 
           dataToUpdate.streakFreezes = freezesNoi;
-          dataToUpdate.streakCount = streakCurent; // Își păstrează streak-ul neatins datorită scutului
+          dataToUpdate.streakCount = streakCurent;
           
-          try {
-            await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
-              type: "streak_inghetat",
-              text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`,
-              read: false,
-              createdAt: serverTimestamp()
-            });
-          } catch (e) {
-            console.error("Eroare trimitere notificare freeze:", e);
-          }
+          await trimiteNotificareCuLimita(currentUser.uid, {
+            type: "streak_inghetat",
+            text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`
+          });
         } else {
-          // Nu are scuturi, streak-ul se resetează la 1 pentru ziua curentă
           dataToUpdate.streakCount = 1; 
           
           if (streakCurent > 0) {
-            try {
-              await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
-                type: "streak_pierdut",
-                text: ` Ai lipsit prea mult! Din păcate ai pierdut streak-ul tău de ${streakCurent} zile. Capul sus, hai să începem unul nou azi!`,
-                read: false,
-                createdAt: serverTimestamp()
-              });
-            } catch (e) {
-              console.error("Eroare trimitere notificare streak pierdut:", e);
-            }
+            await trimiteNotificareCuLimita(currentUser.uid, {
+              type: "streak_pierdut",
+              text: ` Ai lipsit prea mult! Din păcate ai pierdut streak-ul tău de ${streakCurent} zile. Capul sus, hai să începem unul nou azi!`
+            });
           }
         }
       }
@@ -469,8 +480,7 @@ const getStatistici = () => {
     }
   };
 
- useEffect(() => {
-    // 🚀 Funcția optimizată care se ocupă de numărare și stocare inteligentă
+  useEffect(() => {
     const preiaSiIncarcaLectii = async () => {
       try {
         const cachedLectii = localStorage.getItem("infoMotion_lectii");
@@ -520,7 +530,7 @@ const getStatistici = () => {
         return () => unsubscribeDb();
       } else {
         setCurrentUser(null);
-        setLectii([]); // Resetăm array-ul
+        setLectii([]);
         setTotalLectii(0);
         setLoading(false);
       }
@@ -628,7 +638,8 @@ const getStatistici = () => {
     cumparaStreakFreeze,
     scadeInima,
     cumparaTitlu,
-    echipeazaTitlu
+    echipeazaTitlu,
+    trimiteNotificareCuLimita
   };
 
   return (

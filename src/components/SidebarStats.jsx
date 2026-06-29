@@ -19,21 +19,17 @@ function SidebarStats({ isOpen, onClose }) {
   const [usernameError, setUsernameError] = useState("");
   const [deleteError, setDeleteError] = useState("");
 
-
-  // totalLectiiDB state removed to optimize reads
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [modalRaspuns, setModalRaspuns] = useState(null);
   const isTeacher = currentUser?.role === 'teacher';
+  
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
   const puncteTotale = currentUser?.puncteTotale || 0;
-
-  // CORECTAT: Folosim 'puncte' în loc de 'monede' pentru a se sincroniza cu portofelul din AuthContext
   const baniUtilizator = currentUser?.puncte || 0;
 
-  // CORECTAT: Transformat din Array în Obiect (Key-Value) pentru a funcționa căutarea directă după ID
   const dictionarTitluri = {
     title_coders: { name: 'Codul e Legea', price: 300, color: '#f1c40f', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', desc: 'Pentru cei care dictează regulile în compilator.' },
     title_toxic: { name: 'Zero Erori', price: 500, color: '#2ecc71', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)', desc: 'Titlu legendar pentru cine scrie cod curat din prima.' },
@@ -42,7 +38,6 @@ function SidebarStats({ isOpen, onClose }) {
     title_grind: { name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
     title_jeanG: { name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
   };
-
 
   useEffect(() => {
     if (isOpen && !isTeacher) {
@@ -62,16 +57,36 @@ function SidebarStats({ isOpen, onClose }) {
 
     const q = query(
       collection(db, "users", currentUser.uid, "notifications"),
+      where("read", "==", false),
       orderBy("createdAt", "desc"),
-      limit(8)
+      limit(5)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const notifList = snapshot.docs.map((doc) => ({
+      const dbUnreadNotif = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
       }));
-      setNotifications(notifList);
+
+      const localKey = `notifications_${currentUser.uid}`;
+      const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
+
+      const mapIdToNotif = new Map();
+      localNotif.forEach(n => mapIdToNotif.set(n.id, n));
+      dbUnreadNotif.forEach(n => mapIdToNotif.set(n.id, { ...n, read: false }));
+
+      let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
+        const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
+        const timeB = b.createdAt?.seconds || new Date(b.createdAt).getTime() || 0;
+        return timeB - timeA;
+      });
+
+      if (combined.length > 5) {
+        combined = combined.slice(0, 5);
+      }
+
+      localStorage.setItem(localKey, JSON.stringify(combined));
+      setNotifications(combined);
     });
 
     return () => unsubscribe();
@@ -125,22 +140,37 @@ function SidebarStats({ isOpen, onClose }) {
       }
     }
   };
-
   const markNotificationAsRead = async (notifId) => {
     if (!currentUser?.uid) return;
     try {
-      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), { read: true });
-    } catch (e) { console.error("Eroare la marcarea notificării:", e); }
+      const localKey = `notifications_${currentUser.uid}`;
+      
+      await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notifId));
+
+      const updated = notifications.map(n => 
+        n.id === notifId ? { ...n, read: true } : n
+      );
+
+      localStorage.setItem(localKey, JSON.stringify(updated));
+      setNotifications(updated);
+    } catch (e) { console.error("Eroare la ștergerea notificării din DB:", e); }
   };
 
   const markAllNotificationsAsRead = async () => {
     if (!currentUser?.uid) return;
     try {
+      const localKey = `notifications_${currentUser.uid}`;
       const unreadNotifications = notifications.filter((n) => !n.read);
+      
       for (const notif of unreadNotifications) {
-        await updateDoc(doc(db, "users", currentUser.uid, "notifications", notif.id), { read: true });
+        await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notif.id));
       }
-    } catch (e) { console.error("Eroare la marcarea tuturor notificărilor:", e); }
+
+      const updated = notifications.map(n => ({ ...n, read: true }));
+
+      localStorage.setItem(localKey, JSON.stringify(updated));
+      setNotifications(updated);
+    } catch (e) { console.error("Eroare la curățarea notificărilor:", e); }
   };
 
   if (!currentUser) return null;
@@ -181,16 +211,14 @@ function SidebarStats({ isOpen, onClose }) {
         <div className="sidebar-header">
           <div className="user-avatar-placeholder"><UserRound size={30} color="#8f4ebb" strokeWidth={2.5} /></div>
           <h3>
-            {currentUser.nume || currentUser.email.split('@')[0]}{""}
+            {currentUser.nume || currentUser.email.split('@')[0]}
           </h3>
-
 
           {currentUser?.titluEchipat && dictionarTitluri[currentUser.titluEchipat] && (
             <div className="sidebar-brawl-title-badge" style={{ background: dictionarTitluri[currentUser.titluEchipat].bg }}>
               {dictionarTitluri[currentUser.titluEchipat].name}
             </div>
           )}
-
 
           <div style={{ marginTop: '0px', display: 'flex', justifyContent: 'center', gap: '5px' }}>
             <span style={{
@@ -287,7 +315,7 @@ function SidebarStats({ isOpen, onClose }) {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
-                  {notifications.slice(0, 8).map((notif) => (
+                  {notifications.map((notif) => (
                     <button
                       key={notif.id}
                       type="button"
@@ -512,72 +540,71 @@ function SidebarStats({ isOpen, onClose }) {
           {deleteError && <small style={{ color: '#ff4d4d', textAlign: 'center', display: 'block', padding: '5px' }}>{deleteError}</small>}
         </div>
 
-
       </div>
 
       {modalRaspuns && createPortal(
-    <div
-        onClick={() => setModalRaspuns(null)}
-        style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px',
-            backdropFilter: 'blur(4px)',
-        }}
-    >
         <div
-            onClick={e => e.stopPropagation()}
+            onClick={() => setModalRaspuns(null)}
             style={{
-                background: '#fff', borderRadius: '24px',
-                padding: '40px 36px', maxWidth: '480px', width: '100%',
-                boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+                position: 'fixed', inset: 0, zIndex: 9999,
+                background: 'rgba(0,0,0,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '20px',
+                backdropFilter: 'blur(4px)',
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px', flexShrink: 0,
-                }}>
-                    💬
-                </div>
-                <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Răspuns de la echipa InfoMotion
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                        Mesajul tău a primit un răspuns
-                    </div>
-                </div>
-            </div>
-
-            <div style={{
-                background: '#f8fafc', borderRadius: '14px',
-                padding: '20px', marginBottom: '24px',
-                border: '1.5px solid #e2e8f0',
-                fontSize: '16px', fontWeight: '500',
-                color: '#1e293b', lineHeight: '1.7',
-            }}>
-                {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
-            </div>
-
-            <button
-                onClick={() => setModalRaspuns(null)}
+            <div
+                onClick={e => e.stopPropagation()}
                 style={{
-                    width: '100%', padding: '14px', borderRadius: '30px',
-                    border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                    color: '#fff', fontWeight: '700', fontSize: '15px',
-                    cursor: 'pointer', letterSpacing: '0.3px',
+                    background: '#fff', borderRadius: '24px',
+                    padding: '40px 36px', maxWidth: '480px', width: '100%',
+                    boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
                 }}
             >
-                Am înțeles
-            </button>
-        </div>
-    </div>,
-    document.body
-)}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                    <div style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '18px', flexShrink: 0,
+                    }}>
+                        💬
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Răspuns de la echipa InfoMotion
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                            Mesajul tău a primit un răspuns
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{
+                    background: '#f8fafc', borderRadius: '14px',
+                    padding: '20px', marginBottom: '24px',
+                    border: '1.5px solid #e2e8f0',
+                    fontSize: '16px', fontWeight: '500',
+                    color: '#1e293b', lineHeight: '1.7',
+                }}>
+                    {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
+                </div>
+
+                <button
+                    onClick={() => setModalRaspuns(null)}
+                    style={{
+                        width: '100%', padding: '14px', borderRadius: '30px',
+                        border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                        color: '#fff', fontWeight: '700', fontSize: '15px',
+                        cursor: 'pointer', letterSpacing: '0.3px',
+                    }}
+                >
+                    Am înțeles
+                </button>
+            </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 }
