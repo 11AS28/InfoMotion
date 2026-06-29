@@ -52,30 +52,41 @@ function SidebarStats({ isOpen, onClose }) {
     }
   }, [currentUser, isOpen]);
 
-  // Sincronizare: Citim din DB doar cele cu read == false, dar le păstrăm pe cele vechi în LocalStorage
   useEffect(() => {
     if (!currentUser?.uid) return;
 
     const q = query(
       collection(db, "users", currentUser.uid, "notifications"),
-      where("read", "==", false),
       orderBy("createdAt", "desc"),
       limit(5)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const dbUnreadNotif = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const dbNotif = [];
+      
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        
+        if (data.read === true) {
+          try {
+            await deleteDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id));
+          } catch (err) {
+            console.error("Eroare la curățarea automată a notificării vechi:", err);
+          }
+        } else {
+          dbNotif.push({
+            id: docSnap.id,
+            ...data
+          });
+        }
+      }
 
       const localKey = `notifications_${currentUser.uid}`;
       const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
 
       const mapIdToNotif = new Map();
       localNotif.forEach(n => mapIdToNotif.set(n.id, n));
-      
-      dbUnreadNotif.forEach(n => mapIdToNotif.set(n.id, { ...n, read: false }));
+      dbNotif.forEach(n => mapIdToNotif.set(n.id, { ...n, read: false }));
 
       let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
         const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
