@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
@@ -37,6 +37,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [totalLectii, setTotalLectii] = useState(0);
+  const isUpdatingStreak = useRef(false);
 
   const [lectii, setLectii] = useState([]);
 
@@ -124,6 +125,7 @@ const getStatistici = () => {
 
   const actualizeazaStreak = async () => {
     if (!currentUser) return;
+    if (isUpdatingStreak.current) return;
 
     const userRef = doc(db, 'users', currentUser.uid);
     const azi = new Date().toLocaleDateString("en-US");
@@ -132,31 +134,36 @@ const getStatistici = () => {
     const ultimaLogare = currentUser.lastLoginDate;
     const freezesDisponibile = currentUser.streakFreezes || 0;
 
-    let noulStreak = streakCurent;
+    if (ultimaLogare === azi) {
+      return;
+    }
+
+    isUpdatingStreak.current = true;
+
     let freezesNoi = freezesDisponibile;
+    let dataToUpdate = {
+      streakCount: streakCurent,
+      lastLoginDate: azi
+    };
 
     if (!ultimaLogare) {
       // Prima logare din istoria contului
-      noulStreak = 1;
-    } else if (ultimaLogare === azi) {
-      // S-a logat deja azi, nu facem modificări structurale
-      return;
+      dataToUpdate.streakCount = 1;
     } else {
       const diffTime = Math.abs(new Date(azi) - new Date(ultimaLogare));
       const diffZile = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffZile === 1) {
         // Logare consecutivă (ziua următoare)
-        noulStreak += 1;
+        dataToUpdate.streakCount = streakCurent + 1;
       } else if (diffZile > 1) {
         // A trecut mai mult de o zi de la ultima logare
         if (freezesDisponibile > 0) {
           freezesNoi -= 1; 
-          noulStreak = streakCurent; // Își păstrează streak-ul neatins datorită scutului
+          dataToUpdate.streakFreezes = freezesNoi;
+          dataToUpdate.streakCount = streakCurent; // Își păstrează streak-ul neatins datorită scutului
           
           try {
-            await updateDoc(userRef, { streakFreezes: freezesNoi });
-            
             await addDoc(collection(db, "users", currentUser.uid, "notifications"), {
               type: "streak_inghetat",
               text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`,
@@ -168,7 +175,7 @@ const getStatistici = () => {
           }
         } else {
           // Nu are scuturi, streak-ul se resetează la 1 pentru ziua curentă
-          noulStreak = 1; 
+          dataToUpdate.streakCount = 1; 
           
           if (streakCurent > 0) {
             try {
@@ -187,9 +194,11 @@ const getStatistici = () => {
     }
 
     try {
-      await setDoc(userRef, { streakCount: noulStreak, lastLoginDate: azi }, { merge: true });
+      await setDoc(userRef, dataToUpdate, { merge: true });
     } catch (error) {
       console.error("Eroare la scrierea streak-ului:", error);
+    } finally {
+      isUpdatingStreak.current = false;
     }
   };
 
