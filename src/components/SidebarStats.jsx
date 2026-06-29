@@ -46,11 +46,15 @@ function SidebarStats({ isOpen, onClose }) {
   }, [isOpen, isTeacher, actualizeazaStreak]);
 
   useEffect(() => {
-    if (currentUser) {
-      setHandleInput(currentUser.codeforcesHandle || "");
-      setUsernameInput(currentUser.nume || "");
+    if (isOpen && !isTeacher) {
+      actualizeazaStreak();
     }
-  }, [currentUser, isOpen]);
+    if (currentUser?.uid) {
+      const localKey = `notifications_${currentUser.uid}`;
+      const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
+      setNotifications(localNotif);
+    }
+  }, [isOpen, isTeacher, actualizeazaStreak, currentUser]);
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -71,7 +75,7 @@ function SidebarStats({ isOpen, onClose }) {
           try {
             await deleteDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id));
           } catch (err) {
-            console.error("Eroare la curățarea automată a notificării vechi:", err);
+            console.error("Eroare la curățarea notificării:", err);
           }
         } else {
           dbNotif.push({
@@ -97,7 +101,6 @@ function SidebarStats({ isOpen, onClose }) {
       if (combined.length > 5) {
         combined = combined.slice(0, 5);
       }
-
       localStorage.setItem(localKey, JSON.stringify(combined));
       setNotifications(combined);
     });
