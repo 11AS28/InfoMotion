@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query, updateDoc, doc, serverTimestamp, addDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'sonner';
 
-function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
+function MesajeTab({ adminUsername, adminPassword }) {
     const [mesaje, setMesaje] = useState([]);
     const [loading, setLoading] = useState(true);
     const [mesajSelectat, setMesajSelectat] = useState(null);
@@ -30,7 +28,7 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                 body: JSON.stringify({ action: 'list_messages', username: adminUsername, sessionToken: adminPassword })
             });
             const { messages } = await res.json();
-            setMesaje(messages);
+            setMesaje(messages || []);
         } catch (e) {
             toast.error('Eroare la încărcarea mesajelor.');
         } finally {
@@ -38,14 +36,20 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
         }
     };
 
+    // CORECTAT: Preluarea utilizatorilor se face acum securizat prin API-ul de admin
     const loadUseri = async () => {
         if (totiUserii.length > 0) return;
         setLoadingUseri(true);
         try {
-            const snap = await getDocs(collection(db, 'users'));
-            setTotiUserii(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const res = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_users_minimal', username: adminUsername, sessionToken: adminPassword })
+            });
+            const data = await res.json();
+            setTotiUserii(data.users || []);
         } catch (e) {
-            toast.error('Eroare la încărcarea userilor.');
+            toast.error('Eroare la încărcarea listei de utilizatori.');
         } finally {
             setLoadingUseri(false);
         }
@@ -70,7 +74,7 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
         if (!mesajSelectat.uid) { toast.error('Acest mesaj nu are un UID asociat.'); return; }
         setTrimitere(true);
         try {
-            await fetch('/api/admin', {
+            const res = await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -79,10 +83,15 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                     data: { messageId: mesajSelectat.id, raspuns: raspuns.trim(), numeAdmin, userUid: mesajSelectat.uid }
                 })
             });
-            toast.success('Răspuns trimis cu succes!');
-            setMesajSelectat(null);
-            setRaspuns('');
-            await loadMesaje();
+            const result = await res.json();
+            if(result.success) {
+                toast.success('Răspuns trimis cu succes!');
+                setMesajSelectat(null);
+                setRaspuns('');
+                await loadMesaje();
+            } else {
+                toast.error(result.message || 'Eroare la trimitere.');
+            }
         } catch (e) {
             toast.error('Eroare: ' + e.message);
         } finally {
@@ -90,7 +99,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
         }
     };
 
-    // ── Trimite anunț ──
     const handleCautaUser = (val) => {
         setAnuntUserId(val);
         if (!val.trim()) { setAnuntUserSuggestii([]); return; }
@@ -102,49 +110,44 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
         );
     };
 
+    // CORECTAT: Trimiterea anunțurilor/notificărilor trece acum exclusiv prin backend-ul de Vercel
     const handleTrimiteAnunt = async () => {
         if (!anuntText.trim()) { toast.error('Mesajul anunțului nu poate fi gol.'); return; }
 
-        if (anuntTip === 'unul' && !anuntUserId.trim()) {
-            toast.error('Selectează un user.');
-            return;
+        let targetUserId = null;
+        if (anuntTip === 'unul') {
+            if (!anuntUserId.trim()) { toast.error('Selectează un user.'); return; }
+            const user = totiUserii.find(u => u.username === anuntUserId || u.email === anuntUserId || u.id === anuntUserId);
+            if (!user) { toast.error('Userul nu a fost găsit.'); return; }
+            targetUserId = user.id;
         }
 
         setAnuntTrimite(true);
         try {
-            if (anuntTip === 'toti') {
-                // trimitem la toți userii în paralel
-                const batch = totiUserii.map(u =>
-                    addDoc(collection(db, 'users', u.id, 'notifications'), {
-                        type: 'anunt_admin',
-                        text: anuntText.trim(),
-                        read: false,
-                        createdAt: serverTimestamp(),
-                        cheieSecuritate: adminPassword,
-                        adminUsername,
-                    })
-                );
-                await Promise.all(batch);
-                toast.success(`Anunț trimis la ${totiUserii.length} utilizatori! 🎉`);
+            const res = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'broadcast_announcement', // Acțiune nouă în backend
+                    username: adminUsername,
+                    sessionToken: adminPassword,
+                    data: {
+                        type: anuntTip, // 'toti' sau 'unul'
+                        userId: targetUserId,
+                        text: anuntText.trim()
+                    }
+                })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                toast.success(result.message || 'Anunț trimis cu succes! 🎉');
+                setAnuntText('');
+                setAnuntUserId('');
+                setAnuntUserSuggestii([]);
             } else {
-                // găsim userul după username sau email
-                const user = totiUserii.find(u =>
-                    u.username === anuntUserId || u.email === anuntUserId || u.id === anuntUserId
-                );
-                if (!user) { toast.error('Userul nu a fost găsit.'); setAnuntTrimite(false); return; }
-                await addDoc(collection(db, 'users', user.id, 'notifications'), {
-                    type: 'anunt_admin',
-                    text: anuntText.trim(),
-                    read: false,
-                    createdAt: serverTimestamp(),
-                    cheieSecuritate: adminPassword,
-                    adminUsername,
-                });
-                toast.success(`Anunț trimis către ${user.username || user.email}! ✅`);
+                toast.error(result.message || 'Eroare la trimiterea anunțului.');
             }
-            setAnuntText('');
-            setAnuntUserId('');
-            setAnuntUserSuggestii([]);
         } catch (e) {
             toast.error('Eroare la trimitere: ' + e.message);
         } finally {
@@ -160,11 +163,10 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
 
     const formatData = (timestamp) => {
         if (!timestamp) return '—';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
         return date.toLocaleString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
-    // ── Stiluri comune ──
     const cardStyle = { background: '#fff', borderRadius: '14px', border: '1.5px solid #e2e8f0' };
     const btnPrimary = (disabled) => ({
         padding: '11px 28px', borderRadius: '30px', border: 'none',
@@ -176,8 +178,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-            {/* ── Toggle secțiune ── */}
             <div style={{ display: 'flex', gap: '10px' }}>
                 {[
                     { key: 'mesaje', label: '💬 Mesaje primite' },
@@ -198,14 +198,11 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                 ))}
             </div>
 
-            {/* ════════════════ SECȚIUNEA MESAJE ════════════════ */}
             {sectiune === 'mesaje' && (
                 <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-
-                    {/* Lista mesaje */}
                     <div style={{ flex: '0 0 380px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ ...cardStyle, padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                 <div className="admin-section-title" style={{ margin: 0 }}>Mesaje ({mesajeFiltrate.length})</div>
                                 <button onClick={loadMesaje} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>🔄</button>
                             </div>
@@ -256,7 +253,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                         )}
                     </div>
 
-                    {/* Panel detalii + răspuns */}
                     <div style={{ flex: 1 }}>
                         {!mesajSelectat ? (
                             <div style={{ ...cardStyle, padding: '60px 20px', textAlign: 'center', color: '#94a3b8' }}>
@@ -312,11 +308,8 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                 </div>
             )}
 
-            {/* ════════════════ SECȚIUNEA ANUNȚ ════════════════ */}
             {sectiune === 'anunt' && (
                 <div style={{ maxWidth: '620px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-                    {/* Selector destinatar */}
                     <div style={{ ...cardStyle, padding: '20px 24px' }}>
                         <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '16px' }}>📢 Către cine trimiți?</div>
                         <div style={{ display: 'flex', gap: '10px' }}>
@@ -337,7 +330,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                         </div>
                     </div>
 
-                    {/* Câmp user specific */}
                     {anuntTip === 'unul' && (
                         <div style={{ ...cardStyle, padding: '20px 24px', position: 'relative' }}>
                             <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '8px' }}>Username sau email</label>
@@ -350,7 +342,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                                 onFocus={e => e.target.style.borderColor = '#01696f'}
                                 onBlur={e => e.target.style.borderColor = '#e2e8f0'}
                             />
-                            {/* Sugestii autocomplete */}
                             {anuntUserSuggestii.length > 0 && (
                                 <div style={{ position: 'absolute', left: '24px', right: '24px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', zIndex: 10, overflow: 'hidden', marginTop: '4px' }}>
                                     {anuntUserSuggestii.map(u => (
@@ -366,7 +357,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                         </div>
                     )}
 
-                    {/* Textul anunțului */}
                     <div style={{ ...cardStyle, padding: '20px 24px' }}>
                         <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '8px' }}>Mesajul anunțului</label>
                         <textarea
@@ -383,7 +373,6 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
                         <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right', marginTop: '4px' }}>{anuntText.length}/500</div>
                     </div>
 
-                    {/* Preview + buton trimite */}
                     <div style={{ ...cardStyle, padding: '20px 24px' }}>
                         {anuntText.trim() && (
                             <div style={{ marginBottom: '16px', padding: '14px 16px', borderRadius: '10px', background: '#f0fdf4', border: '1.5px solid #bbf7d0' }}>
