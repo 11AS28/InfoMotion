@@ -4,7 +4,7 @@ import Editor, {
   BtnBold, BtnItalic, BtnUnderline, BtnStrikeThrough,
   BtnNumberedList, BtnBulletList, BtnLink, BtnClearFormatting, Toolbar,
 } from 'react-simple-wysiwyg';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'sonner';
 
@@ -119,6 +119,7 @@ export default function AdaugaTab({
       }
 
       localStorage.removeItem("infoMotion_lectii");
+      await setDoc(doc(db, 'meta', 'lectii'), { ultimaActualizare: Date.now() });
 
       if (propunereInCurs) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);

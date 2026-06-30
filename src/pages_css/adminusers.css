@@ -5,11 +5,13 @@ body:has(.admin-login-overlay) {
 }
 
 body.admin-layout-activ {
-  background-color: #f4f4f5 !important;
+  background-color: f4f4z !important;
   background: #f4f4f5 !important;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
 }
+
 
 .admin-login-overlay {
   display: flex;
@@ -38,7 +40,7 @@ body.admin-layout-activ {
   max-width: 400px;
   box-sizing: border-box;
   text-align: left;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 
@@ -267,7 +269,9 @@ body.admin-layout-activ {
 }
 
 @media (max-width: 950px) {
-  .desktop-table { display: none; }
+  .desktop-table {
+    display: none;
+  }
 
   .mobile-cards {
     display: block;
@@ -284,7 +288,9 @@ body.admin-layout-activ {
     transition: border-color 0.15s;
   }
 
-  .user-card:hover { border-color: #0d9488; }
+  .user-card:hover {
+    border-color: #0d9488;
+  }
 
   .card-row {
     display: flex;
@@ -316,4 +322,19 @@ body.admin-layout-activ {
     gap: 14px;
     align-items: flex-start !important;
   }
+}
+
+.admin-panel-container h1,
+.admin-panel-container h2,
+.admin-panel-container h3,
+.admin-panel-container h4,
+.admin-panel-container p {
+  color: inherit;
+}
+
+.admin-login-form .login-input,
+.admin-login-form .login-input:focus,
+.admin-login-form input {
+  color: #18181b !important;
+  -webkit-text-fill-color: #18181b !important;
 }

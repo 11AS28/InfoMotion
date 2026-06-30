@@ -37,7 +37,7 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-   return (
+  return (
     <div className="admin-login-overlay" style={{ background: '#09090b' }}>
       <form onSubmit={handleLogin} className="admin-login-form">
         <div className="login-header">
@@ -136,6 +136,11 @@ function AdminUsers() {
     if (isAuthorized) fetchUsers();
   }, [isAuthorized]);
 
+  useEffect(() => {
+    document.body.classList.add('admin-layout-activ');
+    return () => document.body.classList.remove('admin-layout-activ');
+  }, []);
+
   const handleEditClick = (user, e) => {
     e.stopPropagation();
     setEditUserId(user.id);
@@ -164,13 +169,13 @@ function AdminUsers() {
       let finalData = { ...editFormData };
 
       if (typeof finalData.lectiiTerminate === 'string') {
-        try { finalData.lectiiTerminate = JSON.parse(finalData.lectiiTerminate); } catch {}
+        try { finalData.lectiiTerminate = JSON.parse(finalData.lectiiTerminate); } catch { }
       }
       if (typeof finalData.statistici === 'string') {
-        try { finalData.statistici = JSON.parse(finalData.statistici); } catch {}
+        try { finalData.statistici = JSON.parse(finalData.statistici); } catch { }
       }
       if (typeof finalData.temeDeblocate === 'string') {
-        try { finalData.temeDeblocate = JSON.parse(finalData.temeDeblocate); } catch {}
+        try { finalData.temeDeblocate = JSON.parse(finalData.temeDeblocate); } catch { }
       }
 
       finalData.cheieSecuritate = loggedAdmin.password;
@@ -535,12 +540,12 @@ function AdminUsers() {
 
       {totalPages > 1 && (
         <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', margin: '20px 0' }}>
-          <button 
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            style={{ 
-              ...btnStyle, 
-              background: currentPage === 1 ? '#333' : '#378ADD', 
+            style={{
+              ...btnStyle,
+              background: currentPage === 1 ? '#333' : '#378ADD',
               cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
               opacity: currentPage === 1 ? 0.5 : 1
             }}
@@ -550,12 +555,12 @@ function AdminUsers() {
           <span style={{ color: '#aaa', fontSize: '0.9rem', fontWeight: 'bold' }}>
             Pagina {currentPage} din {totalPages}
           </span>
-          <button 
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            style={{ 
-              ...btnStyle, 
-              background: currentPage === totalPages ? '#333' : '#378ADD', 
+            style={{
+              ...btnStyle,
+              background: currentPage === totalPages ? '#333' : '#378ADD',
               cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
               opacity: currentPage === totalPages ? 0.5 : 1
             }}
