@@ -23,7 +23,7 @@ import {
   increment, 
   arrayUnion,
   addDoc,
-  deleteDoc, // Integrat pentru curățarea notificărilor vechi
+  deleteDoc,
   serverTimestamp 
 } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
