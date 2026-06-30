@@ -1,11 +1,8 @@
-// AdaugaTab.jsx modificat profesional pentru Serverless API
 import { useState } from 'react';
 import Editor, {
   BtnBold, BtnItalic, BtnUnderline, BtnStrikeThrough,
   BtnNumberedList, BtnBulletList, BtnLink, BtnClearFormatting, Toolbar,
 } from 'react-simple-wysiwyg';
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'sonner';
 
 // Stare implicită pentru un quiz gol
@@ -15,12 +12,12 @@ const emptyQuiz = () =>
 export default function AdaugaTab({
   isEditing,
   propunereInCurs,
-  propuneri,
-  initialData,        // obiect cu toate câmpurile precompletate (pt edit/aprobare)
-  onSuccess,          // callback după publicare
+  propuneri = [],
+  initialData,        
+  onSuccess,          
   onCancel,
-  adminPassword,      // Primit din Dashboard pentru validarea securizării
-  adminUsername,      // Primit din Dashboard pentru validarea securizării
+  adminPassword,      
+  adminUsername,      
 }) {
   const d = initialData || {};
 
@@ -31,16 +28,15 @@ export default function AdaugaTab({
   const [fDescriere, setFDescriere] = useState(d.descriere || '');
   const [fAdaugatDe, setFAdaugatDe] = useState(d.adaugatDe || adminUsername || '');
   const [fTeorie, setFTeorie] = useState(d.teorie || '');
-  const [fCod, setFCod] = useState(d.cod || '');
+  const [fCod, setFCod] = useState(d.cod || d.codCPlusPlus || '');
   const [fCodSimulatorCPP, setFCodSimulatorCPP] = useState(d.codSimulatorCPP || '');
-  const [fAnim, setFAnim] = useState(d.anim || 'null');
-  const [fAnimCustom, setFAnimCustom] = useState(d.animCustom || '');
-  const [pbRows, setPbRows] = useState(d.pbRows || [{ id: '', titlu: '', url: '' }]);
+  const [fAnim, setFAnim] = useState(d.animatie ? (['BubbleSortAnim', 'CautareBinaraAnim'].includes(d.animatie) ? d.animatie : 'custom') : 'null');
+  const [fAnimCustom, setFAnimCustom] = useState(!['BubbleSortAnim', 'CautareBinaraAnim', undefined, null].includes(d.animatie) ? d.animatie : '');
+  const [pbRows, setPbRows] = useState(d.problemePbinfo || d.pbRows || [{ id: '', titlu: '', url: '' }]);
   const [quiz, setQuiz] = useState(d.quiz || emptyQuiz());
   const [cfProblems, setCfProblems] = useState(d.codeforces || ['', '']);
   const [loading, setLoading] = useState(false);
 
-  // Helper ca să știm rapid dacă suntem pe modul "Concepte"
   const esteConcept = fClasa === 'concepte';
 
   const updatePb = (idx, field, val) =>
@@ -55,20 +51,27 @@ export default function AdaugaTab({
     setQuiz(q);
   };
 
+  // CORECTAT: Schimbat 'username' în 'adminUsername' pentru a evita crash-ul de referință nedeclarată
   const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
-    await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'send_notification',
-        username, sessionToken: adminPassword,
-        data: { userId, type, text }
-      })
-    });
+    try {
+      await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send_notification',
+          username: adminUsername, 
+          sessionToken: adminPassword,
+          data: { userId, type, text }
+        })
+      });
+    } catch (e) {
+      console.error('Eroare la trimiterea notificării de aprobare:', e);
+    }
   };
+
   const handlePublish = async () => {
-    if (!fId || !fTitlu) return toast.warning('Completează ID și Titlu!');
+    if (!fId.trim() || !fTitlu.trim()) return toast.warning('Completează ID și Titlu!');
     setLoading(true);
 
     try {
@@ -79,10 +82,9 @@ export default function AdaugaTab({
 
       let ordineFinala = Number(fOrdine);
 
-      // Pregătim obiectul curat cu datele lecției
       const lectieData = {
-        id: fId, clasa: clasaFinala, categorie: categorieVal,
-        ordine: ordineFinala, titlu: fTitlu, descriere: fDescriere,
+        id: fId.trim(), clasa: clasaFinala, categorie: categorieVal,
+        ordine: ordineFinala, titlu: fTitlu.trim(), descriere: fDescriere.trim(),
         adaugatDe: fAdaugatDe || 'Echipa InfoMotion',
         teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
@@ -92,7 +94,6 @@ export default function AdaugaTab({
         dataModificarii: new Date().toISOString()
       };
 
-      // Trimitem totul către serverless API-ul nostru global securizat
       const response = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +107,7 @@ export default function AdaugaTab({
             clasaFinala,
             categorieVal,
             ordineFinala,
-            fId,
+            fId: fId.trim(),
             lectieData
           }
         })
@@ -116,10 +117,11 @@ export default function AdaugaTab({
         throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
       }
 
+      // Curățăm cache-ul local dacă există
       localStorage.removeItem("infoMotion_lectii");
-      await setDoc(doc(db, 'meta', 'lectii'), { ultimaActualizare: Date.now() });
 
-      if (propunereInCurs) {
+      // Trimitem notificarea de aprobare dacă este cazul
+      if (propunereInCurs && propuneri.length > 0) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {
           await sendUserNotification(propGasita.autorId, 'lectie_aprobata',
@@ -141,65 +143,62 @@ export default function AdaugaTab({
       <div className="admin-form-title">{isEditing ? `Editare lecție: ${fId}` : 'Lecție nouă'}</div>
 
       {propunereInCurs && (
-        <div className="admin-propunere-banner">
+        <div className="admin-propunere-banner" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px' }}>
           <strong>Mod Aprobare Propunere:</strong> datele au fost precompletate.
           Adaugă ID-ul lecției, verifică textul și apoi publică.
         </div>
       )}
 
-      <div className="admin-form-grid">
-        {/* ID */}
-        <div className="admin-field">
-          <label>ID (Slug)</label>
-          <input type="text" value={fId} onChange={(e) => setFId(e.target.value)} disabled={isEditing && !propunereInCurs} placeholder="ex: grafuri-introducere" />
-          {isEditing && !propunereInCurs && <small>ID-ul nu poate fi schimbat după publicare.</small>}
-        </div>
+      <div className="admin-form-grid" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+          {/* ID */}
+          <div className="admin-field" style={{ flex: '1 1 200px' }}>
+            <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>ID (Slug)</label>
+            <input type="text" value={fId} onChange={(e) => setFId(e.target.value)} disabled={isEditing && !propunereInCurs} placeholder="ex: grafuri-introducere" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            {isEditing && !propunereInCurs && <small style={{ color: '#64748b', fontSize: '11px' }}>ID-ul nu poate fi schimbat după publicare.</small>}
+          </div>
 
-        {/* Clasă */}
-        <div className="admin-field">
-          <label>Clasă / Secțiune specială</label>
-          <select value={fClasa} onChange={(e) => setFClasa(e.target.value)}>
-            <option value="clasa-9">Clasa 9</option>
-            <option value="clasa-10">Clasa 10</option>
-            <option value="clasa-11">Clasa 11</option>
-            <option value="olimpici">Olimpici</option>
-            <option value="concepte">Concepte Generale</option>
-          </select>
-        </div>
+          {/* Clasă */}
+          <div className="admin-field" style={{ flex: '1 1 200px' }}>
+            <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Clasă / Secțiune specială</label>
+            <select value={fClasa} onChange={(e) => setFClasa(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }}>
+              <option value="clasa-9">Clasa 9</option>
+              <option value="clasa-10">Clasa 10</option>
+              <option value="clasa-11">Clasa 11</option>
+              <option value="olimpici">Olimpici</option>
+              <option value="concepte">Concepte Generale</option>
+            </select>
+          </div>
 
-        {/* Ordine */}
-        <div className="admin-field">
-          <label>Număr de ordine</label>
-          <input type="number" value={fOrdine} onChange={(e) => setFOrdine(e.target.value)} min="1" placeholder="ex: 1" />
+          {/* Ordine */}
+          <div className="admin-field" style={{ flex: '1 1 120px' }}>
+            <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Număr de ordine</label>
+            <input type="number" value={fOrdine} onChange={(e) => setFOrdine(e.target.value)} min="1" placeholder="ex: 1" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+          </div>
         </div>
 
         {/* Titlu */}
-        <div className="admin-field admin-field--full">
-          <label>Titlu</label>
-          <input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} />
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Titlu</label>
+          <input type="text" value={fTitlu} onChange={(e) => setFTitlu(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
         </div>
 
         {/* Descriere */}
-        <div className="admin-field admin-field--full">
-          <label>Descriere scurtă</label>
-          <input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} />
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Descriere scurtă</label>
+          <input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
         </div>
 
-        <div className="admin-field admin-field--full">
-          <label>Lecție adăugată de</label>
-          <input
-            type="text"
-            value={fAdaugatDe}
-            onChange={(e) => setFAdaugatDe(e.target.value)}
-            placeholder="ex: Prof. Ionescu"
-          />
-          <small style={{ color: 'black' }}>Apare pe pagina lecției, sub titlu. Dacă lași gol, apare „Echipa InfoMotion”.</small>
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Lecție adăugată de</label>
+          <input type="text" value={fAdaugatDe} onChange={(e) => setFAdaugatDe(e.target.value)} placeholder="ex: Prof. Ionescu" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+          <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>Apare pe pagina lecției, sub titlu. Dacă lași gol, apare „Echipa InfoMotion”.</small>
         </div>
 
         {/* Teorie */}
-        <div className="admin-field admin-field--full" style={{ marginBottom: '40px' }}>
-          <label style={{ marginBottom: '8px', display: 'block' }}>Teorie lecție (Rich Text Editor)</label>
-          <div style={{ background: '#fff', color: '#333', borderRadius: '8px' }}>
+        <div className="admin-field" style={{ marginBottom: '10px' }}>
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Teorie lecție (Rich Text Editor)</label>
+          <div style={{ background: '#fff', color: '#333', borderRadius: '8px', border: '1px solid #cbd5e1', overflow: 'hidden' }}>
             <Editor value={fTeorie} onChange={(e) => setFTeorie(e.target.value)} style={{ minHeight: '250px' }}>
               <Toolbar>
                 <BtnBold /><BtnItalic /><BtnUnderline /><BtnStrikeThrough />
@@ -210,31 +209,34 @@ export default function AdaugaTab({
               </Toolbar>
             </Editor>
           </div>
-          <p className="admin-help-text">
-            Pentru a stiliza lecția poți băga în chenar albastru un titlu punând ### la începutul liniei.
+          <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>
+            💡 Pentru a stiliza lecția poți introduce în chenar albastru un titlu secundar adăugând structura standard Markdown `###` la începutul liniei.
           </p>
         </div>
 
         {/* Animație */}
-        <div className="admin-field admin-field--full">
-          <label>Animație Interactivă (Opțională)</label>
-          <div className="admin-anim-options" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Animație Interactivă (Opțională)</label>
+          <div style={{ display: 'flex', gap: '10px', margin: '6px 0 10px 0' }}>
             {['null', 'BubbleSortAnim', 'CautareBinaraAnim', 'custom'].map((opt) => (
-              <button key={opt} type="button" className={`admin-anim-opt ${fAnim === opt ? 'selected' : ''}`} onClick={() => setFAnim(opt)}>
+              <button key={opt} type="button" onClick={() => setFAnim(opt)} style={{
+                padding: '8px 16px', borderRadius: '20px', border: fAnim === opt ? '2px solid #01696f' : '1px solid #cbd5e1',
+                background: fAnim === opt ? 'rgba(1,105,111,0.08)' : '#fff', color: fAnim === opt ? '#01696f' : '#475569',
+                fontWeight: '700', fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s'
+              }}>
                 {opt === 'null' ? 'Fără' : opt === 'custom' ? 'Alt nume' : opt}
               </button>
             ))}
           </div>
           {fAnim === 'custom' && (
-            <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă React" style={{ marginTop: '10px' }} />
+            <input type="text" value={fAnimCustom} onChange={(e) => setFAnimCustom(e.target.value)} placeholder="Nume componentă exactă din React (ex: ArboreIndexatAnim)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
           )}
         </div>
 
         {/* Cod C++ */}
-        <div className="admin-field admin-field--full">
-          <label>Cod C++ (Lasă gol dacă nu e nevoie)</label>
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>Cod C++</label>
           <textarea
-            className="admin-textarea-code"
             value={fCod}
             onChange={(e) => setFCod(e.target.value)}
             onKeyDown={(e) => {
@@ -249,37 +251,52 @@ export default function AdaugaTab({
               }
             }}
             rows={8}
+            placeholder="// Introdu aici implementarea algoritmului..."
+            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '14px', background: '#f8fafc', outline: 'none' }}
           />
         </div>
 
-        {/* SECȚIUNI ASCUNSE PENTRU CONCEPTE */}
+        {/* Conținut ascuns dacă e doar Concept General */}
         {!esteConcept && (
           <>
             {/* Pbinfo */}
-            <div className="admin-field admin-field--full">
-              <div className="admin-section-divider">Probleme Pbinfo</div>
-              {pbRows.map((row, idx) => (
-                <div key={idx} className="admin-pb-row">
-                  <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" className="admin-pb-id" />
-                  <input type="text" value={row.titlu} onChange={(e) => updatePb(idx, 'titlu', e.target.value)} placeholder="Titlu" />
-                  <input type="text" value={row.url} onChange={(e) => updatePb(idx, 'url', e.target.value)} placeholder="URL" />
-                  <button type="button" onClick={() => removePbRow(idx)}>✕</button>
-                </div>
-              ))}
-              <button type="button" className="admin-add-pb" onClick={addPbRow}>+ Adaugă link</button>
+            <div className="admin-field" style={{ marginTop: '10px' }}>
+              <div style={{ fontWeight: '700', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '14px', fontSize: '14px', color: '#0f172a' }}>Probleme Pbinfo</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {pbRows.map((row, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input type="text" value={row.id} onChange={(e) => updatePb(idx, 'id', e.target.value)} placeholder="ID" style={{ width: '70px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" value={row.titlu} onChange={(e) => updatePb(idx, 'titlu', e.target.value)} placeholder="Titlu problemă" style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" value={row.url} onChange={(e) => updatePb(idx, 'url', e.target.value)} placeholder="URL complet link" style={{ flex: 2, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    {pbRows.length > 1 && (
+                      <button type="button" onClick={() => removePbRow(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', padding: '0 8px' }}>✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={addPbRow} style={{ marginTop: '10px', background: '#f1f5f9', border: '1px dashed #cbd5e1', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#475569' }}>+ Adaugă link problemă</button>
+            </div>
+
+            {/* Codeforces Tracker (Sincronizat cu starea) */}
+            <div className="admin-field" style={{ marginTop: '15px' }}>
+              <div style={{ fontWeight: '700', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '14px', fontSize: '14px', color: '#0f172a' }}>Probleme Codeforces Tracker</div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="text" placeholder="Problemă 1 (ex: 123A)" value={cfProblems[0] || ''} onChange={(e) => setCfProblems([e.target.value, cfProblems[1] || ''])} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                <input type="text" placeholder="Problemă 2 (ex: 456B)" value={cfProblems[1] || ''} onChange={(e) => setCfProblems([cfProblems[0] || '', e.target.value])} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              </div>
             </div>
 
             {/* Quiz */}
-            <div className="admin-field admin-field--full">
-              <div className="admin-section-divider">Quiz (5 Întrebări)</div>
+            <div className="admin-field" style={{ marginTop: '15px' }}>
+              <div style={{ fontWeight: '700', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '14px', fontSize: '14px', color: '#0f172a' }}>Quiz Evaluare (Set standard de 5 Întrebări)</div>
               {quiz.map((q, qIdx) => (
-                <div key={qIdx} className="admin-quiz-setup-card" style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
-                  <input type="text" placeholder={`Întrebarea ${qIdx + 1}`} value={q.intrebare} onChange={(e) => updateQuiz(qIdx, 'intrebare', e.target.value)} style={{ width: '100%', fontWeight: 'bold', marginBottom: '10px' }} />
+                <div key={qIdx} style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '10px', marginBottom: '15px', background: '#f8fafc' }}>
+                  <input type="text" placeholder={`Cerință Întrebare ${qIdx + 1}`} value={q.intrebare} onChange={(e) => updateQuiz(qIdx, 'intrebare', e.target.value)} style={{ width: '100%', fontWeight: '700', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '12px', background: '#fff' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {q.variante.map((v, vIdx) => (
                       <div key={vIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-                        <input type="radio" name={`correct-${qIdx}`} checked={q.corect === vIdx} onChange={() => updateQuiz(qIdx, 'corect', vIdx)} style={{ flexShrink: 0, width: '16px', height: '16px', cursor: 'pointer' }} />
-                        <input type="text" placeholder={`Varianta ${vIdx + 1}`} value={v} onChange={(e) => updateQuiz(qIdx, 'varianta', e.target.value, vIdx)} style={{ flex: 1, minWidth: 0 }} />
+                        <input type="radio" name={`correct-${qIdx}`} checked={q.corect === vIdx} onChange={() => updateQuiz(qIdx, 'corect', vIdx)} style={{ flexShrink: 0, width: '17px', height: '17px', cursor: 'pointer' }} />
+                        <input type="text" placeholder={`Răspunsul ${vIdx + 1}`} value={v} onChange={(e) => updateQuiz(qIdx, 'varianta', e.target.value, vIdx)} style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }} />
                       </div>
                     ))}
                   </div>
@@ -290,12 +307,16 @@ export default function AdaugaTab({
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-        <button className="admin-btn-primary" onClick={handlePublish} disabled={loading}>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '30px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+        <button onClick={handlePublish} disabled={loading} style={{
+          padding: '12px 28px', borderRadius: '30px', border: 'none',
+          background: loading ? '#cbd5e1' : '#01696f', color: loading ? '#94a3b8' : '#fff',
+          fontWeight: '700', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s'
+        }}>
           {loading ? 'Se procesează...' : isEditing || propunereInCurs ? '💾 Salvează modificările' : '🚀 Publică pe Site'}
         </button>
         {(isEditing || propunereInCurs) && (
-          <button className="admin-btn-secondary" onClick={onCancel}>Anulează</button>
+          <button onClick={onCancel} style={{ padding: '12px 24px', borderRadius: '30px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>Anulează</button>
         )}
       </div>
     </div>

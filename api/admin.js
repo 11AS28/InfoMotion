@@ -88,7 +88,8 @@ export default async function handler(req, res) {
           const propRef = db.collection('propuneri_lectii').doc(propunereInCurs);
           batch.delete(propRef);
         }
-
+        const metaRef = db.collection('meta').doc('lectii');
+        batch.set(metaRef, { ultimaActualizare: Date.now() }, { merge: true });
         await batch.commit();
         return res.status(200).json({ success: true });
       }
