@@ -146,18 +146,13 @@ function Dashboard({ adminInfo, onLogout }) {
   useEffect(() => {
     const initTab = async () => {
       if (activeTab === 'overview' || activeTab === 'lectii') {
-          if (firebaseLessons.length === 0) 
             await loadLessons();
       } else if (activeTab === 'utilizatori') {
-          if (firebaseUsers.length === 0) 
             await loadUsers();
       } else if (activeTab === 'aprobari') {
-          if (propuneri.length === 0) 
             await loadProposals();
-          if (firebaseLessons.length === 0) 
             await loadLessons();
       } else if (activeTab === 'todo') {
-          if (todos.length === 0) 
             await loadTodos();
       }
     };
