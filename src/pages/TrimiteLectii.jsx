@@ -17,7 +17,6 @@ const TrimiteLectii = () => {
         teorie: "",
         codCPlusPlus: "",
         acceptTerms: false,
-        // Daca este logat, precompletam cu numele lui, altfel il lasam gol sa scrie el
         numeAutor: currentUser ? (currentUser.nume || currentUser.email.split('@')[0]) : "" 
     });
 

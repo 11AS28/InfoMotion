@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
-import ArrayVisualizer from '../components/ArrayVisualizer'; 
+import ArrayVisualizer from '../components/ArrayVisualizer';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy } from 'lucide-react';
@@ -61,14 +61,14 @@ function LessonPage() {
 
 
   const algoritmiBackend = [
-    "bubbleSort", 
-    "BubbleSortAnim", 
-    "strlen_dinamic", 
+    "bubbleSort",
+    "BubbleSortAnim",
+    "strlen_dinamic",
     "strcpy_dinamic",
     "quick_sort_dinamic",
     "cautare_binara_div_imp"
   ];
-  
+
   const handleCopyCode = async () => {
     if (!lectie?.codCPlusPlus) return;
     try {
@@ -97,14 +97,14 @@ function LessonPage() {
     async function incarcaDatePagina() {
       setLoading(true);
       if (isMounted) {
-        setAnimationSteps([]); 
+        setAnimationSteps([]);
         setCustomInput("");
       }
 
       try {
         // 1. Luăm mega-cache-ul global pe care l-am creat în AuthContext
         const cachedLessonsRaw = localStorage.getItem('infoMotion_lectii');
-        
+
         if (cachedLessonsRaw) {
           const toateLectiile = JSON.parse(cachedLessonsRaw);
 
@@ -181,7 +181,7 @@ function LessonPage() {
         body: JSON.stringify({
           algorithmType: lectie.animatie,
           inputData: parsedData,
-          target: targetVal 
+          target: targetVal
         })
       });
 
@@ -193,10 +193,10 @@ function LessonPage() {
         if (esteLectieSiruri) {
           const textCurat = customInput.replace(/,/g, '').trim();
           const asciiArrayComplet = textCurat.split('').map(l => l.charCodeAt(0));
-          asciiArrayComplet.push(0); 
+          asciiArrayComplet.push(0);
 
           pasiCuratatiPentruVisualizer = data.steps.map((pas) => ({
-            array: asciiArrayComplet, 
+            array: asciiArrayComplet,
             highlights: pas.currentIndex !== undefined ? [pas.currentIndex] : [],
             explanation: pas.explanation || "",
             status: pas.status || "active"
@@ -252,14 +252,14 @@ function LessonPage() {
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
-    
+
   };
 
 
 
-  
+
   return (
-    
+
 
     <div className="page-wrapper">
       <br />
@@ -286,6 +286,9 @@ function LessonPage() {
           <header className="lesson-header">
             <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
             <h1>{lectie.titlu}</h1>
+            <p className="lesson-author">
+              Lecție adăugată de <span className="lesson-author-name">{lectie.adaugatDe || "Echipa InfoMotion"}</span>
+            </p>
           </header>
 
           <section className="lesson-content">
@@ -342,7 +345,7 @@ function LessonPage() {
                           {lectie.animatie === "cautare_binara_div_imp" && (
                             <div style={{ width: '100%' }}>
                               <label className="input-zone-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#1fe0f9' }}>
-                                 CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
+                                CE NUMĂR VREI SĂ CĂUTĂM ÎN VECTOR?
                               </label>
                               <input
                                 type="number"
@@ -375,7 +378,7 @@ function LessonPage() {
                           )
                         ) : (
                           <div className="animation-placeholder">
-                             Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
+                            Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
                           </div>
                         )}
                       </div>
@@ -394,7 +397,7 @@ function LessonPage() {
             <section className="lesson-code" style={{ position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
-                
+
                 <button
                   onClick={() => {
                     localStorage.setItem(`infomotion_code_${idLectie}`, lectie.codCPlusPlus);
@@ -427,7 +430,7 @@ function LessonPage() {
                     e.currentTarget.style.boxShadow = '0 0 15px rgba(31, 224, 249, 0.1)';
                   }}
                 >
-                   Modifică și Rulează codul
+                  Modifică și Rulează codul
                 </button>
               </div>
 

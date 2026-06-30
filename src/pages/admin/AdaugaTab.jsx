@@ -29,6 +29,7 @@ export default function AdaugaTab({
   const [fOrdine, setFOrdine] = useState(d.ordine || 1);
   const [fTitlu, setFTitlu] = useState(d.titlu || '');
   const [fDescriere, setFDescriere] = useState(d.descriere || '');
+  const [fAdaugatDe, setFAdaugatDe] = useState(d.adaugatDe || adminUsername || '');
   const [fTeorie, setFTeorie] = useState(d.teorie || '');
   const [fCod, setFCod] = useState(d.cod || '');
   const [fCodSimulatorCPP, setFCodSimulatorCPP] = useState(d.codSimulatorCPP || '');
@@ -84,6 +85,7 @@ export default function AdaugaTab({
       const lectieData = {
         id: fId, clasa: clasaFinala, categorie: categorieVal,
         ordine: ordineFinala, titlu: fTitlu, descriere: fDescriere,
+        adaugatDe: fAdaugatDe || 'Echipa InfoMotion',
         teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
         problemePbinfo: esteConcept ? [] : pbRows.filter((r) => r.id || r.titlu),
@@ -182,6 +184,17 @@ export default function AdaugaTab({
         <div className="admin-field admin-field--full">
           <label>Descriere scurtă</label>
           <input type="text" value={fDescriere} onChange={(e) => setFDescriere(e.target.value)} />
+        </div>
+
+        <div className="admin-field admin-field--full">
+          <label>Lecție adăugată de</label>
+          <input
+            type="text"
+            value={fAdaugatDe}
+            onChange={(e) => setFAdaugatDe(e.target.value)}
+            placeholder="ex: Prof. Ionescu"
+          />
+          <small style={{color: 'black'}}>Apare pe pagina lecției, sub titlu. Dacă lași gol, apare „Echipa InfoMotion”.</small>
         </div>
 
         {/* Teorie */}

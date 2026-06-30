@@ -534,60 +534,53 @@ body {
 
 
 
-/* Containerul gri-închis din jurul căsuței de input */
 .input-control-zone {
   margin-bottom: 25px;
-  background-color: #1e293b; /* Fundal asortat cu restul playerului */
+  background-color: #1e293b; 
   padding: 20px;
   border-radius: 12px;
   border: 2px solid #334155;
 }
 
-/* Textul de etichetă (Introdu datele tale...) */
 .input-zone-label {
   display: block;
   margin-bottom: 10px;
   font-weight: 600;
-  color: #94a3b8; /* Gri fin, nu obositor pentru ochi */
+  color: #94a3b8; 
   font-size: 14px;
   letter-spacing: 0.5px;
 }
 
-/* Flexbox-ul care ține inputul și butonul aliniate perfect */
 .input-action-flex {
   display: flex;
   gap: 12px;
 }
 
-/* Căsuța de input complet stilizată pentru Dark Mode */
 .custom-array-input {
   padding: 12px 16px;
   flex: 1;
-  background-color: #0f172a; /* Fundal foarte închis, ca o consolă */
+  background-color: #0f172a; 
   border: 2px solid #334155;
   border-radius: 8px;
   font-size: 16px;
-  color: #f8fafc; /* Text alb-curat la scriere */
-  font-family: 'Courier New', Courier, monospace; /* Font de cod */
+  color: #f8fafc; 
+  font-family: 'Courier New', Courier, monospace; 
   font-weight: bold;
   letter-spacing: 1px;
   transition: all 0.2s ease;
 }
 
-/* Efectul de glow când utilizatorul dă click să scrie numerele */
 .custom-array-input:focus {
   outline: none;
-  border-color: #00f2fe; /* Schimbăm marginea în cyan neon */
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2); /* Glow subtil */
+  border-color: #00f2fe; 
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2); 
 }
 
-/* Placeholder-ul (textul ajutător din interior înainte să scrii) */
 .custom-array-input::placeholder {
   color: #475569;
   font-weight: normal;
 }
 
-/* Butonul de generare îmbrăcat în tema InfoMotion */
 .generate-anim-btn {
   padding: 12px 24px;
   background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
@@ -633,7 +626,7 @@ body {
 }
 
 .theory-highlight-box {
-  color: #0a0f1a !important; /* forțează negru pe bulă */
+  color: #0a0f1a !important; 
 }
 
 
@@ -679,15 +672,14 @@ body {
 }
 
 
-/* Containerul părintelui - trebuie să fie relativ ca să poziționăm căsuța absolut față de el */
 .wiki-tooltip-container {
   position: relative;
   display: inline-block;
 }
 
-/* Stilul linkului din text */
+
 .wiki-interactive-link {
-  color: #1fe0f9 !important; /* Culoarea cyan pe care o folosești la iconițe */
+  color: #1fe0f9 !important; 
   text-decoration: underline dotted #1fe0f9 !important;
   text-underline-offset: 4px;
   font-weight: 600;
@@ -785,4 +777,16 @@ body {
 @keyframes loadingSkeleton {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+.lesson-author {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #8a93a3;
+  font-weight: 400;
+}
+
+.lesson-author-name {
+  color: #1fe0f9;
+  font-weight: 600;
 }
