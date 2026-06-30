@@ -25,9 +25,12 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
     const loadMesaje = async () => {
         setLoading(true);
         try {
-            const q = query(collection(db, 'contact_messages'), orderBy('createdAt', 'desc'));
-            const snap = await getDocs(q);
-            setMesaje(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const res = await fetch('/api/admin', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_messages', username: adminUsername, sessionToken: adminPassword })
+            });
+            const { messages } = await res.json();
+            setMesaje(messages);
         } catch (e) {
             toast.error('Eroare la încărcarea mesajelor.');
         } finally {
@@ -67,11 +70,15 @@ function MesajeTab({ adminUsername, adminPassword, sendUserNotification }) {
         if (!mesajSelectat.uid) { toast.error('Acest mesaj nu are un UID asociat.'); return; }
         setTrimitere(true);
         try {
-            await updateDoc(doc(db, 'contact_messages', mesajSelectat.id), {
-                answered: true, raspuns: raspuns.trim(), raspunsAdmin: numeAdmin,
-                raspunsLa: serverTimestamp(), cheieSecuritate: adminPassword, adminUsername,
+            await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'reply_message',
+                    username: adminUsername, sessionToken: adminPassword,
+                    data: { messageId: mesajSelectat.id, raspuns: raspuns.trim(), numeAdmin, userUid: mesajSelectat.uid }
+                })
             });
-            await sendUserNotification(mesajSelectat.uid, 'contact_raspuns', `${numeAdmin} ți-a răspuns la mesaj: "${raspuns.trim()}"`);
             toast.success('Răspuns trimis cu succes!');
             setMesajSelectat(null);
             setRaspuns('');

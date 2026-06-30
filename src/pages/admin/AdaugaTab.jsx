@@ -57,18 +57,16 @@ export default function AdaugaTab({
 
   const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
-    try {
-      // Notificările rămân pe frontend pentru că utilizatorul de rând oricum își citește/scrie notificările proprii
-      await addDoc(collection(db, 'users', userId, 'notifications'), {
-        type, text, read: false, createdAt: serverTimestamp(),
-        cheieSecuritate: adminPassword,
-        adminUsername: adminUsername
-      });
-    } catch (e) {
-      console.error('Eroare notificare:', e);
-    }
+    await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'send_notification',
+        username, sessionToken: adminPassword,
+        data: { userId, type, text }
+      })
+    });
   };
-
   const handlePublish = async () => {
     if (!fId || !fTitlu) return toast.warning('Completează ID și Titlu!');
     setLoading(true);
@@ -195,7 +193,7 @@ export default function AdaugaTab({
             onChange={(e) => setFAdaugatDe(e.target.value)}
             placeholder="ex: Prof. Ionescu"
           />
-          <small style={{color: 'black'}}>Apare pe pagina lecției, sub titlu. Dacă lași gol, apare „Echipa InfoMotion”.</small>
+          <small style={{ color: 'black' }}>Apare pe pagina lecției, sub titlu. Dacă lași gol, apare „Echipa InfoMotion”.</small>
         </div>
 
         {/* Teorie */}

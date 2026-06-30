@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
   const { action, sessionToken, username, data, targetId } = req.body;
 
-  // Mapare parole administrative
+  // Mapare parole administrative — SINGURA sursă de adevăr, exclusiv pe Vercel.
   const admins = {
     'SexyBadircea6969': process.env.ADMIN_1_PASS,
     's.m._.maria':      process.env.ADMIN_2_PASS,
@@ -117,6 +117,88 @@ export default async function handler(req, res) {
       case 'delete_todo':
         await db.collection('admin_todo').doc(targetId).delete();
         return res.status(200).json({ success: true });
+
+      case 'send_notification': {
+        // data: { userId, type, text }
+        await db.collection('users').doc(data.userId).collection('notifications').add({
+          type: data.type,
+          text: data.text,
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+        return res.status(200).json({ success: true });
+      }
+
+      case 'send_announcement': {
+        // data: { text, userIds: ['all'] sau ['uid1','uid2',...] }
+        let targetIds = data.userIds;
+        if (targetIds === 'all' || (Array.isArray(targetIds) && targetIds.includes('all'))) {
+          const allUsersSnap = await db.collection('users').get();
+          targetIds = allUsersSnap.docs.map((d) => d.id);
+        }
+
+        const writes = targetIds.map((uid) =>
+          db.collection('users').doc(uid).collection('notifications').add({
+            type: 'anunt_admin',
+            text: data.text,
+            read: false,
+            createdAt: new Date().toISOString()
+          })
+        );
+        await Promise.all(writes);
+        return res.status(200).json({ success: true, count: targetIds.length });
+      }
+
+      case 'reject_proposal': {
+        // data: { proposalId, autorId, titlu }
+        if (data.autorId) {
+          await db.collection('users').doc(data.autorId).collection('notifications').add({
+            type: 'lectie_respinsa',
+            text: `Propunerea ta pentru lecția „${data.titlu}" a fost respinsă.`,
+            read: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+        await db.collection('propuneri_lectii').doc(data.proposalId).delete();
+        return res.status(200).json({ success: true });
+      }
+
+      case 'reply_message': {
+        // data: { messageId, raspuns, numeAdmin, userUid }
+        await db.collection('contact_messages').doc(data.messageId).update({
+          answered: true,
+          raspuns: data.raspuns,
+          raspunsAdmin: data.numeAdmin,
+          raspunsLa: new Date().toISOString()
+        });
+        if (data.userUid) {
+          await db.collection('users').doc(data.userUid).collection('notifications').add({
+            type: 'contact_raspuns',
+            text: `${data.numeAdmin} ți-a răspuns la mesaj: "${data.raspuns}"`,
+            read: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+        return res.status(200).json({ success: true });
+      }
+
+      case 'list_messages': {
+        const snap = await db.collection('contact_messages').orderBy('createdAt', 'desc').get();
+        const messages = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        return res.status(200).json({ success: true, messages });
+      }
+
+      case 'list_todos': {
+        const snap = await db.collection('admin_todo').orderBy('createdAt', 'desc').get();
+        const todoList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        return res.status(200).json({ success: true, todos: todoList });
+      }
+
+      case 'update_user': {
+        // data: { targetId, fields }  — folosit de AdminUsers.jsx
+        await db.collection('users').doc(data.targetId).update(data.fields);
+        return res.status(200).json({ success: true });
+      }
 
       default:
         return res.status(400).json({ error: 'Acțiune necunoscută!' });

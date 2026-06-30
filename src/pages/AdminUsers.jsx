@@ -20,12 +20,15 @@ function LoginScreen({ onLogin }) {
     const exactUsername = username.trim();
 
     try {
-      const userRef = doc(db, 'conturi_admin', exactUsername);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists() && userSnap.data().password === password) {
-        onLogin({ username: exactUsername, password });
-        toast.success(`Acces autorizat! Bine ai venit, ${exactUsername}. 🛠️`);
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: exactUsername, password })
+      });
+      const result = await response.json();
+      if (result.success) {
+        onLogin({ username: result.username, password: result.sessionToken });
+        toast.success(`Bine ai venit înapoi, ${exactUsername}! 🎉`);
       } else {
         toast.error('Username sau parolă incorectă!');
       }
@@ -181,8 +184,14 @@ function AdminUsers() {
       finalData.cheieSecuritate = loggedAdmin.password;
       finalData.adminUsername = loggedAdmin.username;
 
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, finalData);
+      await fetch('/api/admin', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_user',
+          username: loggedAdmin.username, sessionToken: loggedAdmin.password,
+          data: { targetId: userId, fields: finalData }
+        })
+      });
 
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...finalData } : u)));
       setEditUserId(null);

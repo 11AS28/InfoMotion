@@ -22,17 +22,20 @@ function LoginScreen({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     // [COMPLEX AUTH]: Păstrăm input-ul exact așa cum a fost introdus de utilizator
-    const exactUsername = username; 
+    const exactUsername = username;
 
     try {
       // Mergem direct la documentul din colecția securizată creată de tine
-      const userRef = doc(db, 'conturi_admin', exactUsername);
-      const userSnap = await userDocFetch(userRef);
-
-      if (userSnap.exists() && userSnap.data().password === password) {
-        onLogin({ username: exactUsername, password: password });
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: exactUsername, password })
+      });
+      const result = await response.json();
+      if (result.success) {
+        onLogin({ username: result.username, password: result.sessionToken });
         toast.success(`Bine ai venit înapoi, ${exactUsername}! 🎉`);
       } else {
         toast.error('Username sau parolă incorectă!');
@@ -145,19 +148,19 @@ function Dashboard({ adminInfo, onLogout }) {
   useEffect(() => {
     const initTab = async () => {
       if (activeTab === 'overview' || activeTab === 'lectii') {
-          if (firebaseLessons.length === 0) 
-            await loadLessons();
+        if (firebaseLessons.length === 0)
+          await loadLessons();
       } else if (activeTab === 'utilizatori') {
-          if (firebaseUsers.length === 0) 
-            await loadUsers();
+        if (firebaseUsers.length === 0)
+          await loadUsers();
       } else if (activeTab === 'aprobari') {
-          if (propuneri.length === 0) 
-            await loadProposals();
-          if (firebaseLessons.length === 0) 
-            await loadLessons();
+        if (propuneri.length === 0)
+          await loadProposals();
+        if (firebaseLessons.length === 0)
+          await loadLessons();
       } else if (activeTab === 'todo') {
-          if (todos.length === 0) 
-            await loadTodos();
+        if (todos.length === 0)
+          await loadTodos();
       }
     };
     initTab();
@@ -192,15 +195,16 @@ function Dashboard({ adminInfo, onLogout }) {
 
   const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
-    try {
-      await addDoc(collection(db, 'users', userId, 'notifications'), {
-        type, text, read: false, createdAt: serverTimestamp(), 
-        cheieSecuritate: adminPassword,
-        adminUsername: username
-      });
-    } catch (e) { console.error(e); }
+    await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'send_notification',
+        username, sessionToken: adminPassword,
+        data: { userId, type, text }
+      })
+    });
   };
-
   const handleApprovePropunere = (p) => {
     resetEdit();
     let clasa = p.clasa === 'a-IX-a' ? 'clasa-9' : p.clasa === 'a-X-a' ? 'clasa-10' : p.clasa === 'a-XI-a' ? 'clasa-11' : p.clasa || 'clasa-9';
@@ -215,16 +219,21 @@ function Dashboard({ adminInfo, onLogout }) {
   };
 
   const handleRejectPropunere = async (p) => {
-    if (!window.confirm('Ești sigur că vrei să respingi și să ștergi această propunere?')) return;
-    try {
-      if (p.autorId) await sendUserNotification(p.autorId, 'lectie_respinsa', `Propunerea ta pentru lecția „${p.titlu}" a fost respinsă.`);
-      const propRef = doc(db, 'propuneri_lectii', p.id);
-      await updateDoc(propRef, { cheieSecuritate: adminPassword, adminUsername: username });
-      await deleteDoc(propRef);
-      toast.success('Propunere respinsă.');
-      refreshData();
-    } catch (e) { toast.error('Eroare permisiune: ' + e.message); }
-  };
+  if (!window.confirm('Ești sigur că vrei să respingi și să ștergi această propunere?')) return;
+  try {
+    await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'reject_proposal',
+        username, sessionToken: adminPassword,
+        data: { proposalId: p.id, autorId: p.autorId, titlu: p.titlu }
+      })
+    });
+    toast.success('Propunere respinsă.');
+    refreshData();
+  } catch (e) { toast.error('Eroare: ' + e.message); }
+};
 
   const activeTodoCount = todos.filter((t) => !t.completed).length;
   return (
@@ -241,22 +250,22 @@ function Dashboard({ adminInfo, onLogout }) {
       <div className="admin-tabs-bar">
         {['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga', 'mesaje'].map((t) => (
           <button key={t} className={`admin-tab ${activeTab === t ? 'active' : ''}`} onClick={() => handleTabChange(t)}>
-{ {
-  overview: 'Prezentare generală',
-  utilizatori: 'Utilizatori',
-  aprobari: `Aprobări (${propuneri.length})`,
-  todo: `To-Do (${activeTodoCount})`,
-  lectii: 'Lecțiile mele',
-  adauga: isEditing ? '📝 Editare' : '➕ Adaugă',
-  mesaje: 'Mesaje'
-}[t] }          </button>
+            {{
+              overview: 'Prezentare generală',
+              utilizatori: 'Utilizatori',
+              aprobari: `Aprobări (${propuneri.length})`,
+              todo: `To-Do (${activeTodoCount})`,
+              lectii: 'Lecțiile mele',
+              adauga: isEditing ? '📝 Editare' : '➕ Adaugă',
+              mesaje: 'Mesaje'
+            }[t]}          </button>
         ))}
       </div>
 
       <main className="admin-main">
         {activeTab === 'overview' && <OverviewTab firebaseLessons={firebaseLessons} />}
         {activeTab === 'utilizatori' && <UtilizatoriTab firebaseUsers={firebaseUsers} />}
-{activeTab === 'mesaje' && <MesajeTab adminUsername={username} adminPassword={adminPassword} sendUserNotification={sendUserNotification} />}
+        {activeTab === 'mesaje' && <MesajeTab adminUsername={username} adminPassword={adminPassword} sendUserNotification={sendUserNotification} />}
         {activeTab === 'aprobari' && (
           <div className="admin-card">
             <div className="admin-section-title">Lecții propuse</div>
