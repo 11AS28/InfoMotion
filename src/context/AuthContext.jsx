@@ -110,26 +110,38 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 1. Modificăm funcția getStatistici pentru a filtra conceptele
   const getStatistici = () => {
-    if (!currentUser) return { terminate: 0, total: totalLectii, progresProcent: 0 };
+    if (!currentUser) return { terminate: 0, total: 0, progresProcent: 0 };
 
     const progresUser = currentUser.progres || {};
     
+    // Luăm doar lecțiile de bază (excludem categoria 'concepte')
+    const lectiiCurs = lectii.filter(l => l.categorie !== 'concepte');
+    const totalLectiiCurs = lectiiCurs.length;
+
+    // Numărăm doar lecțiile terminate care se regăsesc în lista de lecții de bază
     const terminate = Object.keys(progresUser).filter(id => {
       const dateProgres = progresUser[id];
       if (!dateProgres) return false;
 
-      if (dateProgres.status === 'complet') return true;
-      if (dateProgres === true || dateProgres === 'complet') return true;
-      if (typeof dateProgres === 'object' && !dateProgres.status) return true;
+      // Verificăm dacă statusul este complet
+      const eComplet = dateProgres.status === 'complet' || 
+                       dateProgres === true || 
+                       dateProgres === 'complet' || 
+                       (typeof dateProgres === 'object' && !dateProgres.status);
 
-      return false;
+      if (!eComplet) return false;
+
+      // Piesa lipsă: verificăm dacă această lecție terminată face parte din curs (nu e concept)
+      const gasitaInCurs = lectiiCurs.some(l => l.id === id);
+      return gasitaInCurs;
     }).length;
 
     return {
       terminate,
-      total: totalLectii,
-      progresProcent: totalLectii > 0 ? (terminate / totalLectii) * 100 : 0
+      total: totalLectiiCurs,
+      progresProcent: totalLectiiCurs > 0 ? (terminate / totalLectiiCurs) * 100 : 0
     };
   };
 

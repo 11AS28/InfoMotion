@@ -415,3 +415,23 @@ body {
   color: #f8fafc;
   margin: 0;
 }
+
+
+.lectii-subtitle-dynamic {
+  max-width: 750px;
+  margin: 0 auto;
+  animation: subtitleFadeIn 0.3s ease-out forwards;
+  color: #94a3b8; /* Ajustează culoarea să fie acel gri-albăstrui curat */
+  line-height: 1.6;
+}
+
+@keyframes subtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+}

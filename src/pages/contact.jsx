@@ -58,7 +58,7 @@ function FaqItem({ question, answer }) {
 
 function Contact() {
     const [form, setForm] = useState({ message: "" });
-    const [status, setStatus] = useState(null); 
+    const [status, setStatus] = useState(null);
     const { currentUser } = useAuth();
 
     const handleChange = (e) => {
@@ -148,10 +148,9 @@ function Contact() {
 
                 {currentUser && (
                     <section className="contact-section contact-form-section">
-                        <h2 className="section-title">Trimite-ne un mesaj</h2>
+                        <h2 className="section-title">Trimite-ne un mesaj!</h2>
                         <p className="contact-description" style={{ marginBottom: "24px" }}>
-                            Îți vom răspunde în cel mai scurt timp posibil. Sa verifici notificarile periodic!
-                        </p>
+                            Ai o idee de îmbunătățire, un feedback despre o lecție sau ai întâmpinat o problemă pe platformă? Trimite-ne un mesaj, iar noi îți vom răspunde în cel mai scurt timp posibil. Nu uita să-ți verifici notificările periodic!                        </p>
                         <form className="contact-form" onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Utilizator</label>

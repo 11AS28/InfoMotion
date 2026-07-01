@@ -13,10 +13,9 @@ function Lectii() {
   const [activeFilter, setActiveFilter] = useState('toate');
 
   useEffect(() => {
-    let isMounted = true;
+    let emontata = true;
 
     async function fetchLectii() {
-      // 🚀 Trecem la cache v3 pentru a goli datele vechi și a aduce lecția despre Complexitate!
       const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v3');
       if (cachedLessons) {
         setLessonsData(JSON.parse(cachedLessons));
@@ -54,19 +53,18 @@ function Lectii() {
           };
         });
 
-        if (isMounted) {
+        if (emontata) {
           setLessonsData(lectiiDinDB);
-          // Salvare în cache v3
           localStorage.setItem('infomotion_lessons_cache_v3', JSON.stringify(lectiiDinDB));
         }
       } catch (error) {
         console.error("Eroare la preluarea lecțiilor:", error);
       }
-      if (isMounted) setLoading(false);
+      if (emontata) setLoading(false);
     }
 
     fetchLectii();
-    return () => { isMounted = false; };
+    return () => { emontata = false; };
   }, []);
 
   const filteredLessons = lessonsData
@@ -81,7 +79,6 @@ function Lectii() {
       } else if (activeFilter === 'olimpici') {
         matchesFilter = lectie.esteOlimpiada;
       } else if (activeFilter === 'concepte') {
-        // Acum verifică corect dacă este setat ca fiind concept general
         matchesFilter = lectie.esteConcept;
       } else {
         const clasaTinta = parseInt(activeFilter.split('-')[1]);
@@ -99,16 +96,14 @@ function Lectii() {
           return 4;
         }
         if (item.esteOlimpiada) return 10;
-        if (item.esteConcept) return 20; // Concepte rămân la sfârșit ordonate frumos
+        if (item.esteConcept) return 20; 
         return 999;
       };
 
       const grupA = getGroup(a);
       const grupB = getGroup(b);
 
-      if (grupA !== grupB) {
-        return grupA - grupB;
-      }
+      if (grupA !== grupB) return grupA - grupB;
 
       if (grupA === 10) {
         if (a.clasaNumerica !== b.clasaNumerica) {
@@ -119,9 +114,7 @@ function Lectii() {
       const ordineA = a.ordine !== undefined && a.ordine !== null ? parseInt(a.ordine, 10) : 999;
       const ordineB = b.ordine !== undefined && b.ordine !== null ? parseInt(b.ordine, 10) : 999;
       
-      if (ordineA !== ordineB) {
-        return ordineA - ordineB;
-      }
+      if (ordineA !== ordineB) return ordineA - ordineB;
 
       return (a.titlu || "").localeCompare(b.titlu || "");
     });
@@ -129,20 +122,38 @@ function Lectii() {
   const getFilterLabel = (filter) => {
     if (filter === 'toate') return 'Toate';
     if (filter === 'olimpici') return 'Olimpici';
-    if (filter === 'concepte') return 'Concepte'; // Schimbat din Termeni -> Concepte
+    if (filter === 'concepte') return 'Concepte'; 
     return `Clasa ${filter.split('-')[1]}`;
   };
 
+  const getDynamicSubtitle = () => {
+    switch (activeFilter) {
+     case 'toate':
+        return 'Salut! 👋 Bine ai venit în universul InfoMotion. Fie că ești la început de drum în C++ sau te pregătești pentru performanță, selectează o categorie de mai jos și hai să explorăm împreună algoritmii prin animații interactive.';
+      case 'clasa-9':
+        return 'Fundamentele programării în C++. De la elemente de bază, structuri repetitive și decizionale, până la stăpânirea vectorilor.';
+      case 'clasa-10':
+        return 'Trecem la nivelul următor. Explorează subprograme, recursivitate, matrici (tablouri bidimensionale) și structuri de date complexe.';
+      case 'clasa-11':
+        return 'Pregătire avansată. Descoperă tehnici fundamentale de programare precum Greedy, Backtracking, programare dinamică și teoria grafurilor.';
+      case 'olimpici':
+        return 'Explorează algoritmi și tehnici specifice competițiilor. Te vor ajuta nu doar să obții punctaje maxime în concursuri, ci și să îți dezvolți o gândire analitică solidă, esențială pentru a stăpâni informatica cu adevărat.';
+      case 'concepte':
+        return 'Sintaxă, structuri de date și paradigme esențiale în C++. Baza de care ai nevoie pentru a scrie un cod curat, eficient și optimizat, indiferent de problema pe care încerci să o rezolvi.';
+      default:
+        return 'Alege o lecție și descoperă algoritmii prin animații interactive.';
+    }
+  };
+
   return (
-
-      
-
     <div className="page-wrapper">
       {usePageTitle("InfoMotion - Module de Învățare")}
       <main className="lectii-container">
         <div className="lectii-header">
           <h1>Module de <span>Învățare</span></h1>
-          <p>Alege o lecție și descoperă algoritmii prin animații interactive.</p>
+          <p key={activeFilter} className="lectii-subtitle-dynamic">
+            {getDynamicSubtitle()}
+          </p>
         </div>
 
         <div className="filters-section">
@@ -157,7 +168,6 @@ function Lectii() {
           </div>
           
           <div className="class-filters">
-            {/* Înlocuit valoarea 'termeni' cu 'concepte' pentru butoane */}
             {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte'].map((f) => (
               <button 
                 key={f}
