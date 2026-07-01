@@ -134,3 +134,4 @@ Platforma rulează direct în browser, fără instalare:
 - [vite.dev](https://vite.dev/)
 - [CSS Flexbox — W3Schools](https://www.w3schools.com/csS/css3_flexbox.asp)
 - [ES6 JavaScript Tutorial](https://www.javascripttutorial.net/es6/)
+- [monaco-editor](https://www.npmjs.com/package/@monaco-editor/react)
