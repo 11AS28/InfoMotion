@@ -57,56 +57,61 @@ function SidebarStats({ isOpen, onClose }) {
   }, [isOpen, isTeacher, actualizeazaStreak, currentUser]);
 
   useEffect(() => {
-    if (!currentUser?.uid) return;
-
-    const q = query(
-      collection(db, "users", currentUser.uid, "notifications"),
-      orderBy("createdAt", "desc"),
-      limit(5)
-    );
-
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const dbNotif = [];
-      
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        
-        if (data.read === true) {
-          try {
-            await deleteDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id));
-          } catch (err) {
-            console.error("Eroare la curățarea notificării:", err);
-          }
-        } else {
-          dbNotif.push({
-            id: docSnap.id,
-            ...data
-          });
-        }
-      }
-
-      const localKey = `notifications_${currentUser.uid}`;
-      const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
-
-      const mapIdToNotif = new Map();
-      localNotif.forEach(n => mapIdToNotif.set(n.id, n));
-      dbNotif.forEach(n => mapIdToNotif.set(n.id, { ...n, read: false }));
-
-      let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
-        const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
-        const timeB = b.createdAt?.seconds || new Date(b.createdAt).getTime() || 0;
-        return timeB - timeA;
-      });
-
-      if (combined.length > 5) {
-        combined = combined.slice(0, 5);
-      }
-      localStorage.setItem(localKey, JSON.stringify(combined));
-      setNotifications(combined);
+  if (!currentUser?.uid) return;
+ 
+  const q = query(
+    collection(db, "users", currentUser.uid, "notifications"),
+    orderBy("createdAt", "desc"),
+    limit(5)
+  );
+ 
+  // NOTĂ: callback-ul NU mai e async și NU mai face deleteDoc.
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const dbNotif = snapshot.docs
+      .filter((docSnap) => docSnap.data().read !== true) // ignorăm ce e deja citit
+      .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+ 
+    const localKey = `notifications_${currentUser.uid}`;
+    const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
+ 
+    const mapIdToNotif = new Map();
+    localNotif.forEach((n) => mapIdToNotif.set(n.id, n));
+    dbNotif.forEach((n) => mapIdToNotif.set(n.id, { ...n, read: false }));
+ 
+    let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
+      const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
+      const timeB = b.createdAt?.seconds || new Date(b.createdAt).getTime() || 0;
+      return timeB - timeA;
     });
+ 
+    if (combined.length > 5) combined = combined.slice(0, 5);
+ 
+    localStorage.setItem(localKey, JSON.stringify(combined));
+    setNotifications(combined);
+  });
+ 
+  return () => unsubscribe();
+}, [currentUser]);
 
-    return () => unsubscribe();
-  }, [currentUser]);
+
+useEffect(() => {
+  if (!currentUser?.uid) return;
+ 
+  const cleanupOldReadNotifications = async () => {
+    try {
+      const notifRef = collection(db, "users", currentUser.uid, "notifications");
+      const q = query(notifRef, where("read", "==", true), limit(5));
+      const snap = await getDocs(q);
+      for (const d of snap.docs) {
+        await deleteDoc(doc(db, "users", currentUser.uid, "notifications", d.id));
+      }
+    } catch (e) {
+      console.error("Eroare la curățare notificări vechi:", e);
+    }
+  };
+ 
+  cleanupOldReadNotifications();
+}, [currentUser?.uid]); 
 
   const handleUpdateProfile = async () => {
     if (!currentUser) return;
