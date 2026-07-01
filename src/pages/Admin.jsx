@@ -1,5 +1,4 @@
-// Admin.jsx — Fișierul principal cu autentificare custom bazată pe Firestore
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../pages_css/admin.css';
 import { doc, collection, getDocs, addDoc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -12,7 +11,8 @@ import TodoTab from './admin/TodoTab';
 import LectiiTab from './admin/LectiiTab';
 import AdaugaTab from './admin/AdaugaTab';
 import MesajeTab from './admin/MesajeTab';
-// ─── Login Screen (Verificare în Firestore) ───────────────────────────────────
+
+
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -82,45 +82,52 @@ function Dashboard({ adminInfo, onLogout }) {
   const username = adminInfo.username;
   const adminPassword = adminInfo.password;
 
-  // Date globale
   const [firebaseLessons, setFirebaseLessons] = useState([]);
   const [firebaseUsers, setFirebaseUsers] = useState([]);
   const [propuneri, setPropuneri] = useState([]);
   const [todos, setTodos] = useState([]);
 
-  // Stare pentru tab-ul Adaugă
   const [isEditing, setIsEditing] = useState(false);
   const [propunereInCurs, setPropunereInCurs] = useState(null);
   const [editData, setEditData] = useState(null);
 
-  const loadLessons = async () => {
+  const loadedRef = useRef({ lessons: false, users: false, proposals: false, todos: false });
+
+  const loadLessons = async (force = false) => {
+    if (loadedRef.current.lessons && !force) return; 
     try {
       const snapLectii = await getDocs(collection(db, 'lectii'));
       setFirebaseLessons(snapLectii.docs.map((d) => ({ id: d.id, ...d.data() })));
+      loadedRef.current.lessons = true;
     } catch (e) {
       console.error(e);
     }
   };
 
-  const loadUsers = async () => {
+  const loadUsers = async (force = false) => {
+    if (loadedRef.current.users && !force) return;
     try {
       const snapUsers = await getDocs(collection(db, 'users'));
       setFirebaseUsers(snapUsers.docs.map((d) => ({ id: d.id, ...d.data() })));
+      loadedRef.current.users = true;
     } catch (e) {
       console.error(e);
     }
   };
 
-  const loadProposals = async () => {
+  const loadProposals = async (force = false) => {
+    if (loadedRef.current.proposals && !force) return;
     try {
       const snapPropuneri = await getDocs(collection(db, 'propuneri_lectii'));
       setPropuneri(snapPropuneri.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.status === 'in_asteptare'));
+      loadedRef.current.proposals = true;
     } catch (e) {
       console.error(e);
     }
   };
 
-  const loadTodos = async () => {
+  const loadTodos = async (force = false) => {
+    if (loadedRef.current.todos && !force) return;
     try {
       const response = await fetch('/api/admin', {
         method: 'POST',
@@ -129,6 +136,7 @@ function Dashboard({ adminInfo, onLogout }) {
       });
       const result = await response.json();
       setTodos(result.todos || []);
+      loadedRef.current.todos = true;
     } catch (e) {
       console.error(e);
     }
@@ -136,10 +144,10 @@ function Dashboard({ adminInfo, onLogout }) {
 
   const refreshData = async () => {
     await Promise.all([
-      loadLessons(),
-      loadUsers(),
-      loadProposals(),
-      loadTodos()
+      loadLessons(true),
+      loadUsers(true),
+      loadProposals(true),
+      loadTodos(true)
     ]);
   };
 
@@ -151,7 +159,7 @@ function Dashboard({ adminInfo, onLogout }) {
             await loadUsers();
       } else if (activeTab === 'aprobari') {
             await loadProposals();
-            await loadLessons();
+            await loadLessons(); 
       } else if (activeTab === 'todo') {
             await loadTodos();
       }
