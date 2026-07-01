@@ -790,3 +790,20 @@ body {
   color: #1fe0f9;
   font-weight: 600;
 }
+
+
+
+.lesson-theory-content p,
+.lesson-theory-content li,
+.lesson-theory-content div {
+  text-align: left !important;
+}
+
+@media (min-width: 768px) {
+  .lesson-theory-content p,
+  .lesson-theory-content li,
+  .lesson-theory-content div {
+    text-align: justify !important;
+    text-justify: inter-word !important;
+  }
+}

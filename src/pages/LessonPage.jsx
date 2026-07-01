@@ -11,6 +11,7 @@ import TreeVisualizer from '../components/TreeVisualizer';
 import parse from 'html-react-parser';
 import WikiPreviewLink from '../components/WikiPreviewLink';
 import usePageTitle from '../hooks/usePageTitle';
+import DOMPurify from 'dompurify';
 
 // Lazy loading components...
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
@@ -295,7 +296,7 @@ function LessonPage() {
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
               <div className="lesson-theory-content">
-                {parse(proceseazaTeorie(lectie.teorie), {
+                {parse(DOMPurify.sanitize(proceseazaTeorie(lectie.teorie)), {
                   replace: (domNode) => {
                     if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
                       const href = domNode.attribs.href;

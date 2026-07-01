@@ -435,3 +435,23 @@ body {
     transform: translateY(0);
   }
 }
+
+
+/* --- FORȚARE ALINIERE JUSTIFY --- */
+
+/* Pe telefoane rămâne aliniat normal la stânga */
+.lesson-theory-content p,
+.lesson-theory-content li,
+.lesson-theory-content div {
+  text-align: left !important;
+}
+
+/* Pe ecrane mai mari de 768px tragem textul la linie pe ambele părți */
+@media (min-width: 768px) {
+  .lesson-theory-content p,
+  .lesson-theory-content li,
+  .lesson-theory-content div {
+    text-align: justify !important;
+    text-justify: inter-word !important;
+  }
+}
