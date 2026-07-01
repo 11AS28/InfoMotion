@@ -1,9 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  where,
+  limit,
+  startAfter,
+  getDocs,
+  getCountFromServer,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
 import { toast } from 'sonner';
 import '../pages_css/adminusers.css';
 import usePageTitle from '../hooks/usePageTitle';
+
+/*
+  ============================================================================
+  DE CE S-A ÎNTÂMPLAT SPIKE-UL DE 5.5K READS
+  ============================================================================
+  Varianta veche făcea:
+      const querySnapshot = await getDocs(collection(db, "users"));
+  Asta citește ABSOLUT TOATE documentele din colecția "users", integral,
+  de fiecare dată când se face login în panou / se reîncarcă pagina.
+  Paginarea din UI (`.slice(indexOfFirstUser, indexOfLastUser)`) rula DUPĂ
+  ce toată colecția era deja adusă în memorie — deci nu economisea niciun
+  read, doar decidea ce se afișează pe ecran.
+
+  Rezultat: N reads per login, unde N = nr. total de documente din "users".
+  Cu React StrictMode (dublează efectele în dev) + câteva reload-uri/login-uri
+  de test, ajungi rapid la mii de reads chiar dacă ești singurul user.
+
+  ============================================================================
+  CE FACE VERSIUNEA ASTA DIFERIT
+  ============================================================================
+  1. Browsing (fără căutare activă): interogare Firestore cu orderBy + limit(30)
+     + startAfter(cursor). Se citesc DOAR cei 30 de useri afișați pe pagina
+     curentă, niciodată toată colecția.
+  2. Filtrul de rol (Profesor/Elev) se aplică ÎN interogare (where), nu în
+     JS după ce ai adus totul.
+  3. Numărul total de useri (pentru "Toți (X)" și paginare) vine din
+     getCountFromServer() — costă 1 read indiferent cât de mare e colecția,
+     NU N reads.
+  4. Căutarea (nume / handle CF) NU se declanșează la fiecare tastă apăsată.
+     Se declanșează doar la Enter / click pe "Caută", și e limitată la un
+     batch de maxim 300 documente (configurabil via SEARCH_BATCH_LIMIT).
+     Firestore nu are căutare de tip "conține substring" nativă — pentru
+     căutare completă/nelimitată ai nevoie de un serviciu dedicat
+     (Algolia, Typesense, Meilisearch) sincronizat cu Firestore, sau de
+     un câmp suplimentar `nume_lower` + interogări de tip prefix.
+     Varianta de aici e un compromis rezonabil ca cost, nu căutare globală
+     perfectă pe colecții foarte mari.
+
+  ============================================================================
+  RECOMANDARE IMPORTANTĂ DE SCHEMĂ
+  ============================================================================
+  Interogarea `where('role', '==', 'teacher')` / filtrarea pe elevi
+  presupune că fiecare document din "users" are câmpul `role` populat
+  (implicit "student" dacă lipsește). Dacă ai documente vechi fără acest
+  câmp, rulează o migrare unică (script separat, nu în acest fișier) care
+  setează `role: "student"` acolo unde lipsește — altfel filtrul pe elevi
+  riscă să nu prindă userii vechi fără câmp `role`.
+
+  ============================================================================
+  SECURITATE (pe lângă costul de reads)
+  ============================================================================
+  Am păstrat arhitectura din varianta "nouă": login prin /api/login (server),
+  NU citire directă din client pe colecția conturi_admin. Varianta veche
+  (getDoc direct pe conturi_admin din browser) cere reguli Firestore care
+  permit oricui necunoscut să citească acel document ca să compare parola
+  în client — practic parola de admin devine vizibilă oricui deschide
+  DevTools. Nu reveni la asta.
+
+  De asemenea: indiferent cât de bine paginăm din client, TREBUIE ca
+  regulile Firestore (firestore.rules) să restricționeze cine poate citi/
+  scrie colecția "users" — UI-ul ascuns nu e o măsură de securitate.
+  ============================================================================
+*/
+
+const USERS_PER_PAGE = 30;
+const SEARCH_BATCH_LIMIT = 300; 
 
 function LoginScreen({ onLogin }) {
   usePageTitle("InfoMotion - AdminUsers Login");
@@ -105,44 +182,127 @@ function LoginScreen({ onLogin }) {
 function AdminUsers() {
   usePageTitle("InfoMotion - AdminUsers");
 
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);            
   const [loading, setLoading] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [expandedUserId, setExpandedUserId] = useState(null);
-  const [sortBy, setSortBy] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("all");        
+  const [sortAlpha, setSortAlpha] = useState(false);   
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loggedAdmin, setLoggedAdmin] = useState(null);
 
+  const [searchInput, setSearchInput] = useState('');       
+  const [activeSearch, setActiveSearch] = useState('');     
+  const [searchTruncated, setSearchTruncated] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
-  const USERS_PER_PAGE = 30;
+  const [cursorStack, setCursorStack] = useState([null]); 
+  const [totalCount, setTotalCount] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / USERS_PER_PAGE));
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortBy]);
+    setCursorStack([null]);
+  }, [sortBy, sortAlpha, activeSearch]);
 
-  const fetchUsers = async () => {
+  const buildBaseConstraints = useCallback(() => {
+    const constraints = [];
+    if (sortBy === 'teacher') constraints.push(where('role', '==', 'teacher'));
+    if (sortBy === 'student') constraints.push(where('role', '==', 'student'));
+    constraints.push(orderBy('nume'));
+    return constraints;
+  }, [sortBy]);
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const constraints = buildBaseConstraints().filter(c => c.type !== 'orderBy'); 
+      const q = constraints.length ? query(collection(db, 'users'), ...constraints) : collection(db, 'users');
+      const snap = await getCountFromServer(q);
+      setTotalCount(snap.data().count);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [buildBaseConstraints]);
+
+  const fetchPage = useCallback(async (pageNumber) => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "users"));
-      const usersList = querySnapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-      setUsers(usersList);
+      const constraints = buildBaseConstraints();
+      const cursor = cursorStack[pageNumber - 1] ?? null;
+
+      let q = query(collection(db, 'users'), ...constraints, limit(USERS_PER_PAGE));
+      if (cursor) q = query(q, startAfter(cursor));
+
+      const snap = await getDocs(q);
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setUsers(list);
+
+      const lastDoc = snap.docs[snap.docs.length - 1] || null;
+      setCursorStack((prev) => {
+        if (prev[pageNumber]) return prev; 
+        const next = [...prev];
+        next[pageNumber] = lastDoc;
+        return next;
+      });
     } catch (error) {
       toast.error("Eroare la încărcarea utilizatorilor: " + error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [buildBaseConstraints, cursorStack]);
+
+  const runSearch = useCallback(async (term) => {
+    setLoading(true);
+    try {
+      const constraints = buildBaseConstraints();
+      const q = query(collection(db, 'users'), ...constraints, limit(SEARCH_BATCH_LIMIT));
+      const snap = await getDocs(q);
+      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const t = term.toLowerCase().trim();
+      const filtered = all.filter((u) => {
+        const nameMatch = (u.nume || '').toLowerCase().includes(t);
+        const cfMatch = (u.codeforcesHandle || '').toLowerCase().includes(t);
+        return nameMatch || cfMatch;
+      });
+
+      setUsers(filtered.slice(0, USERS_PER_PAGE));
+      setTotalCount(filtered.length);
+      setSearchTruncated(snap.docs.length === SEARCH_BATCH_LIMIT);
+    } catch (error) {
+      toast.error("Eroare la căutare: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [buildBaseConstraints]);
 
   useEffect(() => {
-    if (isAuthorized) fetchUsers();
-  }, [isAuthorized]);
+    if (!isAuthorized) return;
+    if (activeSearch) {
+      runSearch(activeSearch);
+    } else {
+      fetchCount();
+      fetchPage(currentPage);
+    }
+  }, [isAuthorized, currentPage, sortBy, activeSearch]);
 
   useEffect(() => {
     document.body.classList.add('admin-layout-activ');
     return () => document.body.classList.remove('admin-layout-activ');
   }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setActiveSearch(searchInput.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchInput('');
+    setActiveSearch('');
+    setSearchTruncated(false);
+  };
 
   const handleEditClick = (user, e) => {
     e.stopPropagation();
@@ -205,35 +365,6 @@ function AdminUsers() {
     setExpandedUserId((prev) => (prev === userId ? null : userId));
   };
 
-  const getProcessedUsers = () => {
-    let processed = [...users];
-
-    if (searchTerm.trim() !== "") {
-      const term = searchTerm.toLowerCase().trim();
-      processed = processed.filter((u) => {
-        const usernameMatch = (u.nume || "").toLowerCase().includes(term);
-        const cfMatch = (u.codeforcesHandle || "").toLowerCase().includes(term);
-        return usernameMatch || cfMatch;
-      });
-    }
-
-    if (sortBy === "teacher") {
-      processed = processed.filter((u) => u.role === "teacher");
-    } else if (sortBy === "student") {
-      processed = processed.filter((u) => u.role === "student" || !u.role);
-    }
-
-    if (sortBy === "username") {
-      processed.sort((a, b) => {
-        const nameA = (a.nume || "").toLowerCase();
-        const nameB = (b.nume || "").toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
-    }
-
-    return processed;
-  };
-
   const mascheazaEmail = (email) => {
     if (!email) return "-";
     const parts = email.split("@");
@@ -244,12 +375,10 @@ function AdminUsers() {
     return `${nume[0]}***${nume[nume.length - 1]}@${domeniu}`;
   };
 
-  const displayedUsers = getProcessedUsers();
-
-  const totalPages = Math.ceil(displayedUsers.length / USERS_PER_PAGE);
-  const indexOfLastUser = currentPage * USERS_PER_PAGE;
-  const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
-  const paginatedUsers = displayedUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const goToPage = (p) => {
+    if (p < 1 || p > totalPages || activeSearch) return;
+    setCurrentPage(p);
+  };
 
   if (!isAuthorized) {
     return (
@@ -260,10 +389,6 @@ function AdminUsers() {
         }}
       />
     );
-  }
-
-  if (loading) {
-    return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Se încarcă baza de date...</div>;
   }
 
   return (
@@ -286,36 +411,55 @@ function AdminUsers() {
       </div>
 
       <div className="controls-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', background: '#1a1a24', padding: '15px', borderRadius: '6px', border: '1px solid #2d2d3d' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ color: '#378ADD', fontSize: '0.85rem', fontWeight: 'bold' }}>Caută rapid utilizator:</label>
-          <input
-            type="text"
-            placeholder="Introduceți Username sau Codeforces Handle..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              background: '#0f0f14',
-              border: '1px solid #378ADD',
-              color: 'white',
-              padding: '10px 14px',
-              borderRadius: '4px',
-              width: '100%',
-              boxSizing: 'border-box',
-              fontSize: '0.95rem'
-            }}
-          />
-        </div>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ color: '#378ADD', fontSize: '0.85rem', fontWeight: 'bold' }}>
+            Caută utilizator (Enter sau butonul "Caută" — nu se declanșează automat, ca să nu consume citiri inutil):
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              placeholder="Introduceți Username sau Codeforces Handle..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{
+                background: '#0f0f14',
+                border: '1px solid #378ADD',
+                color: 'white',
+                padding: '10px 14px',
+                borderRadius: '4px',
+                flex: 1,
+                boxSizing: 'border-box',
+                fontSize: '0.95rem'
+              }}
+            />
+            <button type="submit" style={{ ...btnStyle, background: '#378ADD', padding: '10px 16px' }}>Caută</button>
+            {activeSearch && (
+              <button type="button" onClick={clearSearch} style={{ ...btnStyle, background: '#555', padding: '10px 16px' }}>
+                Șterge
+              </button>
+            )}
+          </div>
+          {searchTruncated && (
+            <span style={{ color: '#ffa500', fontSize: '0.8rem' }}>
+              ⚠️ Căutarea a verificat primele {SEARCH_BATCH_LIMIT} rezultate (ordonate alfabetic) — s-ar putea să existe potriviri și mai departe. Rafinează căutarea dacă nu găsești userul.
+            </span>
+          )}
+        </form>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ color: '#aaa', fontSize: '0.85rem', fontWeight: 'bold' }}>Filtre active:</span>
-          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#222", border: "1px solid #444" }}>Toți ({users.length})</button>
-          <button onClick={() => setSortBy("username")} style={{ ...btnStyle, background: sortBy === "username" ? "#378ADD" : "#222", border: "1px solid #444" }}>După Username</button>
+          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#222", border: "1px solid #444" }}>Toți ({sortBy === 'all' && !activeSearch ? totalCount : '...'})</button>
           <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#222", border: "1px solid #444" }}>Doar Profesori</button>
           <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#222", border: "1px solid #444" }}>Doar Elevi</button>
-          {searchTerm && <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>Găsiți: {displayedUsers.length} rezultate</span>}
+          {activeSearch && <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>Găsiți: {totalCount} rezultate pentru "{activeSearch}"</span>}
         </div>
       </div>
 
+      {loading && (
+        <div style={{ color: '#aaa', textAlign: 'center', padding: '20px' }}>Se încarcă...</div>
+      )}
+
+      {!loading && (
       <table className="desktop-table">
         <thead>
           <tr style={{ background: '#25252d', color: '#378ADD', textAlign: 'left' }}>
@@ -332,8 +476,8 @@ function AdminUsers() {
           </tr>
         </thead>
         <tbody>
-          {paginatedUsers.length > 0 ? (
-            paginatedUsers.map((user) => {
+          {users.length > 0 ? (
+            users.map((user) => {
               const isEditing = editUserId === user.id;
               const isExpanded = expandedUserId === user.id;
               return (
@@ -474,10 +618,12 @@ function AdminUsers() {
           )}
         </tbody>
       </table>
+      )}
 
+      {!loading && (
       <div className="mobile-cards">
-        {paginatedUsers.length > 0 ? (
-          paginatedUsers.map((user) => {
+        {users.length > 0 ? (
+          users.map((user) => {
             const isEditing = editUserId === user.id;
             const isExpanded = expandedUserId === user.id;
             return (
@@ -546,11 +692,12 @@ function AdminUsers() {
           <div style={{ textAlign: 'center', padding: '20px', color: '#aaa', background: '#1a1a24', borderRadius: '6px' }}>Niciun utilizator găsit pentru criteriile introduse.</div>
         )}
       </div>
+      )}
 
-      {totalPages > 1 && (
+      {!activeSearch && totalPages > 1 && (
         <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', margin: '20px 0' }}>
           <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
             style={{
               ...btnStyle,
@@ -562,10 +709,10 @@ function AdminUsers() {
             Înapoi
           </button>
           <span style={{ color: '#aaa', fontSize: '0.9rem', fontWeight: 'bold' }}>
-            Pagina {currentPage} din {totalPages}
+            Pagina {currentPage} din {totalPages} ({totalCount} useri)
           </span>
           <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === totalPages}
             style={{
               ...btnStyle,

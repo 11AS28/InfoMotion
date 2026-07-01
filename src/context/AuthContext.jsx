@@ -19,6 +19,7 @@ import {
   collection, 
   query, 
   where, 
+  orderBy,
   getDocs, 
   increment, 
   arrayUnion,
@@ -110,22 +111,18 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 1. Modificăm funcția getStatistici pentru a filtra conceptele
   const getStatistici = () => {
     if (!currentUser) return { terminate: 0, total: 0, progresProcent: 0 };
 
     const progresUser = currentUser.progres || {};
     
-    // Luăm doar lecțiile de bază (excludem categoria 'concepte')
     const lectiiCurs = lectii.filter(l => l.categorie !== 'concepte');
     const totalLectiiCurs = lectiiCurs.length;
 
-    // Numărăm doar lecțiile terminate care se regăsesc în lista de lecții de bază
     const terminate = Object.keys(progresUser).filter(id => {
       const dateProgres = progresUser[id];
       if (!dateProgres) return false;
 
-      // Verificăm dacă statusul este complet
       const eComplet = dateProgres.status === 'complet' || 
                        dateProgres === true || 
                        dateProgres === 'complet' || 
@@ -133,7 +130,6 @@ export function AuthProvider({ children }) {
 
       if (!eComplet) return false;
 
-      // Piesa lipsă: verificăm dacă această lecție terminată face parte din curs (nu e concept)
       const gasitaInCurs = lectiiCurs.some(l => l.id === id);
       return gasitaInCurs;
     }).length;
