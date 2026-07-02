@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext'; 
 import { shopItems } from '../components/shopItems';
 import CoinIcon from '../components/CoinIcon'; 
 import '../pages_css/marketplace.css'; 
 import { useWebHaptics } from "web-haptics/react";
-import { Heart, Snowflake, ThermometerSnowflake, MountainSnow} from 'lucide-react';
+import { Heart, Snowflake, ThermometerSnowflake, MountainSnow, Gift, Flame } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import moneymusic from '../assets/ksjsbwuil-cash-register-1-513922.mp3';
 import moneykabing from '../assets/shelvis_makes_games-i-see-money-181273.mp3';
 
-
 export default function Marketplace() {
-  const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu } = useAuth();
+  // Am adăugat revendicaDailyReward aici
+  const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu, revendicaDailyReward } = useAuth();
   const [loadingId, setLoadingId] = useState(null);
   const [mesaj, setMesaj] = useState({ tip: '', text: '' });
   const { trigger } = useWebHaptics();
+
+  // State-uri noi pentru Daily Reward
+  const [dailyLoading, setDailyLoading] = useState(false);
+  const [timeLeftBooster, setTimeLeftBooster] = useState("");
 
   const punctePortofel = currentUser?.puncte || 0;
   const temeDeblocate = currentUser?.temeDeblocate || ['theme_default'];
@@ -26,12 +30,40 @@ export default function Marketplace() {
   const titluriDeblocate = currentUser?.titluriDeblocate || [];
   const titluEchipat = currentUser?.titluEchipat || "";
 
+  const aziStr = new Date().toLocaleDateString("en-US");
+  const aDatClaimAzi = currentUser?.lastDailyClaim === aziStr;
+
   usePageTitle("InfoMotion - Marketplace");
 
+  // Timer pentru afișarea timpului rămas din XP Booster
+  useEffect(() => {
+    if (!currentUser?.xp_booster_expires_at) {
+      setTimeLeftBooster("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const limita = new Date(currentUser.xp_booster_expires_at);
+      const acum = new Date();
+      const difMs = limita - acum;
+
+      if (difMs <= 0) {
+        setTimeLeftBooster("");
+        clearInterval(interval);
+      } else {
+        const minute = Math.floor(difMs / (1000 * 60));
+        const secunde = Math.floor((difMs % (1000 * 60)) / 1000);
+        setTimeLeftBooster(`${minute}:${secunde < 10 ? '0' : ''}${secunde}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentUser?.xp_booster_expires_at]);
+
   const playSound = (src) => {
-  const audio = new Audio(src);
-  audio.play();
-};
+    const audio = new Audio(src);
+    audio.play();
+  };
 
   const triggerErrorHaptic = () => {
     trigger([
@@ -47,6 +79,27 @@ export default function Marketplace() {
       { duration: 30 },
       { delay: 60, duration: 40, intensity: 1 },
     ]);
+  };
+
+  const handleClaimDaily = async () => {
+    setDailyLoading(true);
+    const res = await revendicaDailyReward();
+    setDailyLoading(false);
+
+    if (res.success) {
+      triggerSuccessHaptic();
+      // Dacă e drop Epic/Rare punem sunetul mai blană, altfel cel de coins
+      if (res.rarity === 'epic') {
+        playSound(moneykabing);
+        afiseazaMesaj('succes', res.message);
+      } else {
+        playSound(moneymusic);
+        afiseazaMesaj('succes', res.message);
+      }
+    } else {
+      triggerErrorHaptic();
+      afiseazaMesaj('eroare', res.error);
+    }
   };
 
   const pacheteInimi = [
@@ -82,7 +135,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
-       playSound(moneymusic);
+      playSound(moneymusic);
       afiseazaMesaj('succes', 'Tema a fost deblocată cu succes! ');
     } else {
       triggerErrorHaptic();
@@ -97,7 +150,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
-       playSound(moneymusic);
+      playSound(moneymusic);
       afiseazaMesaj('succes', 'Tema a fost echipată! ');
     } else {
       triggerErrorHaptic();
@@ -112,7 +165,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
-       playSound(moneymusic);
+      playSound(moneymusic);
       afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
       triggerErrorHaptic();
@@ -127,7 +180,7 @@ export default function Marketplace() {
 
     if (rezultat.success) {
       triggerSuccessHaptic();
-       playSound(moneymusic);
+      playSound(moneymusic);
       afiseazaMesaj('succes', `Ai achiziționat ${pachet.name}! `);
     } else {
       triggerErrorHaptic();
@@ -135,19 +188,19 @@ export default function Marketplace() {
     }
   };
 
-const handleCumparaTitlu = async (id, pret) => {
-  setLoadingId(id);
-  const rezultat = await cumparaTitlu(id, pret);
-  setLoadingId(null);
-  if (rezultat.success) {
-    triggerSuccessHaptic();
-    playSound(id === 'title_jeanG' ? moneykabing : moneymusic); 
-    afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
-  } else {
-    triggerErrorHaptic();
-    afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
-  }
-};
+  const handleCumparaTitlu = async (id, pret) => {
+    setLoadingId(id);
+    const rezultat = await cumparaTitlu(id, pret);
+    setLoadingId(null);
+    if (rezultat.success) {
+      triggerSuccessHaptic();
+      playSound(id === 'title_jeanG' ? moneykabing : moneymusic); 
+      afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
+    } else {
+      triggerErrorHaptic();
+      afiseazaMesaj('eroare', rezultat?.error || "Eroare la tranzacție.");
+    }
+  };
 
   const handleEchipeazaTitlu = async (id) => {
     setLoadingId(id);
@@ -171,7 +224,6 @@ const handleCumparaTitlu = async (id, pret) => {
           <p className="market-subtitle">Personalizează-ți experiența de codare și asigură-ți progresul.</p>
         </div>
         
-
         <div className="wallet-card">
           <CoinIcon size={28} className="wallet-coin-icon" /> 
           <div className="wallet-info">
@@ -181,19 +233,60 @@ const handleCumparaTitlu = async (id, pret) => {
         </div>
       </div>
 
-
       {mesaj.text && (
         <div className={`market-alert ${mesaj.tip === 'succes' ? 'alert-success' : 'alert-error'}`}>
           {mesaj.text}
         </div>
       )}
 
+      {/* ========================================================= */}
+      {/* NOUA SECȚIUNE: DAILY REWARD (Injected exact unde ai încercuit) */}
+      {/* ========================================================= */}
+      <div className="daily-reward-card-section">
+        <div className="daily-left-box">
+          <div className="daily-gift-circle">
+            <Gift size={32} className="daily-gift-icon" />
+          </div>
+          <div>
+            <h2 className="daily-title">Norocul Zilei (Daily Reward)</h2>
+            <p className="daily-desc">
+              Revendică recompensa o dată la 24 de ore. Ai șanse la coins bonus sau la un **Epic 2x XP Booster**!
+            </p>
+          </div>
+        </div>
+
+        <div className="daily-right-box">
+          {/* Afișăm timerul dacă utilizatorul are un booster pornit și activ în acest moment */}
+          {timeLeftBooster && (
+            <div className="booster-active-badge">
+              <Flame size={18} className="flame-icon-pulse" />
+              <span>2x XP Activ: <strong style={{fontFamily: 'monospace'}}>{timeLeftBooster}</strong></span>
+            </div>
+          )}
+
+          <button
+            onClick={handleClaimDaily}
+            disabled={aDatClaimAzi || dailyLoading}
+            className={`daily-claim-btn ${aDatClaimAzi ? 'daily-claimed' : 'daily-ready'}`}
+          >
+            {dailyLoading ? (
+              "Se deschide..."
+            ) : aDatClaimAzi ? (
+              "Revendicat ✓"
+            ) : (
+              "Deschide Cutia 🎁"
+            )}
+          </button>
+        </div>
+      </div>
+      {/* ========================================================= */}
 
       <div className="market-section-divider">
         <h2 className="market-section-title">Personalizare Editor</h2>
         <div className="market-section-line"></div>
       </div>
 
+      {/* ... Restul codului tău de grid rămâne absolut neschimbat până jos ... */}
       <div className="market-grid">
         {shopItems.map((item) => {
           const esteDeblocata = temeDeblocate.includes(item.id);
@@ -282,7 +375,6 @@ const handleCumparaTitlu = async (id, pret) => {
           );
         })}
       </div>
-
 
       <div className="market-section-divider" style={{ marginTop: '50px' }}>
         <h2 className="market-section-title">Pachete Streak Freeze (Inventar: {freezeCurente}/6 )</h2>

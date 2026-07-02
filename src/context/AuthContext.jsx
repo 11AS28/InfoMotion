@@ -488,6 +488,49 @@ export function AuthProvider({ children }) {
     }
   };
 
+const revendicaDailyReward = async () => {
+  if (!currentUser) {
+    return { success: false, error: "Nu ești logat!" };
+  }
+
+  try {
+    const token = await currentUser.getIdToken(true);
+
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'claim_daily_reward',
+        data: {
+          userId: currentUser.uid,
+          userToken: token
+        }
+      })
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok || !resData.success) {
+      throw new Error(resData.error || "Eroare la procesarea pe server.");
+    }
+
+    return { 
+      success: true, 
+      rarity: resData.rarity, 
+      message: resData.message 
+    };
+
+  } catch (error) {
+    console.error("Eroare în AuthContext la daily reward:", error);
+    return { 
+      success: false, 
+      error: error.message || "Serverul a refuzat tranzacția." 
+    };
+  }
+};
+  
   useEffect(() => {
     const preiaSiIncarcaLectii = async () => {
       try {
@@ -591,36 +634,67 @@ export function AuthProvider({ children }) {
   }
 
   const acordaPuncte = async (tip) => {
-    if (!currentUser) return;
-    const userRef = doc(db, 'users', currentUser.uid);
+  if (!currentUser) return { success: false, error: "Nu ești logat!" };
 
-    let puncteDeAdaugat = 0;
-    let extraData = {};
+  let puncteDeAdaugat = 0;
+  let extraFields = {}; 
 
-    if (typeof tip === 'number') {
-      puncteDeAdaugat = tip;
-    } else if (tip === 'quiz') {
-      puncteDeAdaugat = 10;
-    } else if (tip === 'daily_normal') {
-      puncteDeAdaugat = 30;
-      extraData.problemeRezolvateCount = increment(1);
-    } else if (tip === 'daily_sprinter') {
-      puncteDeAdaugat = 50;
-      extraData.problemeRezolvateCount = increment(1);
+  if (typeof tip === 'number') {
+    puncteDeAdaugat = tip;
+  } else if (tip === 'quiz') {
+    puncteDeAdaugat = 10;
+  } else if (tip === 'daily_normal') {
+    puncteDeAdaugat = 30;
+    extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+  } else if (tip === 'daily_sprinter') {
+    puncteDeAdaugat = 50;
+    extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+  }
+
+  if (currentUser.xp_booster_expires_at) {
+    const expiryDate = new Date(currentUser.xp_booster_expires_at);
+    const acum = new Date();
+
+    if (acum < expiryDate) {
+      puncteDeAdaugat = puncteDeAdaugat * 2; 
+      console.log("⚡ BUM! Recompensă dublată de XP Booster!");
+    }
+  }
+
+  if (puncteDeAdaugat === 0) return { success: true };
+
+  try {
+    const token = await currentUser.getIdToken(true);
+
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'acorda_puncte', 
+        data: {
+          userId: currentUser.uid,
+          userToken: token,
+          amount: puncteDeAdaugat, 
+          extraFields: extraFields 
+        }
+      })
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok || !resData.success) {
+      throw new Error(resData.error || "Eroare la procesarea punctelor pe server.");
     }
 
-    if (puncteDeAdaugat === 0) return;
+    return { success: true };
 
-    try {
-      await setDoc(userRef, {
-        ...extraData,
-        puncteTotale: increment(puncteDeAdaugat),
-        puncte: increment(puncteDeAdaugat)
-      }, { merge: true });
-    } catch (error) {
-      console.error("Eroare la acordarea punctelor:", error);
-    }
-  };
+  } catch (error) {
+    console.error("Eroare la acordarea punctelor prin API:", error);
+    return { success: false, error: error.message };
+  }
+};
 
   const value = {
     currentUser,
@@ -647,6 +721,7 @@ export function AuthProvider({ children }) {
     scadeInima,
     cumparaTitlu,
     echipeazaTitlu,
+    revendicaDailyReward,
     trimiteNotificareCuLimita
   };
 

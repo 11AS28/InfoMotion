@@ -40,15 +40,106 @@ export default async function handler(req, res) {
     'Emi': process.env.ADMIN_4_PASS
   };
 
-  const expectedPassword = admins[username];
-  if (!expectedPassword || sessionToken !== expectedPassword) {
-    return res.status(403).json({ error: 'Neautorizat! Sesiune invalidă.' });
+  if (action !== 'claim_daily_reward' && action !== 'acorda_puncte') {
+    const expectedPassword = admins[username];
+    if (!expectedPassword || sessionToken !== expectedPassword) {
+      return res.status(403).json({ error: 'Neautorizat! Sesiune invalidă.' });
+    }
   }
 
   const currentTimestamp = new Date().toISOString();
 
   try {
     switch (action) {
+      case 'claim_daily_reward': {
+        const { userToken, userId } = data;
+
+        if (!userToken || !userId) {
+          return res.status(400).json({ error: 'Date incomplete pentru revendicare.' });
+        }
+
+        const decodedToken = await admin.auth().verifyIdToken(userToken);
+        if (decodedToken.uid !== userId) {
+          return res.status(403).json({ error: 'Identitate invalidă! Cerere neautorizată.' });
+        }
+
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+          return res.status(404).json({ error: 'Utilizatorul nu există.' });
+        }
+
+        const userData = userDoc.data();
+        const aziStr = new Date().toLocaleDateString("en-US");
+
+        if (userData.lastDailyClaim === aziStr) {
+          return res.status(400).json({ error: 'Ai revendicat deja recompensa pe ziua de azi!' });
+        }
+
+        const sansa = Math.random();
+        let fieldsToUpdate = {};
+        let message = "";
+        let tipReward = "coins";
+
+        if (sansa < 0.15) {
+          tipReward = 'epic';
+          const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+          fieldsToUpdate = {
+            lastDailyClaim: aziStr,
+            xp_booster_expires_at: expiresAt
+          };
+          message = "Epic! Ai deblocat un 2x XP Booster pentru următoarea oră! ⚡";
+        } else {
+          const puncteCastigate = Math.floor(Math.random() * 101) + 50;
+          fieldsToUpdate = {
+            lastDailyClaim: aziStr,
+            puncte: (userData.puncte || 0) + puncteCastigate,
+            puncteTotale: (userData.puncteTotale || 0) + puncteCastigate
+          };
+          message = `Ai primit ${puncteCastigate} puncte ca Daily Reward! 🪙`;
+        }
+
+        await userRef.update(fieldsToUpdate);
+
+        return res.status(200).json({
+          success: true,
+          rarity: tipReward,
+          message: message
+        });
+      }
+      case 'acorda_puncte': {
+        const { userToken, userId, amount, extraFields } = data; 
+
+        if (!userToken || !userId || amount === undefined) {
+          return res.status(400).json({ error: 'Date incomplete.' });
+        }
+
+        const decodedToken = await admin.auth().verifyIdToken(userToken);
+        if (decodedToken.uid !== userId) {
+          return res.status(403).json({ error: 'Identitate invalidă! Cerere neautorizată.' });
+        }
+
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+          return res.status(404).json({ error: 'Utilizatorul nu există.' });
+        }
+
+        const userData = userDoc.data();
+        
+        const updateData = {
+          puncte: (userData.puncte || 0) + amount,
+          puncteTotale: (userData.puncteTotale || 0) + amount,
+          ...extraFields 
+        };
+
+        await userRef.update(updateData);
+
+        return res.status(200).json({ success: true, message: `Ai primit ${amount} puncte!` });
+      }
+
       case 'publish_lesson': {
         const { isEditing, propunereInCurs, clasaFinala, ordineFinala, fId, lectieData } = data;
         const batch = db.batch();
@@ -132,7 +223,6 @@ export default async function handler(req, res) {
           targetIds = allUsersSnap.docs.map((d) => d.id);
         }
 
-        // Folosim batch-uri de max 500 operații pentru siguranță și viteză
         let batch = db.batch();
         let count = 0;
 
@@ -216,7 +306,7 @@ export default async function handler(req, res) {
       }
 
       case 'broadcast_announcement': {
-        const { type, userId, text } = data; // destructurare din 'data' pentru consistență
+        const { type, userId, text } = data;
 
         if (type === 'unul') {
           if (!userId) return res.status(400).json({ success: false, message: 'ID-ul utilizatorului lipsește.' });
