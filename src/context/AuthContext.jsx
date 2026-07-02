@@ -10,22 +10,22 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
-  onSnapshot, 
-  collection, 
-  query, 
-  where, 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  onSnapshot,
+  collection,
+  query,
+  where,
   orderBy,
-  getDocs, 
-  increment, 
+  getDocs,
+  increment,
   arrayUnion,
   addDoc,
   deleteDoc,
-  serverTimestamp 
+  serverTimestamp
 } from 'firebase/firestore';
 import { lessonsData } from '../lessonsData';
 
@@ -46,19 +46,19 @@ export function AuthProvider({ children }) {
   const trimiteNotificareCuLimita = async (userId, notifData) => {
     try {
       const notifRef = collection(db, "users", userId, "notifications");
-      
+
       const q = query(
         notifRef,
         where("read", "==", false),
         orderBy("createdAt", "asc")
       );
-      
+
       const snapshot = await getDocs(q);
-      
+
       if (snapshot.size >= 5) {
-        const nrDeSters = snapshot.size - 5 + 1; 
+        const nrDeSters = snapshot.size - 5 + 1;
         const docsDeSters = snapshot.docs.slice(0, nrDeSters);
-        
+
         for (const docSters of docsDeSters) {
           await deleteDoc(doc(db, "users", userId, "notifications", docSters.id));
         }
@@ -115,7 +115,7 @@ export function AuthProvider({ children }) {
     if (!currentUser) return { terminate: 0, total: 0, progresProcent: 0 };
 
     const progresUser = currentUser.progres || {};
-    
+
     const lectiiCurs = lectii.filter(l => l.categorie !== 'concepte');
     const totalLectiiCurs = lectiiCurs.length;
 
@@ -123,10 +123,10 @@ export function AuthProvider({ children }) {
       const dateProgres = progresUser[id];
       if (!dateProgres) return false;
 
-      const eComplet = dateProgres.status === 'complet' || 
-                       dateProgres === true || 
-                       dateProgres === 'complet' || 
-                       (typeof dateProgres === 'object' && !dateProgres.status);
+      const eComplet = dateProgres.status === 'complet' ||
+        dateProgres === true ||
+        dateProgres === 'complet' ||
+        (typeof dateProgres === 'object' && !dateProgres.status);
 
       if (!eComplet) return false;
 
@@ -164,7 +164,7 @@ export function AuthProvider({ children }) {
 
     const userRef = doc(db, 'users', currentUser.uid);
     const azi = new Date().toLocaleDateString("en-US");
-    
+
     const streakCurent = currentUser.streakCount || 0;
     const ultimaLogare = currentUser.lastLoginDate;
     const freezesDisponibile = currentUser.streakFreezes || 0;
@@ -191,17 +191,17 @@ export function AuthProvider({ children }) {
         dataToUpdate.streakCount = streakCurent + 1;
       } else if (diffZile > 1) {
         if (freezesDisponibile > 0) {
-          freezesNoi -= 1; 
+          freezesNoi -= 1;
           dataToUpdate.streakFreezes = freezesNoi;
           dataToUpdate.streakCount = streakCurent;
-          
+
           await trimiteNotificareCuLimita(currentUser.uid, {
             type: "streak_inghetat",
             text: ` Scutul tău de Streak a fost activat! Ziua de ieri a fost acoperită, iar streak-ul tău a fost blocat la ${streakCurent} zile.`
           });
         } else {
-          dataToUpdate.streakCount = 1; 
-          
+          dataToUpdate.streakCount = 1;
+
           if (streakCurent > 0) {
             await trimiteNotificareCuLimita(currentUser.uid, {
               type: "streak_pierdut",
@@ -331,7 +331,7 @@ export function AuthProvider({ children }) {
 
   const cumparaInima = async (cantitate, pretInima) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
-    
+
     const inimiCurente = currentUser.hearts ?? 3;
     if (inimiCurente + cantitate > 3) {
       return { success: false, error: `Nu poți avea mai mult de 3 inimi! În prezent ai deja ${inimiCurente}.` };
@@ -360,9 +360,9 @@ export function AuthProvider({ children }) {
 
     const freezesCurente = currentUser.streakFreezes || 0;
     if (freezesCurente + cantitate > 6) {
-      return { 
-        success: false, 
-        error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.` 
+      return {
+        success: false,
+        error: `Nu poți avea mai mult de 6 scuturi Streak Freeze! În prezent ai deja ${freezesCurente}.`
       };
     }
 
@@ -488,49 +488,49 @@ export function AuthProvider({ children }) {
     }
   };
 
-const revendicaDailyReward = async () => {
-  if (!currentUser) {
-    return { success: false, error: "Nu ești logat!" };
-  }
-
-  try {
-    const token = await currentUser.getIdToken(true);
-
-    const response = await fetch('/api/admin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'claim_daily_reward',
-        data: {
-          userId: currentUser.uid,
-          userToken: token
-        }
-      })
-    });
-
-    const resData = await response.json();
-
-    if (!response.ok || !resData.success) {
-      throw new Error(resData.error || "Eroare la procesarea pe server.");
+  const revendicaDailyReward = async () => {
+    if (!currentUser) {
+      return { success: false, error: "Nu ești logat!" };
     }
 
-    return { 
-      success: true, 
-      rarity: resData.rarity, 
-      message: resData.message 
-    };
+    try {
+      const token = await auth.currentUser.getIdToken(true);
 
-  } catch (error) {
-    console.error("Eroare în AuthContext la daily reward:", error);
-    return { 
-      success: false, 
-      error: error.message || "Serverul a refuzat tranzacția." 
-    };
-  }
-};
-  
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'claim_daily_reward',
+          data: {
+            userId: currentUser.uid,
+            userToken: token
+          }
+        })
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok || !resData.success) {
+        throw new Error(resData.error || "Eroare la procesarea pe server.");
+      }
+
+      return {
+        success: true,
+        rarity: resData.rarity,
+        message: resData.message
+      };
+
+    } catch (error) {
+      console.error("Eroare în AuthContext la daily reward:", error);
+      return {
+        success: false,
+        error: error.message || "Serverul a refuzat tranzacția."
+      };
+    }
+  };
+
   useEffect(() => {
     const preiaSiIncarcaLectii = async () => {
       try {
@@ -551,7 +551,7 @@ const revendicaDailyReward = async () => {
         });
 
         localStorage.setItem("infoMotion_lectii", JSON.stringify(listaLectii));
-        
+
         setLectii(listaLectii);
         setTotalLectii(querySnapshot.size);
       } catch (error) {
@@ -634,67 +634,67 @@ const revendicaDailyReward = async () => {
   }
 
   const acordaPuncte = async (tip) => {
-  if (!currentUser) return { success: false, error: "Nu ești logat!" };
+    if (!currentUser) return { success: false, error: "Nu ești logat!" };
 
-  let puncteDeAdaugat = 0;
-  let extraFields = {}; 
+    let puncteDeAdaugat = 0;
+    let extraFields = {};
 
-  if (typeof tip === 'number') {
-    puncteDeAdaugat = tip;
-  } else if (tip === 'quiz') {
-    puncteDeAdaugat = 10;
-  } else if (tip === 'daily_normal') {
-    puncteDeAdaugat = 30;
-    extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
-  } else if (tip === 'daily_sprinter') {
-    puncteDeAdaugat = 50;
-    extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
-  }
-
-  if (currentUser.xp_booster_expires_at) {
-    const expiryDate = new Date(currentUser.xp_booster_expires_at);
-    const acum = new Date();
-
-    if (acum < expiryDate) {
-      puncteDeAdaugat = puncteDeAdaugat * 2; 
-      console.log("⚡ BUM! Recompensă dublată de XP Booster!");
-    }
-  }
-
-  if (puncteDeAdaugat === 0) return { success: true };
-
-  try {
-    const token = await currentUser.getIdToken(true);
-
-    const response = await fetch('/api/admin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'acorda_puncte', 
-        data: {
-          userId: currentUser.uid,
-          userToken: token,
-          amount: puncteDeAdaugat, 
-          extraFields: extraFields 
-        }
-      })
-    });
-
-    const resData = await response.json();
-
-    if (!response.ok || !resData.success) {
-      throw new Error(resData.error || "Eroare la procesarea punctelor pe server.");
+    if (typeof tip === 'number') {
+      puncteDeAdaugat = tip;
+    } else if (tip === 'quiz') {
+      puncteDeAdaugat = 10;
+    } else if (tip === 'daily_normal') {
+      puncteDeAdaugat = 30;
+      extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
+    } else if (tip === 'daily_sprinter') {
+      puncteDeAdaugat = 50;
+      extraFields.problemeRezolvateCount = (currentUser.problemeRezolvateCount || 0) + 1;
     }
 
-    return { success: true };
+    if (currentUser.xp_booster_expires_at) {
+      const expiryDate = new Date(currentUser.xp_booster_expires_at);
+      const acum = new Date();
 
-  } catch (error) {
-    console.error("Eroare la acordarea punctelor prin API:", error);
-    return { success: false, error: error.message };
-  }
-};
+      if (acum < expiryDate) {
+        puncteDeAdaugat = puncteDeAdaugat * 2;
+        console.log("⚡ BUM! Recompensă dublată de XP Booster!");
+      }
+    }
+
+    if (puncteDeAdaugat === 0) return { success: true };
+
+    try {
+      const token = await auth.currentUser.getIdToken(true);
+      
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'acorda_puncte',
+          data: {
+            userId: currentUser.uid,
+            userToken: token,
+            amount: puncteDeAdaugat,
+            extraFields: extraFields
+          }
+        })
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok || !resData.success) {
+        throw new Error(resData.error || "Eroare la procesarea punctelor pe server.");
+      }
+
+      return { success: true };
+
+    } catch (error) {
+      console.error("Eroare la acordarea punctelor prin API:", error);
+      return { success: false, error: error.message };
+    }
+  };
 
   const value = {
     currentUser,
