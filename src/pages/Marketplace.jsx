@@ -248,7 +248,7 @@ export default function Marketplace() {
             <Gift size={32} className="daily-gift-icon" />
           </div>
           <div>
-            <h2 className="daily-title">Norocul Zilei (Daily Reward)</h2>
+            <h2 className="daily-title">Daily Reward</h2>
             <p className="daily-desc">
               Revendică recompensa o dată la 24 de ore. Ai șanse la coins bonus sau la un **Epic 2x XP Booster**!
             </p>
@@ -274,7 +274,7 @@ export default function Marketplace() {
             ) : aDatClaimAzi ? (
               "Revendicat ✓"
             ) : (
-              "Deschide Cutia 🎁"
+              "Deschide Surpriza 🎁"
             )}
           </button>
         </div>
