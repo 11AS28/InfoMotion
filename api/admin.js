@@ -77,27 +77,39 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Ai revendicat deja recompensa pe ziua de azi!' });
         }
 
+       // Generăm o șansă între 0 și 1
         const sansa = Math.random();
         let fieldsToUpdate = {};
         let message = "";
         let tipReward = "coins";
 
-        if (sansa < 0.15) {
+        if (sansa < 0.10) {
           tipReward = 'epic';
           const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
           fieldsToUpdate = {
             lastDailyClaim: aziStr,
             xp_booster_expires_at: expiresAt
           };
-          message = "Epic! Ai deblocat un 2x XP Booster pentru următoarea oră! ⚡";
-        } else {
-          const puncteCastigate = Math.floor(Math.random() * 101) + 50;
+          message = "⚡ MEGA JACKPOT! Ai deblocat un 2x XP Booster pentru următoarea oră! ⚡";
+
+        } else if (sansa < 0.25) {
+          const puncteJackpot = 50;
           fieldsToUpdate = {
             lastDailyClaim: aziStr,
-            puncte: (userData.puncte || 0) + puncteCastigate,
-            puncteTotale: (userData.puncteTotale || 0) + puncteCastigate
+            puncte: (userData.puncte || 0) + puncteJackpot,
+            puncteTotale: (userData.puncteTotale || 0) + puncteJackpot
           };
-          message = `Ai primit ${puncteCastigate} puncte ca Daily Reward! 🪙`;
+          message = `🎉 JACKPOT! Ai nimerit premiul cel mare de ${puncteJackpot} puncte! 🎉`;
+
+        } else {
+          const puncteNormale = Math.floor(Math.random() * 11) + 20; 
+          
+          fieldsToUpdate = {
+            lastDailyClaim: aziStr,
+            puncte: (userData.puncte || 0) + puncteNormale,
+            puncteTotale: (userData.puncteTotale || 0) + puncteNormale
+          };
+          message = `Ai primit ${puncteNormale} puncte ca Daily Reward! 🪙`;
         }
 
         await userRef.update(fieldsToUpdate);
@@ -108,6 +120,10 @@ export default async function handler(req, res) {
           message: message
         });
       }
+
+
+
+
       case 'acorda_puncte': {
         const { userToken, userId, amount, extraFields } = data; 
 
