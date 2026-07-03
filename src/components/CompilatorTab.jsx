@@ -246,6 +246,11 @@ function CompilerPage() {
     );
   }
 
+  const handleEditorDidMount = (editorInstance) => {
+  setTimeout(() => {
+    editorInstance.layout();
+  }, 150);
+};
   const mainSplitStyle = isMobile 
     ? { height: `${editorHeightMobile}px`, width: '100%' }
     : { width: `${leftWidth}px`, height: '100%' };
@@ -278,21 +283,22 @@ function CompilerPage() {
         <div className="ide-editor-section" style={mainSplitStyle}>
   {fontsLoaded ? (
     <Editor
-      height="100%"
-      language="cpp"
-      theme={monacoThemeName} 
-      value={editorCode}
-      onChange={(val) => setEditorCode(val || "")}
-      options={{
-        fontSize: isMobile ? 14 : 16, 
-        minimap: { enabled: false },
-        automaticLayout: true,
-        scrollbar: { vertical: 'visible', handleMouseWheel: true },
-        tabSize: 4,
-        fontFamily: "'Fira Code', Consolas, monospace",
-        tabFocusMode: false,
-      }}
-    />
+  height="100%"
+  language="cpp"
+  theme={monacoThemeName} 
+  value={editorCode}
+  onChange={(val) => setEditorCode(val || "")}
+  onMount={handleEditorDidMount} 
+  options={{
+    fontSize: isMobile ? 14 : 16, 
+    minimap: { enabled: false },
+    automaticLayout: true,
+    scrollbar: { vertical: 'visible', handleMouseWheel: true },
+    tabSize: 4,
+    fontFamily: "Consolas, 'Courier New', monospace", 
+    tabFocusMode: false,
+  }}
+/>
   ) : (
     <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
       Se încarcă fonturile...
