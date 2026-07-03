@@ -55,9 +55,11 @@ function CompilerPage() {
 
   const [isResizingH, setIsResizingH] = useState(false);
   const [isResizingV, setIsResizingV] = useState(false);
-
+  
   const containerRef = useRef(null);
   const sidePanelRef = useRef(null);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
@@ -70,10 +72,18 @@ function CompilerPage() {
     };
   }, []);
 
-  // --- REZOLVARE CURĂȚARE NUME TEMĂ ---
+  useEffect(() => {
+  if (document.fonts) {
+    document.fonts.ready.then(() => {
+      setFontsLoaded(true);
+    });
+  } else {
+    setFontsLoaded(true);
+  }
+}, []);
+  
   const temaEchipataDb = currentUser?.temaEchipata || 'theme_default';
 
-  // Numele temei curente curățat pe care îl pasăm proprietății `theme` din Monaco
   const monacoThemeName = (customThemes && customThemes[temaEchipataDb]) 
     ? sanitizeThemeName(temaEchipataDb) 
     : 'vs-dark';
@@ -266,23 +276,29 @@ function CompilerPage() {
       <div className="ide-main-body" ref={containerRef}>
         
         <div className="ide-editor-section" style={mainSplitStyle}>
-          <Editor
-            height="100%"
-            language="cpp"
-            theme={monacoThemeName} 
-            value={editorCode}
-            onChange={(val) => setEditorCode(val || "")}
-            options={{
-              fontSize: isMobile ? 14 : 16, 
-              minimap: { enabled: false },
-              automaticLayout: true,
-              scrollbar: { vertical: 'visible', handleMouseWheel: true },
-              tabSize: 4,
-              fontFamily: "'Fira Code', Consolas, monospace",
-              tabFocusMode: false,
-            }}
-          />
-        </div>
+  {fontsLoaded ? (
+    <Editor
+      height="100%"
+      language="cpp"
+      theme={monacoThemeName} 
+      value={editorCode}
+      onChange={(val) => setEditorCode(val || "")}
+      options={{
+        fontSize: isMobile ? 14 : 16, 
+        minimap: { enabled: false },
+        automaticLayout: true,
+        scrollbar: { vertical: 'visible', handleMouseWheel: true },
+        tabSize: 4,
+        fontFamily: "'Fira Code', Consolas, monospace",
+        tabFocusMode: false,
+      }}
+    />
+  ) : (
+    <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
+      Se încarcă fonturile...
+    </div>
+  )}
+</div>
 
         <div 
           className={`resizer-horizontal ${isResizingH ? 'active' : ''}`} 
