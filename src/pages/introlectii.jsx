@@ -146,10 +146,21 @@ function Intro() {
             <span className="tech-tag">CSS Grid & Flexbox</span>
             <span className="tech-tag">JavaScript ES6+</span>
             <span className="tech-tag">Firebase</span>
-            <span className="tech-tag">Monaco editor</span>
-            <span className="tech-tag"></span>
+            <span className="tech-tag">Monaco Editor</span>
+            <span className="tech-tag">Node.js</span>
+            <span className="tech-tag">Express</span>
+            <span className="tech-tag">Firestore</span>
+            <span className="tech-tag">Firebase Auth</span>
+            <span className="tech-tag">Docker</span>
+            <span className="tech-tag">Vercel</span>
+            <span className="tech-tag">Vercel Serverless Functions</span>
+            <span className="tech-tag">DOMPurify</span>
+            <span className="tech-tag">React Markdown</span>
+            <span className="tech-tag">ESLint</span>
+            <span className="tech-tag">Context API</span>
           </div>
         </section>
+
 
 
 
