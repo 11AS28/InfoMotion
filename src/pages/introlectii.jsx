@@ -146,6 +146,8 @@ function Intro() {
             <span className="tech-tag">CSS Grid & Flexbox</span>
             <span className="tech-tag">JavaScript ES6+</span>
             <span className="tech-tag">Firebase</span>
+            <span className="tech-tag">Monaco editor</span>
+            <span className="tech-tag"></span>
           </div>
         </section>
 
