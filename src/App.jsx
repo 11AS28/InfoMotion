@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster, toast } from 'sonner';
+import { Analytics } from '@vercel/analytics/react'
 
 import Nav from './components/nav';
 import Footer from './components/footer';
@@ -253,6 +254,7 @@ function App() {
         
       </AuthProvider>
       <SpeedInsights />
+      <Analytics />
     </ThemeProvider>
   );
 }
