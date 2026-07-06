@@ -1,0 +1,31 @@
+# InfoMotion
+
+> InfoMotion este o platformă educațională web pentru elevii care vor să învețe algoritmică și informatică prin lecții interactive animate, simulări reale pas cu pas, quiz-uri, competiție și compilare C++ direct în browser.
+
+InfoMotion transformă algoritmica din teorie seacă în experiență vizuală și competitivă. Platforma combină vizualizări interactive pentru algoritmi, un compilator C++ integrat, gamificare, clasamente și progres urmărit în timp real.
+
+## Platformă
+- [Acasă](https://info-motion.vercel.app): prezentarea generală a platformei, a scopului și a principalelor funcționalități
+- [Despre](https://info-motion.vercel.app/despre): explicație detaliată despre misiunea InfoMotion și ce o diferențiază de un site clasic cu tutoriale
+- [Contact](https://info-motion.vercel.app/contact): pagină pentru mesaje, întrebări și feedback
+
+## Lecții și învățare
+- [Lecții](https://info-motion.vercel.app/lectii): lista completă de lecții interactive de algoritmică și informatică
+- [Bubble Sort](https://info-motion.vercel.app/lectie/bubble-sort): lecție animată care arată comparațiile și interschimbările pas cu pas
+- [Quick Sort](https://info-motion.vercel.app/lectie/quick-sort): lecție vizuală pentru partiționare și recursivitate
+- [Merge Sort](https://info-motion.vercel.app/lectie/merge-sort): explicație animată pentru împărțire, interclasare și complexitate
+- [Căutare binară](https://info-motion.vercel.app/lectie/cautare-binara): demonstrație vizuală pentru reducerea intervalului de căutare
+
+## Compilare
+- [Compilator C++](https://info-motion.vercel.app/compiler/liber): editor C++ în browser cu compilare, rulare, erori și măsurători de performanță
+
+## Evaluare și competiție
+- [Arena](https://info-motion.vercel.app/arena): secțiunea competitivă a platformei pentru rezolvarea problemelor de algoritmică
+- [Problema Zilei](https://info-motion.vercel.app/arena): provocarea zilnică cu punctaj și clasament
+- [Clasament](https://info-motion.vercel.app/arena): leaderboard live bazat pe punctele acumulate
+
+
+
+## Cont și integrare
+- [Autentificare](https://info-motion.vercel.app/auth): acces în contul utilizatorului
+- [Înregistrare](https://info-motion.vercel.app/auth): creare cont nou
