@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import { shopItems } from '../components/shopItems';
-import CoinIcon from '../components/CoinIcon'; 
-import '../pages_css/marketplace.css'; 
+import CoinIcon from '../components/CoinIcon';
+import '../pages_css/marketplace.css';
 import { useWebHaptics } from "web-haptics/react";
 import { Heart, Snowflake, ThermometerSnowflake, MountainSnow, Gift, Flame } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
@@ -14,14 +14,14 @@ export default function Marketplace() {
   const [loadingId, setLoadingId] = useState(null);
   const [mesaj, setMesaj] = useState({ tip: '', text: '' });
   const { trigger } = useWebHaptics();
-
+  const [recompensaAfisata, setRecompensaAfisata] = useState(null);
   const [dailyLoading, setDailyLoading] = useState(false);
   const [timeLeftBooster, setTimeLeftBooster] = useState("");
 
   const punctePortofel = currentUser?.puncte || 0;
   const temeDeblocate = currentUser?.temeDeblocate || ['theme_default'];
   const temaEchipata = currentUser?.temaEchipata || 'theme_default';
-  
+
   const inimiCurente = currentUser?.hearts ?? 3;
   const freezeCurente = currentUser?.streakFreezes || 0;
 
@@ -87,11 +87,12 @@ export default function Marketplace() {
       triggerSuccessHaptic();
       if (res.rarity === 'epic') {
         playSound(moneykabing);
-        afiseazaMesaj('succes', res.message);
       } else {
         playSound(moneymusic);
-        afiseazaMesaj('succes', res.message);
       }
+
+      setRecompensaAfisata({ text: res.message, rarity: res.rarity });
+      setTimeout(() => setRecompensaAfisata(null), 12000); // 12 secunde
     } else {
       triggerErrorHaptic();
       afiseazaMesaj('eroare', res.error);
@@ -190,7 +191,7 @@ export default function Marketplace() {
     setLoadingId(null);
     if (rezultat.success) {
       triggerSuccessHaptic();
-      playSound(id === 'title_jeanG' ? moneykabing : moneymusic); 
+      playSound(id === 'title_jeanG' ? moneykabing : moneymusic);
       afiseazaMesaj('succes', 'Titlul de profil a fost cumpărat! ');
     } else {
       triggerErrorHaptic();
@@ -219,9 +220,9 @@ export default function Marketplace() {
           <h1 className="market-main-title">InfoMotion<span id="dot">.</span> Marketplace</h1>
           <p className="market-subtitle">Personalizează-ți experiența de codare și asigură-ți progresul.</p>
         </div>
-        
+
         <div className="wallet-card">
-          <CoinIcon size={28} className="wallet-coin-icon" /> 
+          <CoinIcon size={28} className="wallet-coin-icon" />
           <div className="wallet-info">
             <div className="wallet-label">Portofelul tău</div>
             <div className="wallet-balance">{punctePortofel} <span className="wallet-currency">puncte</span></div>
@@ -236,6 +237,13 @@ export default function Marketplace() {
       )}
 
       <div className="daily-reward-card-section">
+        {recompensaAfisata && (
+          <div className={`daily-reward-banner ${recompensaAfisata.rarity === 'epic' ? 'banner-epic' : 'banner-normal'}`}>
+            <Gift size={20} />
+            <span>{recompensaAfisata.text}</span>
+            <button onClick={() => setRecompensaAfisata(null)} className="banner-close-btn">✕</button>
+          </div>
+        )}
         <div className="daily-left-box">
           <div className="daily-gift-circle">
             <Gift size={32} className="daily-gift-icon" />
@@ -252,7 +260,7 @@ export default function Marketplace() {
           {timeLeftBooster && (
             <div className="booster-active-badge">
               <Flame size={18} className="flame-icon-pulse" />
-              <span>2x XP Activ: <strong style={{fontFamily: 'monospace'}}>{timeLeftBooster}</strong></span>
+              <span>2x XP Activ: <strong style={{ fontFamily: 'monospace' }}>{timeLeftBooster}</strong></span>
             </div>
           )}
 
@@ -277,7 +285,7 @@ export default function Marketplace() {
         <div className="market-section-line"></div>
       </div>
 
-       <div className="market-grid">
+      <div className="market-grid">
         {shopItems.map((item) => {
           const esteDeblocata = temeDeblocate.includes(item.id);
           const esteEchipata = temaEchipata === item.id;

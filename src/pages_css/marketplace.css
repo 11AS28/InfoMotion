@@ -491,3 +491,42 @@
     width: 100%;
   }
 }
+
+
+.daily-reward-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+.banner-normal {
+  background: #fff8e1;
+  color: #7a5c00;
+  border: 1px solid #f1c40f;
+}
+
+.banner-epic {
+  background: linear-gradient(135deg, #fceabb, #f8b500);
+  color: #4a2f00;
+  border: 1px solid #f39c12;
+}
+
+.banner-close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.6;
+}
+.banner-close-btn:hover { opacity: 1; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

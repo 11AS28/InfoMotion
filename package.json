@@ -13,6 +13,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "analytics": "^0.8.19",
     "dompurify": "^3.4.11",
     "dotenv": "^17.4.2",
     "firebase": "^12.12.1",
@@ -20,7 +21,7 @@
     "html-react-parser": "^6.1.3",
     "js-auto-translate": "^1.0.1",
     "lucide-react": "^1.16.0",
-    "react": "^19.2.5",
+    "react": "^19.2.7",
     "react-dom": "^19.2.5",
     "react-icons": "^5.6.0",
     "react-markdown": "^10.1.0",
@@ -29,6 +30,7 @@
     "react-simple-wysiwyg": "^3.4.1",
     "sonner": "^2.0.7",
     "use-streak": "^1.0.4",
+    "vercel": "^54.20.1",
     "web-haptics": "^0.0.6"
   },
   "devDependencies": {
