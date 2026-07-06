@@ -4,7 +4,7 @@
   background: transparent;
   display: flex;
   justify-content: center;
-  margin-top: 30px; /* Distanță față de butonul de sus */
+  margin-top: 30px; 
   padding-bottom: 50px;
   z-index: 1;
 }
@@ -25,13 +25,12 @@
   position: relative;
   padding: 40px;
   overflow-y: auto;
-  pointer-events: auto; /* Reactivăm click-urile pe formular */
+  pointer-events: auto; 
   
   /* Umbră mult mai pronunțată ca să se vadă bine pe fundal alb */
   box-shadow: 0 10px 100px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0,0,0,0.05);
   border: 1px solid var(--border-color);
   
-  /* Animație care vine de jos în sus */
   animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -55,7 +54,6 @@
 }
 
 
-/* --- TITLURI ȘI PASI --- */
 .modal-content h3 {
   font-size: 1.5rem;
   color: var(--text-primary);
@@ -65,7 +63,6 @@
   gap: 10px;
 }
 
-/* --- QUIZ DESIGN --- */
 .q-block {
   background: var(--bg-card);
   padding: 20px;
@@ -119,8 +116,6 @@
   background: var(--accent);
   color: var(--accent-color);
 }
-
-/* Status culori după verificare */
 .v-btn.correct {
   background: #40c057 !important;
   border-color: var(--border-correct) !important;
@@ -133,7 +128,6 @@
   color: var(--text-wrong) !important;
 }
 
-/* --- CODEFORCES STEP --- */
 .cf-list {
   display: flex;
   flex-direction: column;
@@ -160,7 +154,6 @@
   font-weight: bold;
 }
 
-/* --- BUTOANE PRINCIPALE --- */
 .main-action-btn {
   width: 100%;
   padding: 16px;
@@ -198,7 +191,7 @@
 
 .main-action-btn.next:hover { background: #37b24d; }
 
-/* Responsive */
+
 @media (max-width: 500px) {
   .v-grid { grid-template-columns: 1fr; }
   .modal-content { padding: 20px; }

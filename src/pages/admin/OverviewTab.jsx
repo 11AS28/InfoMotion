@@ -1,5 +1,4 @@
-// OverviewTab.jsx
-export default function OverviewTab({ firebaseLessons }) {
+ export default function OverviewTab({ firebaseLessons }) {
   const totalLectii = firebaseLessons.length;
   const cuAnimatie = firebaseLessons.filter((l) => l.animatie && l.animatie !== 'null').length;
   const claseUnice = [...new Set(firebaseLessons.map((l) => l.clasa))].length;

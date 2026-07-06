@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import '../animatii_css/divideAnim.css'; // Refolosim clasele tale generice
+import '../animatii_css/divideAnim.css';
 
 export default function LungimeSirAnim() {
   const [step, setStep] = useState(0);
 
-  // Șirul din memorie: "INFO" urmat de '\0' și alte caractere random (gunoi de memorie)
   const stages = [
     {
       desc: "1. Inițializare. Avem șirul s = \"INFO\". În memorie, caracterele sunt memorate pe poziții consecutive, iar la final se pune automat caracterul nul '\\0' ca terminator de șir.",
@@ -51,7 +50,7 @@ export default function LungimeSirAnim() {
       vector: ['I', 'N', 'F', 'O', '\\0', '?', '?'],
       currentIndex: 4,
       lungime: 4,
-      highlightBox: 4, // Evidențiem terminatorul de șir
+      highlightBox: 4, 
       finished: true
     },
     {
@@ -76,29 +75,23 @@ export default function LungimeSirAnim() {
       <p className="di-desc" style={{ minHeight: '60px' }}>{currentStage.desc}</p>
       
       <div className="di-visual">
-        {/* Folosim flexWrap pentru ca elementele array-ului să coboare pe rândul următor pe ecrane mici */}
         <div className="di-array" style={{ border: 'none', background: 'transparent', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
           {currentStage.vector.map((char, idx) => {
             let boxStyle = {};
             
             if (idx === currentStage.highlightBox) {
               if (char === '\\0') {
-                // Terminatorul de șir o să fie roșu/coral ca să bată la ochi că e stop
                 boxStyle = { backgroundColor: '#c93b3b', border: '2px solid #ff6b6b', transform: 'scale(1.1)', color: '#fff' };
               } else {
-                // Caracterul valid curent procesat e verde
                 boxStyle = { backgroundColor: '#639922', border: '2px solid #8cd932', transform: 'scale(1.1)', color: '#fff' };
               }
             } else if (idx === currentStage.currentIndex) {
                boxStyle = { backgroundColor: '#BA7517', border: '2px solid #ffb347', color: '#fff' };
             } else if (idx < currentStage.currentIndex && currentStage.currentIndex !== -1) {
-               // Cele verificate deja devin discrete
                boxStyle = { backgroundColor: 'var(--bg-subtle)', color: 'var(--text-muted)', opacity: 0.6 };
             } else if (char === '\\0') {
-               // Stil implicit discret pentru terminator când nu e selectat
                boxStyle = { backgroundColor: '#4a2323', border: '1px dashed #c93b3b', color: '#ff6b6b' };
             } else if (char === '?') {
-               // Zona de memorie nefolosită (gunoi)
                boxStyle = { backgroundColor: '#2d3748', color: '#718096', border: '1px dotted #4a5568' };
             }
 
@@ -116,12 +109,10 @@ export default function LungimeSirAnim() {
         </div>
       </div>
 
-      {/* Afișarea contorului/lungimii cu aspect flexibil */}
       <div style={{ marginBottom: '30px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
         <div>
           Variabila <code style={{ color: '#639922', backgroundColor: 'var(--bg-subtle)', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>lungime = {currentStage.lungime}</code>
         </div>
-        {/* Mesajul de terminare pus pe un rând separat pentru a preveni coliziunea pe ecrane mici */}
         <div style={{ minHeight: '24px' }}>
           {currentStage.finished && <span style={{ color: currentStage.highlightBox === 4 ? '#ff6b6b' : '#8cd932', fontSize: '1rem' }}>{currentStage.highlightBox === 4 ? "🛑 Condiție s[i] != '\\0' FALSĂ!" : "✓ Gata!"}</span>}
         </div>

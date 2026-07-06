@@ -82,12 +82,11 @@ export default function QuickSortAnimExtins() {
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
         
-        {/* Schita vectorului principal */}
         <div style={{ 
             display: 'flex', 
             gap: '10px', 
             justifyContent: 'center', 
-            flexWrap: 'wrap', // IMPORTANT: Permite trecerea elementelor pe rândul următor pe ecrane mici
+            flexWrap: 'wrap',  
             width: '100%' 
         }}>
           {cur.v.map((val, idx) => {

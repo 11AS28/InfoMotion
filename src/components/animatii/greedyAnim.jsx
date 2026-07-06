@@ -4,7 +4,6 @@ import '../animatii_css/greedyAnim.css';
 export default function GreedyAnim() {
   const [step, setStep] = useState(0);
 
-  // Etapele animației pentru a plăti suma 38 folosind monede de 20, 10, 5, 1
   const stages = [
     { 
       desc: "1. Vrem să strângem suma de 38 RON. Suntem „lacomi”: începem cu cea mai mare monedă (20).", 

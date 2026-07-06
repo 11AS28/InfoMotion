@@ -86,7 +86,6 @@ export default function LanguageSelect() {
             translateDiv.style.display = 'none';
             document.body.appendChild(translateDiv);
         }
-        // 2. Define the global callback for google translate
         window.googleTranslateElementInit = () => {
             new window.google.translate.TranslateElement({
                 pageLanguage: 'ro',
@@ -95,7 +94,6 @@ export default function LanguageSelect() {
                 autoDisplay: false
             }, 'google_translate_element');
         };
-        // 3. Load the Google Translate script if not loaded
         if (!document.getElementById('google-translate-script')) {
             const script = document.createElement('script');
             script.id = 'google-translate-script';
@@ -105,7 +103,6 @@ export default function LanguageSelect() {
         }
     }, []);
     const changeLanguage = (langCode) => {
-        // Set cookie for both domain configurations to ensure Google Translate picks it up
         const domain = window.location.hostname;
         document.cookie = `googtrans=/ro/${langCode}; path=/;`;
         document.cookie = `googtrans=/ro/${langCode}; path=/; domain=${domain}`;
@@ -119,7 +116,6 @@ export default function LanguageSelect() {
             select.value = langCode;
             select.dispatchEvent(new Event('change'));
         } else {
-            // Fallback: reload the page to apply cookie
             window.location.reload();
         }
     };

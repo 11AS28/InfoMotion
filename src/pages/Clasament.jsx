@@ -12,7 +12,7 @@ function Clasament() {
 
   const [topXP, setTopXP] = useState([]);
   const [topProbleme, setTopProbleme] = useState([]);
-  const [arenaData, setArenaData] = useState(null); // Snapshot-ul pentru Arenă
+  const [arenaData, setArenaData] = useState(null);  
   const [loading, setLoading] = useState(true);
 
   const [ultimulDocXP, setUltimulDocXP] = useState(null);
@@ -36,15 +36,12 @@ function Clasament() {
   useEffect(() => {
     const initToateDatele = async () => {
       try {
-        // Queries pentru Clasamente
         const xpQ = query(collection(db, 'users'), orderBy('puncteTotale', 'desc'), limit(USERS_PER_PAGE));
         const probQ = query(collection(db, 'users'), orderBy('problemeRezolvateCount', 'desc'), limit(USERS_PER_PAGE));
         
-        // Documentul de Arenă pentru ziua curentă
         const dataAzi = getSafeDateString();
         const arenaDocRef = doc(db, 'dailyChallenges', dataAzi);
 
-        // Declanșăm TOATE citirile în paralel (Ultra Rapid)
         const [xpSnap, probSnap, arenaSnap] = await Promise.all([
           getDocs(xpQ),
           getDocs(probQ),
@@ -69,7 +66,6 @@ function Clasament() {
   }, []);
 
   const paginaUrmatoareXP = async () => {
-  // Dacă avem deja datele pentru pagina următoare în array, doar schimbăm pagina
   const dateSuficiente = topXP.length > paginaXP * USERS_PER_PAGE;
 
   if (dateSuficiente) {
@@ -77,7 +73,6 @@ function Clasament() {
     return;
   }
 
-  // Altfel, facem query mai departe
   if (!ultimulDocXP) return;
   
   try {
@@ -162,11 +157,9 @@ function Clasament() {
         <img src="/logo-infomotion.svg" alt="logo" id="arena-badge" />
       </h1>
       
-      {/* SOSIRE OPTIMIZARE: Trimitem datele gata citite către componenta copil */}
       <Arena datePreincarcate={arenaData} />
 
       <div className="topuri-container">
-        {/* Secțiunea ta vizuală cu Top General și The Grinders rămâne neschimbată */}
         <section className="top-section">
           <div className="leaderboard-card">
             <h2><Sparkles size={16} color="#ffe224" strokeWidth={2.5} /> Top General</h2>

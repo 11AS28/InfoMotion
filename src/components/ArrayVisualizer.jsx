@@ -1,4 +1,3 @@
-// src/components/ArrayVisualizer.jsx
 import React, { useState, useEffect } from 'react';
 import '../components_css/ArrayVisualizer.css'; 
 

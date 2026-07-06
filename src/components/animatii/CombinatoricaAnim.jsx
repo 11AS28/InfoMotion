@@ -21,7 +21,7 @@ export default function StirlingAnim() {
       formula: "Cazul A: S(n-1, k-1) = S(3, 1)",
       boxes: [
         { label: "Cutia 1", items: [1, 2, 3], bg: '#3b82f6' },
-        { label: "Cutia 2", items: [4], bg: '#BA7517' } // 4 e izolat
+        { label: "Cutia 2", items: [4], bg: '#BA7517' }
       ],
       currentN: 4,
       pool: [],

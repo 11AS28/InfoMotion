@@ -4,7 +4,7 @@ import '../animatii_css/divideAnim.css';
 export default function SlidingWindowDequeAnim() {
   const [step, setStep] = useState(0);
 
-  const vector = [0, 4, 3, 8, 1, 6]; // indexat de la 1 virtual: [4, 3, 8, 1, 6]
+  const vector = [0, 4, 3, 8, 1, 6]; 
   const K = 3;
 
   const stages = [

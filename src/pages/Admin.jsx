@@ -76,7 +76,6 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ─── Dashboard ─────────────────────────────────────────────────────────────────
 function Dashboard({ adminInfo, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const username = adminInfo.username;

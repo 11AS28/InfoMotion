@@ -1,5 +1,4 @@
-// UtilizatoriTab.jsx
-export default function UtilizatoriTab({ firebaseUsers }) {
+ export default function UtilizatoriTab({ firebaseUsers }) {
   const totalUsers = firebaseUsers.length;
   const verifiedCFUsers = firebaseUsers.filter((u) => u.cfValidat).length;
   const totalPlatformXP = firebaseUsers.reduce((sum, u) => sum + (u.puncteTotale || 0), 0);

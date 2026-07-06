@@ -44,7 +44,7 @@ export default function InterclasareAnim() {
       if (newC.length === a.length + b.length) {
         setIsFinished(true);
       }
-    }, 600); // Timp ca sa vadă elevul comparația roșie
+    }, 600); 
   };
 
   const resetAnim = () => {

@@ -25,12 +25,11 @@ export default function FibonacciAnim() {
       
            <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
-        {/* Valorile curente ale pointerilor de recurență */}
         <div style={{ 
             display: 'flex', 
             gap: '10px', 
             justifyContent: 'center', 
-            marginBottom: '35px', // Spațiu crescut între ecuație și șir
+            marginBottom: '35px',  
             flexWrap: 'wrap',
             alignItems: 'center' 
         }}>
@@ -41,7 +40,6 @@ export default function FibonacciAnim() {
           <div className="di-box" style={{ background: '#639922', width: 'auto', padding: '0 15px' }}>f3 = {cur.f3}</div>
         </div>
 
-        {/* Șirul generat efectiv, izolat complet pe propriul rând (flexDirection: column) */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', textAlign: 'center', fontWeight: 'bold' }}>
             ȘIRUL GENERAT PÂNĂ ACUM:

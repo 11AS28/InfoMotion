@@ -65,10 +65,9 @@ function SidebarStats({ isOpen, onClose }) {
     limit(5)
   );
  
-  // NOTĂ: callback-ul NU mai e async și NU mai face deleteDoc.
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const dbNotif = snapshot.docs
-      .filter((docSnap) => docSnap.data().read !== true) // ignorăm ce e deja citit
+      .filter((docSnap) => docSnap.data().read !== true) 
       .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
  
     const localKey = `notifications_${currentUser.uid}`;

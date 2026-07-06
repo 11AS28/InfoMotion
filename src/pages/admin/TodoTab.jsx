@@ -28,7 +28,7 @@ export default function TodoTab({ todos = [], username, onRefresh, adminPassword
           sessionToken: adminPassword,
           data: { 
             text: newTodoText.trim(),
-            author: username || adminUsername || 'Admin' // Ne asigurăm că trimitem și autorul task-ului
+            author: username || adminUsername || 'Admin' 
           }
         })
       });
@@ -122,8 +122,7 @@ export default function TodoTab({ todos = [], username, onRefresh, adminPassword
         </button>
       </form>
 
-      {/* Active tasks */}
-      <div style={{ marginBottom: '35px' }}>
+       <div style={{ marginBottom: '35px' }}>
         <h3 style={{ fontSize: '16px', color: '#0f172a', marginBottom: '12px' }}>
           Task-uri de făcut ({active.length})
         </h3>
@@ -148,8 +147,7 @@ export default function TodoTab({ todos = [], username, onRefresh, adminPassword
         )}
       </div>
 
-      {/* Completed tasks */}
-      <div>
+       <div>
         <h3 style={{ fontSize: '16px', color: '#64748b', marginBottom: '12px' }}>
           Istoric task-uri finalizate ({done.length})
         </h3>

@@ -10,9 +10,8 @@ function MesajeTab({ adminUsername, adminPassword }) {
     const [trimitere, setTrimitere] = useState(false);
     const [filtru, setFiltru] = useState('toate');
 
-    // ── Anunț ──
-    const [sectiune, setSectiune] = useState('mesaje'); // 'mesaje' | 'anunt'
-    const [anuntTip, setAnuntTip] = useState('toti'); // 'toti' | 'unul'
+     const [sectiune, setSectiune] = useState('mesaje');  
+    const [anuntTip, setAnuntTip] = useState('toti');  
     const [anuntUserId, setAnuntUserId] = useState('');
     const [anuntUserSuggestii, setAnuntUserSuggestii] = useState([]);
     const [totiUserii, setTotiUserii] = useState([]);
@@ -36,8 +35,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
         }
     };
 
-    // CORECTAT: Preluarea utilizatorilor se face acum securizat prin API-ul de admin
-    const loadUseri = async () => {
+     const loadUseri = async () => {
         if (totiUserii.length > 0) return;
         setLoadingUseri(true);
         try {
@@ -110,8 +108,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
         );
     };
 
-    // CORECTAT: Trimiterea anunțurilor/notificărilor trece acum exclusiv prin backend-ul de Vercel
-    const handleTrimiteAnunt = async () => {
+     const handleTrimiteAnunt = async () => {
         if (!anuntText.trim()) { toast.error('Mesajul anunțului nu poate fi gol.'); return; }
 
         let targetUserId = null;
@@ -128,11 +125,11 @@ function MesajeTab({ adminUsername, adminPassword }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'broadcast_announcement', // Acțiune nouă în backend
+                    action: 'broadcast_announcement',  
                     username: adminUsername,
                     sessionToken: adminPassword,
                     data: {
-                        type: anuntTip, // 'toti' sau 'unul'
+                        type: anuntTip, 
                         userId: targetUserId,
                         text: anuntText.trim()
                     }

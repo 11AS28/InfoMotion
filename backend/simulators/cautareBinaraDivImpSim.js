@@ -92,5 +92,4 @@ function simulateCautareBinaraDivImpJS(arr, target) {
   return steps;
 }
 
-// ATENȚIE: Exportă exact numele pe care îl folosești în server.js
 module.exports = { simulateCautareBinaraDivImpJS };

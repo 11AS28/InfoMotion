@@ -4,7 +4,6 @@ import '../animatii_css/divideAnim.css';
 export default function DivideAnim() {
   const [step, setStep] = useState(0);
 
-  // Stările vectorului pe măsură ce este împărțit și apoi combinat (căutăm MAXIMUL)
   const stages = [
     { 
       desc: "1. Problema inițială: Găsește maximul în vectorul de 8 elemente.", 

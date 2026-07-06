@@ -5,8 +5,7 @@ import Editor, {
 } from 'react-simple-wysiwyg';
 import { toast } from 'sonner';
 
-// Stare implicită pentru un quiz gol
-const emptyQuiz = () =>
+ const emptyQuiz = () =>
   Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 }));
 
 export default function AdaugaTab({
@@ -51,8 +50,7 @@ export default function AdaugaTab({
     setQuiz(q);
   };
 
-  // CORECTAT: Schimbat 'username' în 'adminUsername' pentru a evita crash-ul de referință nedeclarată
-  const sendUserNotification = async (userId, type, text) => {
+   const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
     try {
       await fetch('/api/admin', {
@@ -117,11 +115,9 @@ export default function AdaugaTab({
         throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
       }
 
-      // Curățăm cache-ul local dacă există
-      localStorage.removeItem("infoMotion_lectii");
+       localStorage.removeItem("infoMotion_lectii");
 
-      // Trimitem notificarea de aprobare dacă este cazul
-      if (propunereInCurs && propuneri.length > 0) {
+       if (propunereInCurs && propuneri.length > 0) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {
           await sendUserNotification(propGasita.autorId, 'lectie_aprobata',
@@ -256,8 +252,7 @@ export default function AdaugaTab({
           />
         </div>
 
-        {/* Conținut ascuns dacă e doar Concept General */}
-        {!esteConcept && (
+         {!esteConcept && (
           <>
             {/* Pbinfo */}
             <div className="admin-field" style={{ marginTop: '10px' }}>
@@ -277,7 +272,7 @@ export default function AdaugaTab({
               <button type="button" onClick={addPbRow} style={{ marginTop: '10px', background: '#f1f5f9', border: '1px dashed #cbd5e1', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#475569' }}>+ Adaugă link problemă</button>
             </div>
 
-            {/* Codeforces Tracker (Sincronizat cu starea) */}
+            {/* Codeforces Tracker  */}
             <div className="admin-field" style={{ marginTop: '15px' }}>
               <div style={{ fontWeight: '700', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '14px', fontSize: '14px', color: '#0f172a' }}>Probleme Codeforces Tracker</div>
               <div style={{ display: 'flex', gap: '10px' }}>

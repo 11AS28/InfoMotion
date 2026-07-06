@@ -33,7 +33,6 @@ export const shopItems = [
   }
 ];
 
-// Obiectul de configurare pe care Monaco Editor îl va citi ca să știe ce culori să aplice
 export const customThemes = {
   theme_dracula: {
     base: 'vs-dark',

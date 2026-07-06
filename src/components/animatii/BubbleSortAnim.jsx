@@ -1,6 +1,4 @@
-// src/components/animations/BubbleSortAnim.jsx
 import React, { useState, useEffect } from 'react';
-// Asigură-te că ai CSS-ul pentru bare aici sau importat global
 
 const INITIAL_ARRAY = [24, 18, 35, 12, 42, 8];
 

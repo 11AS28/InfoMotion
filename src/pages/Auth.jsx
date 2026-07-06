@@ -62,7 +62,6 @@ usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autent
           return;
         }
 
-        //  Pasăm și starea `role` către funcția de signup din context
         await signup(identificator, password, username, role); 
         
         setSuccessMsg("Cont creat cu succes! Te rugăm să îți verifici emailul (inclusiv folderul Spam) pentru a activa contul.");
@@ -172,7 +171,6 @@ usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autent
           </div>
         )}
         
-        {/*  SELECTOR DE ROL: Afișat doar la înregistrare */}
         {isRegistering && (
           <div className="role-selector-container" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             <button
@@ -258,7 +256,6 @@ usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autent
             />
           </div>
 
-          {/*  Câmpuri specifice de profesor în formular (Opțional - momentan l-am lăsat gol, dar dacă vrei să ceri ceva specific de la ei pe viitor, îl injectezi direct aici) */}
           {isRegistering && role === 'teacher' && (
             <div className="teacher-extra-fields" style={{ marginBottom: '15px', padding: '10px', background: 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
               <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -298,7 +295,7 @@ usePageTitle(isRegistering ? 'InfoMotion - Înregistrare' : 'InfoMotion - Autent
               setPassword(""); 
               setIdentificator(""); 
               setUsername("");
-              setRole('student'); // Resetăm înapoi la student
+              setRole('student');
               setAgreedToTerms(false);
             }} 
             style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}

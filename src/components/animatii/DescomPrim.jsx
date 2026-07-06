@@ -26,7 +26,6 @@ export default function FactoriPrimiAnim() {
       
       <div className="di-visual" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
-        {/* Folosim flexWrap pentru ca elementele N, d, p să nu se înghesuie pe mobil */}
         <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <div className="di-box" style={{ background: '#2d3748', width: '100px', maxWidth: '100%' }}>N = {cur.n}</div>
           <div className="di-box" style={{ background: '#BA7517', width: '100px', maxWidth: '100%' }}>d = {cur.d}</div>
@@ -37,18 +36,18 @@ export default function FactoriPrimiAnim() {
           marginTop: '30px', 
           textAlign: 'center', 
           width: '100%',
-          maxWidth: '400px' // Îi limităm lățimea ca să nu se întindă urât, dar permite restrângerea pe mobil
+          maxWidth: '400px'  
         }}>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '5px' }}>REZULTAT PARȚIAL:</p>
           <div style={{ 
-            fontSize: 'clamp(1.2rem, 4vw, 1.8rem)', // 'clamp' face textul responsiv pe mobil (se micșorează adaptiv)
+            fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
             fontWeight: 'bold', 
             color: '#8cd932', 
             fontFamily: 'monospace',
             padding: '15px',
             border: '2px dashed #8cd932',
             borderRadius: '10px',
-            wordBreak: 'break-all' // Asigură că dacă expresia ajunge lungă, se rupe pe alt rând pe telefoanele înguste
+            wordBreak: 'break-all' 
           }}>
             {cur.res || "..."}
           </div>

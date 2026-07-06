@@ -18,7 +18,7 @@ export default function VariabileAnim() {
       desc: "2. Problema: Dacă facem direct 'a = b', valoarea 5 dispare definitiv (se suprascrie). De aceea avem nevoie de un 'pahar de rezervă' numit 'aux'. Turnăm A în Aux.",
       code: "aux = a; // aux devine 5",
       pahare: {
-        a: { val: null, color: 'rgba(59, 130, 246, 0.2)', label: 'Variabila A (Gol)' }, // Simulăm că l-am golit pentru a evidenția mutarea
+        a: { val: null, color: 'rgba(59, 130, 246, 0.2)', label: 'Variabila A (Gol)' },
         b: { val: 7, color: '#BA7517', label: 'Variabila B' },
         aux: { val: 5, color: '#3b82f6', label: 'Variabila AUX' }
       }
@@ -58,7 +58,6 @@ export default function VariabileAnim() {
 
   const cur = stages[step];
 
-  // Componentă mică pentru afișarea unui Pahar
   const Pahar = ({ data }) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
@@ -72,15 +71,14 @@ export default function VariabileAnim() {
             position: 'relative',
             background: 'rgba(255, 255, 255, 0.05)',
             display: 'flex',
-            alignItems: 'flex-end', // Lichidul stă jos
+            alignItems: 'flex-end', 
             overflow: 'hidden'
         }}>
-          {/* Partea de "Lichid" */}
           <div style={{ 
               width: '100%', 
               height: data.val !== null ? '80%' : '0%', 
               background: data.color,
-              transition: 'all 0.5s ease', // Efect fluid la mutare
+              transition: 'all 0.5s ease',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center'
@@ -106,18 +104,16 @@ export default function VariabileAnim() {
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '35px' }}>
         
-        {/* Vizualizare Pahare */}
         <div style={{ 
             display: 'flex', 
             gap: '20px', 
             justifyContent: 'center', 
-            flexWrap: 'wrap', // Siguranță pentru mobil
+            flexWrap: 'wrap', 
             width: '100%',
             padding: '20px 0'
         }}>
           <Pahar data={cur.pahare.a} />
           
-          {/* Auxiliarul e plasat între ele, dar mai jos, ca o găleată ajutătoare */}
           <div style={{ transform: 'translateY(30px)' }}>
              <Pahar data={cur.pahare.aux} />
           </div>
@@ -125,7 +121,6 @@ export default function VariabileAnim() {
           <Pahar data={cur.pahare.b} />
         </div>
 
-        {/* Codul C++ relevant pasului */}
         <div style={{ 
           background: '#1e293b', padding: '15px', borderRadius: '8px', 
           fontFamily: 'monospace', borderLeft: '4px solid #9b5de5',

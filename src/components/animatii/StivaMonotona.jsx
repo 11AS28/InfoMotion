@@ -91,7 +91,6 @@ export default function StivaMonotonaAnim() {
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', gap: '25px', alignItems: 'center' }}>
         
-        {/* Schita Vector Principal */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
           {cur.v.slice(1).map((val, i) => {
             const realIdx = i + 1;
@@ -114,8 +113,6 @@ export default function StivaMonotonaAnim() {
           })}
         </div>
 
-        {/* Reprezentarea Stivei (Vizualizata pe verticala, de la baza in sus) și a Vectorului Rezultat */}
-        {/* Adăugat flexWrap pentru ecrane înguste unde stiva și rezultatul nu pot sta aliniate lateral */}
         <div style={{ display: 'flex', gap: '40px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
           
           <div style={{ textAlign: 'center', minWidth: '120px' }}>
@@ -131,12 +128,12 @@ export default function StivaMonotonaAnim() {
               gap: '5px', 
               padding: '5px',
               background: 'rgba(255, 255, 255, 0.02)',
-              margin: '0 auto' // Asigură centrarea cutiei de stivă sub propriul text
+              margin: '0 auto' 
             }}>
               {cur.stiva.map((val, idx) => (
                 <div key={idx} className="di-box" style={{ 
                   width: '100%', 
-                  height: 'auto', // Permite flexibilitate la textul "(Top)"
+                  height: 'auto', 
                   minHeight: '25px', 
                   background: idx === cur.stiva.length - 1 ? '#BA7517' : '#1e293b',
                   fontSize: '0.85rem',

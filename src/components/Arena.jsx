@@ -24,14 +24,12 @@ function Arena({ datePreincarcate }) {
   const [activeTab, setActiveTab] = useState('easy'); 
   const [isChecking, setIsChecking] = useState(false); 
 
-  // Stări pentru verificarea oricărei probleme de pe Codeforces
   const [customProblemId, setCustomProblemId] = useState('');
   const [isCheckingCustom, setIsCheckingCustom] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const solversPerPage = 5;
 
-  // Pattern pentru erori, atenționări sau lipsă date
   const triggerErrorHaptic = () => {
     trigger([
       { duration: 40, intensity: 0.7 },
@@ -41,7 +39,6 @@ function Arena({ datePreincarcate }) {
     ]);
   };
 
-  // Pattern-ul tău personalizat pentru succes (Când totul este OK)
   const triggerSuccessHaptic = () => {
     trigger([
       { duration: 30 },
@@ -169,10 +166,10 @@ function Arena({ datePreincarcate }) {
           else if (dificultateTinta === 'medium') puncteDeAcordat = esteInPrimii3 ? 50 : 40;
           else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
           await acordaPuncte(puncteDeAcordat);
-          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes
+          triggerSuccessHaptic(); 
           toast.success(`Felicitări! Ai primit +${puncteDeAcordat} XP!`, { id: idValidare });
         } else {
-          triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes (antrenament validat)
+          triggerSuccessHaptic(); 
           toast.info("Antrenament privat validat!", { id: idValidare });
         }
         
@@ -238,7 +235,7 @@ function Arena({ datePreincarcate }) {
           problemeRezolvateCount: increment(1)
         });
 
-        triggerSuccessHaptic(); // <--- Haptic-ul tău pentru succes liber
+        triggerSuccessHaptic(); 
         toast.success(`Validat! +${xpDeOferit} XP adăugați pentru problema ${idCurat}.`, { id: idToast });
         setCustomProblemId('');
       } else {

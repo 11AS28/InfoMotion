@@ -13,7 +13,6 @@ import WikiPreviewLink from '../components/WikiPreviewLink';
 import usePageTitle from '../hooks/usePageTitle';
 import DOMPurify from 'dompurify';
 
-// Lazy loading components...
 const CautareBinaraAnim = React.lazy(() => import('../components/animatii/CautareBinaraAnim'));
 const DivideAnim = React.lazy(() => import('../components/animatii/DivideAnim'));
 const GreedyAnim = React.lazy(() => import('../components/animatii/greedyAnim'));
@@ -103,32 +102,27 @@ function LessonPage() {
       }
 
       try {
-        // 1. Luăm mega-cache-ul global pe care l-am creat în AuthContext
         const cachedLessonsRaw = localStorage.getItem('infoMotion_lectii');
 
         if (cachedLessonsRaw) {
           const toateLectiile = JSON.parse(cachedLessonsRaw);
 
-          // 2. Găsim lecția curentă direct în cache după ID (Slug) -> 0 Citiri Firestore!
           const lectieGasita = toateLectiile.find(l => l.id === idLectie);
 
           if (lectieGasita) {
             if (isMounted) setLectie(lectieGasita);
 
-            // 3. Filtrăm tot local lecțiile din aceeași clasă pentru Sidebar -> 0 Citiri Firestore!
             const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
             if (isMounted) setToateLectiileDinClasa(filtrateLocal);
           } else {
             console.error("Lecția nu a fost găsită în cache-ul local!");
           }
         } else {
-          // Fallback de siguranță extreme în caz că cineva a șters manual cache-ul
           const docRef = doc(db, "lectii", idLectie);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists() && isMounted) setLectie(docSnap.data());
         }
 
-        // 4. Verificăm dacă lecția e terminată (rămâne neschimbat)
         if (currentUser) {
           const terminate = currentUser.lectiiTerminate || [];
           const gasit = terminate.some(id => String(id) === String(idLectie));

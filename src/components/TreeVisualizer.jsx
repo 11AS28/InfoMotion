@@ -1,8 +1,6 @@
-// src/components/TreeVisualizer.jsx
 import React, { useState, useEffect } from 'react';
 import '../components_css/TreeVisualizer.css';
 
-// Componentă recursivă pentru randarea fiecărui nod din arbore
 function TreeNode({ node }) {
   if (!node) return null;
 

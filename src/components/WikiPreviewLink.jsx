@@ -21,16 +21,12 @@ export default function WikiPreviewLink({ href, idLectieTinta, children }) {
       const data = docSnap.data();
       let textTeorie = data.teorie || '';
 
-      // 1. Ștergem marcajele de tip "### Text" (cu tot cu spații sau &nbsp; lipite de ele)
       textTeorie = textTeorie.replace(/###\s*.+?(?=\s|<|\n|$)/g, '');
 
-      // 2. Curățăm toate tagurile HTML ramase (ex: <p>, <div>, <a>)
       textTeorie = textTeorie.replace(/<[^>]*>/g, '');
 
-      // 3. Înlocuim entitățile HTML ciudate precum &nbsp; cu spațiu normal
       textTeorie = textTeorie.replace(/&nbsp;/g, ' ');
 
-      // 4. Scurtăm textul pentru previzualizare (140 de caractere e perfect)
       const textCuratatScurt = textTeorie.trim().substring(0, 140) + '...';
 
       setPreviewData({

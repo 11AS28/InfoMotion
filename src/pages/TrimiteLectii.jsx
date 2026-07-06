@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase"; // Asigură-te că importul către instanța ta de Firebase este corect
-import { useAuth } from "../context/AuthContext"; // Dacă vrei să salvezi și cine a trimis lecția
+import { db } from "../firebase"; 
+import { useAuth } from "../context/AuthContext";
 import Nav from "../components/nav";
 import Footer from "../components/footer";
 import '../pages_css/trimiteLectii.css';
 import usePageTitle from '../hooks/usePageTitle';
 
 const TrimiteLectii = () => {
-    const { currentUser } = useAuth(); // Extragem utilizatorul logat, dacă este cazul
+    const { currentUser } = useAuth(); 
     
-    // Starea inițială a formularului
-    const [form, setForm] = useState({
+     const [form, setForm] = useState({
         titlu: "",
         clasa: "",
         teorie: "",
@@ -20,26 +19,21 @@ const TrimiteLectii = () => {
         numeAutor: currentUser ? (currentUser.nume || currentUser.email.split('@')[0]) : "" 
     });
 
-    // Stări pentru feedback-ul utilizatorului (încărcare, succes, eroare)
-    const [loading, setLoading] = useState(false);
+     const [loading, setLoading] = useState(false);
     const [statusMessage, setStatusMessage] = useState({ type: "", text: "" });
 
-    // Funcția care actualizează state-ul la fiecare modificare a unui input/textarea/checkbox
-    const handleChange = (e) => {
+     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setForm((prevForm) => ({
             ...prevForm,
-            // Dacă e checkbox folosim "checked", altfel folosim "value"
-            [name]: type === 'checkbox' ? checked : value
+             [name]: type === 'checkbox' ? checked : value
         }));
     };
 
-    // Funcția care se execută când utilizatorul apasă butonul "Trimite Lecția"
-    const handleSubmit = async (e) => {
-        e.preventDefault(); // Previne reîncărcarea paginii
+     const handleSubmit = async (e) => {
+        e.preventDefault();  
         
-        // Validare de siguranță (opțională, HTML5 deja blochează prin atributul 'required')
-        if (!form.titlu || !form.clasa || !form.teorie || !form.acceptTerms) {
+         if (!form.titlu || !form.clasa || !form.teorie || !form.acceptTerms) {
             setStatusMessage({ type: "error", text: "Te rugăm să completezi toate câmpurile obligatorii și să accepți termenii." });
             return;
         }
@@ -48,25 +42,21 @@ const TrimiteLectii = () => {
         setStatusMessage({ type: "", text: "" });
 
         try {
-            // Trimitem datele în baza de date Firestore
-            await addDoc(collection(db, "propuneri_lectii"), {
+             await addDoc(collection(db, "propuneri_lectii"), {
                 titlu: form.titlu,
                 clasa: form.clasa,
                 teorie: form.teorie,
                 codCPlusPlus: form.codCPlusPlus,
-                // Aici salvam ce a scris omul în câmpul "Numele tău", sau "Anonim" dacă a lăsat gol
-                numeAutorDorit: form.numeAutor || "Anonim", 
+                 numeAutorDorit: form.numeAutor || "Anonim", 
                 autorId: currentUser ? currentUser.uid : "Anonim", 
                 emailAutor: currentUser ? currentUser.email : "Anonim",
                 dataTrimiterii: serverTimestamp(),
                 status: "in_asteptare" 
             });
 
-            // Afișăm un mesaj de succes
-            setStatusMessage({ type: "success", text: "Lecția a fost trimisă cu succes! Îți mulțumim pentru contribuție." });
+             setStatusMessage({ type: "success", text: "Lecția a fost trimisă cu succes! Îți mulțumim pentru contribuție." });
             
-            // Resetăm formularul după trimiterea cu succes (inclusiv checkbox și nume)
-            setForm({
+             setForm({
                 titlu: "",
                 clasa: "",
                 teorie: "",
@@ -99,8 +89,7 @@ const TrimiteLectii = () => {
                 Acesta este locul potrivit! Completează formularul de mai jos cu detaliile lecției tale și trimite-ne propunerea.
             </p>
             
-            {/* Afișarea mesajelor de status (Eroare sau Succes) */}
-            {statusMessage.text && (
+             {statusMessage.text && (
                 <div style={{ 
                     padding: '15px', 
                     marginBottom: '20px', 

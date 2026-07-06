@@ -13,14 +13,12 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
   const { currentUser, acordaPuncte, scadeInima } = useAuth();
   const { trigger } = useWebHaptics();
 
-  // Păstrăm inima sincronizată cu ce are userul în momentul deschiderii
   const [localHearts, setLocalHearts] = useState(currentUser?.hearts ?? 3);
 
   const answeredCount = answers.filter(ans => ans !== null).length;
   const score = answers.filter((ans, idx) => ans === quizData[idx].corect).length;
   const isPerfect = score === quizData.length;
 
-  // Pattern vibrație succes (Test trecut perfect)
   const triggerSuccessHaptic = () => {
     trigger([
       { duration: 30 },
@@ -28,7 +26,6 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     ]);
   };
 
-  // Pattern vibrație eroare (Când se greșește testul, ex: 2/5)
   const triggerErrorHaptic = () => {
     trigger([
       { duration: 50, intensity: 0.8 },
@@ -66,12 +63,10 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
     try {
       const userRef = doc(db, 'users', currentUser.uid);
       
-      // CORECTAT: Salvăm în obiectul 'progres' folosind notația cu punct,
-      // pentru a fi citit corect de getStatistici() fără a șterge alte lecții
       await updateDoc(userRef, { 
         [`progres.${lessonId}`]: {
           status: 'complet',
-          terminatLa: new Date() // sau serverTimestamp() dacă îl ai importat
+          terminatLa: new Date() 
         }
       });
 
@@ -97,7 +92,6 @@ function QuizModal({ lessonId, quizData, onClose, onFinished }) {
 
     setIsQuizChecked(true);
 
-    // Declanșăm haptic-ul în funcție de rezultatul scorului calculat pe loc
     if (score === quizData.length) {
       triggerSuccessHaptic();
     } else {

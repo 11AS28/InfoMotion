@@ -34,7 +34,6 @@ Deși este foarte ușor de înțeles și de scris, Bubble Sort nu este eficient 
         url: "https://www.pbinfo.ro/probleme/509/ordonare"
       }
     ],
-    // ------------------------------------
 
 
 
@@ -118,7 +117,7 @@ Reguli pentru numele variabilelor:
       }
     ],
 
-    animatie: null, // Aici poți pune numele componentei dacă faci o animație în viitor
+    animatie: null, 
     
     codCPlusPlus: `#include <iostream>
 using namespace std;

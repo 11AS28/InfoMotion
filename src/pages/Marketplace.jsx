@@ -10,13 +10,11 @@ import moneymusic from '../assets/ksjsbwuil-cash-register-1-513922.mp3';
 import moneykabing from '../assets/shelvis_makes_games-i-see-money-181273.mp3';
 
 export default function Marketplace() {
-  // Am adăugat revendicaDailyReward aici
   const { currentUser, cumparaTema, echipeazaTema, cumparaInima, cumparaStreakFreeze, cumparaTitlu, echipeazaTitlu, revendicaDailyReward } = useAuth();
   const [loadingId, setLoadingId] = useState(null);
   const [mesaj, setMesaj] = useState({ tip: '', text: '' });
   const { trigger } = useWebHaptics();
 
-  // State-uri noi pentru Daily Reward
   const [dailyLoading, setDailyLoading] = useState(false);
   const [timeLeftBooster, setTimeLeftBooster] = useState("");
 
@@ -35,7 +33,6 @@ export default function Marketplace() {
 
   usePageTitle("InfoMotion - Marketplace");
 
-  // Timer pentru afișarea timpului rămas din XP Booster
   useEffect(() => {
     if (!currentUser?.xp_booster_expires_at) {
       setTimeLeftBooster("");
@@ -88,7 +85,6 @@ export default function Marketplace() {
 
     if (res.success) {
       triggerSuccessHaptic();
-      // Dacă e drop Epic/Rare punem sunetul mai blană, altfel cel de coins
       if (res.rarity === 'epic') {
         playSound(moneykabing);
         afiseazaMesaj('succes', res.message);
@@ -239,9 +235,6 @@ export default function Marketplace() {
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* NOUA SECȚIUNE: DAILY REWARD (Injected exact unde ai încercuit) */}
-      {/* ========================================================= */}
       <div className="daily-reward-card-section">
         <div className="daily-left-box">
           <div className="daily-gift-circle">
@@ -256,7 +249,6 @@ export default function Marketplace() {
         </div>
 
         <div className="daily-right-box">
-          {/* Afișăm timerul dacă utilizatorul are un booster pornit și activ în acest moment */}
           {timeLeftBooster && (
             <div className="booster-active-badge">
               <Flame size={18} className="flame-icon-pulse" />
@@ -279,15 +271,13 @@ export default function Marketplace() {
           </button>
         </div>
       </div>
-      {/* ========================================================= */}
 
       <div className="market-section-divider">
         <h2 className="market-section-title">Personalizare Editor</h2>
         <div className="market-section-line"></div>
       </div>
 
-      {/* ... Restul codului tău de grid rămâne absolut neschimbat până jos ... */}
-      <div className="market-grid">
+       <div className="market-grid">
         {shopItems.map((item) => {
           const esteDeblocata = temeDeblocate.includes(item.id);
           const esteEchipata = temaEchipata === item.id;

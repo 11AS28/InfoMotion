@@ -4,7 +4,6 @@ import '../animatii_css/divideAnim.css';
 export default function SumePartiale1DAnim() {
   const [step, setStep] = useState(0);
 
-  // Vectorul original V (indexat de la 1, deci punem un 0 ignorat la început)
   const V = [0, 3, 1, 4, 2, 5];
   
   const stages = [
@@ -62,7 +61,7 @@ export default function SumePartiale1DAnim() {
       s: [0, 3, 4, 8, 10, 15],
       activeV: [2, 3, 4],
       activeS: -1,
-      highlightS: [4, 1], // R=4, L-1=1
+      highlightS: [4, 1],
       query: { L: 2, R: 4 },
       calc: "Suma = S[R] - S[L-1] = S[4] - S[1]",
       desc: "8. FORMULA: Suma cerută este S[4] (suma primelor 4 elemente) din care tăiem S[1] (ce e înainte de L)."
@@ -90,7 +89,6 @@ export default function SumePartiale1DAnim() {
       
       <div className="di-visual" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
-        {/* Vectorul V */}
         <div style={{ marginBottom: '20px', width: '100%' }}>
           <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold', textAlign: 'center' }}>
             Vectorul V (Original):
@@ -102,12 +100,10 @@ export default function SumePartiale1DAnim() {
               let border = '1px solid #4a5568';
               
               
-              // Evidențiere în faza de construire
               if (cur.activeV.includes(idx) && step < 6) {
                 bg = '#3b82f6';
                 border = '2px solid #60a5fa';
               }
-              // Evidențiere în faza de query
               else if (cur.activeV.includes(idx) && step >= 6) {
                 bg = '#BA7517';
                 border = '2px solid #ffb347';
@@ -130,12 +126,10 @@ export default function SumePartiale1DAnim() {
           </div>
         </div>
 
-        {/* Săgeată/Separator vizual în faza de construcție */}
         {step > 0 && step < 6 && (
            <div style={{ color: '#3b82f6', fontSize: '1.5rem', marginBottom: '10px' }}>⬇</div>
         )}
 
-        {/* Vectorul S */}
         <div style={{ width: '100%' }}>
           <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold', textAlign: 'center' }}>
             Vectorul S (Sume Parțiale):
@@ -179,7 +173,6 @@ export default function SumePartiale1DAnim() {
           </div>
         </div>
 
-        {/* Zona de formule / Calcule live */}
         {cur.calc && (
           <div style={{ 
             marginTop: '30px', 

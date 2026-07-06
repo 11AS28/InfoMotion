@@ -1,5 +1,4 @@
-// LectiiTab.jsx modificat profesional pentru Serverless API
-import { useState } from 'react';
+ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPassword, adminUsername }) {
@@ -13,8 +12,7 @@ export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPas
   const handleDelete = async (id) => {
     if (!window.confirm(`Ești sigur că vrei să ștergi lecția "${id}"?`)) return;
     try {
-      // Trimitem cererea de ștergere către backend-ul nostru central securizat
-      const response = await fetch('/api/admin', {
+       const response = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,8 +56,7 @@ export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPas
         />
       </div>
 
-      {/* Desktop table */}
-      <div className="admin-table-wrap desktop-only">
+       <div className="admin-table-wrap desktop-only">
         <table className="admin-table">
           <thead>
             <tr>
@@ -85,8 +82,7 @@ export default function LectiiTab({ firebaseLessons, onEdit, onRefresh, adminPas
         </table>
       </div>
 
-      {/* Mobile cards */}
-      <div className="admin-lessons-mobile-list mobile-only">
+       <div className="admin-lessons-mobile-list mobile-only">
         {filtered.map((l) => (
           <div key={l.id} className="admin-lesson-mobile-card">
             <div className="mobile-card-header">

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-// 1. IMPORTĂ și "loader" de la monaco-editor
 import Editor, { loader } from '@monaco-editor/react'; 
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';

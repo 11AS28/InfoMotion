@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import '../animatii_css/divideAnim.css'; // Refolosim stilul de la DivideAnim
+import '../animatii_css/divideAnim.css'; 
 
 export default function VariabileAnim() {
   const [step, setStep] = useState(0);
 
-  // Stările animației pentru a arăta cum funcționează memoria și variabilele
   const stages = [
     { 
       desc: "1. Memoria calculatorului este goală. Nu avem nicio variabilă creată.", 
@@ -21,7 +20,7 @@ export default function VariabileAnim() {
       cutieTitlu: "Variabila 'a' (int)",
       cutieContinut: "? (Nimic)",
       tip: "int",
-      boxColor: '#378ADD' // Albastru pt int
+      boxColor: '#378ADD' 
     },
     { 
       desc: "3. ATRIBUIREA (Inițializarea): Punem valoarea 5 în interiorul cutiei 'a'.", 
@@ -45,7 +44,7 @@ export default function VariabileAnim() {
       cutieTitlu: "Variabila 'litera' (char)",
       cutieContinut: "'X'",
       tip: "char",
-      boxColor: '#D4537E' // Roz pt char
+      boxColor: '#D4537E' 
     },
     { 
       desc: "6. ALTE TIPURI DE DATE: Pentru numere cu virgulă folosim float sau double.", 
@@ -53,7 +52,7 @@ export default function VariabileAnim() {
       cutieTitlu: "Variabila 'pi' (float)",
       cutieContinut: "3.14",
       tip: "float",
-      boxColor: '#639922' // Verde pt float
+      boxColor: '#639922' 
     }
   ];
 
@@ -70,7 +69,6 @@ export default function VariabileAnim() {
       
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '50px', flexWrap: 'wrap', marginBottom: '40px' }}>
         
-        {/* Partea Stângă: CODUL C++ */}
         <div style={{ 
             backgroundColor: '#1e1e1e', 
             padding: '20px', 
@@ -82,12 +80,11 @@ export default function VariabileAnim() {
             color: '#d4d4d4',
             border: '1px solid #444',
             fontSize: '1.2rem',
-            whiteSpace: 'pre-wrap' // Păstrează enter-urile din string
+            whiteSpace: 'pre-wrap' 
         }}>
           <span style={{ color: '#888', display: 'block', marginBottom: '10px' }}>// Cod C++</span>
           {currentStage.cod === "" ? <span style={{color: '#555'}}>(Nimic)</span> : 
            currentStage.cod.split('\n').map((line, i) => {
-               // Colorăm cuvintele cheie (int, float, char)
                if(line.includes("int")) return <div key={i}><span style={{color: '#569cd6'}}>int</span> {line.replace('int', '')}</div>;
                if(line.includes("char")) return <div key={i}><span style={{color: '#569cd6'}}>char</span> {line.replace('char', '')}</div>;
                if(line.includes("float")) return <div key={i}><span style={{color: '#569cd6'}}>float</span> {line.replace('float', '')}</div>;
@@ -95,7 +92,6 @@ export default function VariabileAnim() {
            })}
         </div>
 
-        {/* Partea Dreaptă: REPREZENTAREA VIZUALĂ A CUTIEI (MEMORIA) */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <span style={{ marginBottom: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
             {currentStage.cutieTitlu || "Memoria (RAM)"}
@@ -108,7 +104,7 @@ export default function VariabileAnim() {
             border: '3px dashed var(--text-muted)',
             borderRadius: '12px',
             fontSize: '2rem',
-            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Efect de "bounce"
+            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
             transform: step === 0 ? 'scale(0.8)' : 'scale(1)',
             opacity: step === 0 ? 0.3 : 1,
             color: currentStage.color

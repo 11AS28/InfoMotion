@@ -1,4 +1,3 @@
-// src/components/CodeSnippet.jsx
 import React from 'react';
 import '../components_css/codeSnippet.css'; 
 
