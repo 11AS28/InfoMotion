@@ -59,7 +59,7 @@ async function generateSitemap() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${allRoutes.map(url => `
   <url>
-    <loc>https://info-motion.vercel.app${url}</loc>
+    <loc>https://info-motion.space${url}</loc>
     <changefreq>weekly</changefreq>
     <priority>${url === '/' ? '1.0' : '0.8'}</priority>
   </url>`).join('')}
