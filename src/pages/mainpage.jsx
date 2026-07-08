@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../pages_css/mainPage.css';
 import Nav from '../components/nav';
 import Footer from '../components/footer';
-import { Eye, ClipboardPenLine, LibraryBig } from 'lucide-react';
+import { Eye, ClipboardPenLine, LibraryBig, Terminal,Coins } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
 const INITIAL_ARRAY = [24, 18, 35, 12, 42, 8];
@@ -170,25 +170,27 @@ function MainPage() {
       
 
       <section id="Features" className="features-section">
-        <h2 className="features-title">De ce să alegi InfoMotion?</h2>
-        <ul className="features-grid">
-          <li className="feature-card">
-            <div className="feature-icon"><Eye size={100} color="#23a9b3" strokeWidth={0.75} /></div> 
-            <strong>Vizualizare Interactivă</strong>
-            <p>Înțelege algoritmii și structurile de date prin animații clare și intuitive.</p>
-          </li>
-          <li className="feature-card">
-            <div className="feature-icon"><ClipboardPenLine size={100} color="#23a9b3" strokeWidth={0.75} /></div>
-            <strong>Explicații Pas cu Pas</strong>
-            <p>Fiecare linie de cod este explicată în detaliu, astfel încât să poți urmări logica.</p>
-          </li>
-          <li className="feature-card">
-            <div className="feature-icon"><LibraryBig size={100} color="#23a9b3" strokeWidth={0.75} /></div>
-            <strong>Resurse Educaționale</strong>
-            <p>Acces la o bibliotecă vastă de lecții, exerciții și probleme de algoritmi.</p>
-          </li>
-        </ul>
-      </section>
+  <h2 className="features-title">De ce să alegi InfoMotion?</h2>
+  <ul className="features-grid">
+    <li className="feature-card">
+      <div className="feature-icon"><Terminal size={100} color="#23a9b3" strokeWidth={0.75} /></div>
+      <strong>Compilator și Evaluator Sandbox</strong>
+      <p>Scrie cod C++ direct în browser și testează-l în siguranță într-un mediu izolat bazat pe containere Docker.</p>
+    </li>
+
+    <li className="feature-card">
+      <div className="feature-icon"><Coins size={100} color="#23a9b3" strokeWidth={0.75} /></div>
+      <strong>Gamification și Marketplace</strong>
+      <p>Rezolvă quiz-uri, menține-ți streak-ul și folosește monedele acumulate pentru a debloca avantaje sau teme unice.</p>
+    </li>
+
+    <li className="feature-card">
+      <div className="feature-icon"><LibraryBig size={100} color="#23a9b3" strokeWidth={0.75} /></div>
+      <strong>Resurse și Arena Competitivă</strong>
+      <p>Acces la lecții structurate, „Problema Zilei” sincronizată din Codeforces și clasamente globale.</p>
+    </li>
+  </ul>
+</section>
 
       
       
