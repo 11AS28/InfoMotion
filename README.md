@@ -81,7 +81,7 @@ Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl 
 
 Platforma rulează direct în browser, fără instalare:
 
-1. 🌐 Accesează **[info-motion.vercel.app](https://info-motion.vercel.app)**
+1. 🌐 Accesează **[infomotion.space](https://infomotion.space)**
 2. 🔑 Apasă **„LOGARE / CREARE CONT"**
 3. 📘 Apasă **„Începe să înveți"**
 
