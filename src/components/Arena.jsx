@@ -5,6 +5,7 @@ import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestor
 import '../components_css/arena.css';
 import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
+import { Toaster, toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useWebHaptics } from "web-haptics/react";
 function Arena({ datePreincarcate }) {
