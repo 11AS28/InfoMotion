@@ -16,6 +16,9 @@
 
 ## 📖 Despre proiect
 
+**DOCUMENTATIA O GASITI AICI** (https://docs.google.com/document/d/1Z5vPx7C196fCTjE-NZTvjNK1hayeKfIs/edit?usp=sharing&ouid=115920545337278714774&rtpof=true&sd=true)
+
+
 **InfoMotion** a fost creat pentru că algoritmii de bază sunt de obicei explicați teoretic și greoi. Platforma transformă procesul de învățare al algoritmilor într-o experiență vizuală, interactivă și motivantă — prin **animații pas-cu-pas**, un **compilator C++ integrat**, **quiz-uri**, un sistem de **gamificare** și o arenă de concurs zilnică.
 
 Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl vezi *mișcându-se* — nu citit din pseudocod pe tablă, ci văzut pas cu pas, cu fiecare comparație și interschimbare vizibilă pe ecran.
