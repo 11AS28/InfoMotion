@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
-import { Toaster, toast } from 'sonner';
 import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
@@ -260,7 +259,6 @@ function Arena({ datePreincarcate }) {
   return (
     usePageTitle("InfoMotion - Arena"),
     <div className="arena-wrapper">
-      <Toaster position="top-center" richColors />
       <div className="arena-container">
         <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>
 

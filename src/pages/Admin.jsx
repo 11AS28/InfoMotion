@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import '../pages_css/admin.css';
 import { doc, collection, getDocs, addDoc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Toaster, toast } from 'sonner';
 import usePageTitle from '../hooks/usePageTitle';
-
 import OverviewTab from './admin/OverviewTab';
 import UtilizatoriTab from './admin/UtilizatoriTab';
 import TodoTab from './admin/TodoTab';
@@ -308,7 +306,6 @@ export default function Admin() {
   const [loggedUser, setLoggedUser] = useState(null);
   return (
     <>
-      <Toaster richColors position="top-right" closeButton />
       {!loggedUser ? <LoginScreen onLogin={setLoggedUser} /> : <Dashboard adminInfo={loggedUser} onLogout={() => setLoggedUser(null)} />}
     </>
   );
