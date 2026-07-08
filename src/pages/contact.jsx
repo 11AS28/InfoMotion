@@ -136,15 +136,6 @@ function Contact() {
                         </li>
                     </ul>
                 </section>
-                <section className="faq-section">
-
-                    <h2 className="section-title"> Întrebări frecvente</h2>
-                    <div className="faq-list">
-                        {FAQ_ITEMS.map((item, index) => (
-                            <FaqItem key={index} question={item.question} answer={item.answer} />
-                        ))}
-                    </div>
-                </section>
 
                 {currentUser && (
                     <section className="contact-section contact-form-section">
@@ -183,6 +174,18 @@ function Contact() {
                         </form>
                     </section>
                 )}
+
+                <section className="faq-section">
+
+                    <h2 className="section-title"> Întrebări frecvente</h2>
+                    <div className="faq-list">
+                        {FAQ_ITEMS.map((item, index) => (
+                            <FaqItem key={index} question={item.question} answer={item.answer} />
+                        ))}
+                    </div>
+                </section>
+
+                
 
             </main>
         </div>
