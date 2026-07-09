@@ -18,6 +18,7 @@ app.use(cors({
     'https://infomotion.space',
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://165.22.20.132.sslip.io'
   ],
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

@@ -45,7 +45,7 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   //doar schimbi false in true 
-  const [isMigrating, setIsMigrating] = useState(true);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
