@@ -354,8 +354,9 @@ function CompilerPage() {
                 color: '#fab387',
                 lineHeight: '1.45'
               }}>
-                🚧 <strong>Sistemul de evaluare se mută pe server VPS dedicat!</strong> <br />
+                <strong>Sistemul de evaluare se mută pe server VPS dedicat!</strong> <br />
                 Compilarea live pentru codul C++ este temporar suspendată pentru upgrade de infrastructură (mutare cluster Docker). Toate animațiile și simulările vizuale de pe site rămân complet funcționale.
+                O sa aveti din nou acces la compilatorul C++ în maxim 24 de ore. <br />
               </div>
             )}
 
