@@ -45,7 +45,6 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
 
-  // 🚧 MENTENANȚĂ ACTIVĂ PENTRU MIGRARE VPS (Schimbă pe false după ce VPS-ul e gata)
   const [isMigrating, setIsMigrating] = useState(true);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
