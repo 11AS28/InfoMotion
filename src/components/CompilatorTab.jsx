@@ -59,7 +59,7 @@ function CompilerPage() {
   const sidePanelRef = useRef(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const baseUrl = "https://165.22.20.132.sslip.io" || 'http://localhost:5000';
 
   useEffect(() => {
     document.documentElement.classList.add('dark');

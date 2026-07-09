@@ -168,7 +168,7 @@ function LessonPage() {
         targetVal = targetInput ? parseInt(targetInput.value) : null;
         if (isNaN(targetVal)) return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
       }
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const baseUrl = "https://165.22.20.132.sslip.io" || 'http://localhost:5000';
 
       const response = await fetch(`${baseUrl}/api/simulate`, {
         method: 'POST',
