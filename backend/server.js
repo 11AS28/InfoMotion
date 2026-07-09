@@ -12,18 +12,16 @@ const { addLog, getLogs } = require('./logger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-/*
 app.use(cors({
   origin: [
     'https://infomotion.space',
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://165.22.20.132.sslip.io'
+    'https://infomotionbackend.duckdns.org'
   ],
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
-*/
 app.use(express.json());
 
 app.post('/api/log-event', (req, res) => {
