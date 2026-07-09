@@ -17,11 +17,9 @@ const sanitizeThemeName = (name) => {
 loader.init().then((monacoInstance) => {
   if (customThemes && typeof customThemes === 'object') {
     Object.keys(customThemes).forEach((themeKey) => {
-      
       if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
         return; 
       }
-
       try {
         if (customThemes[themeKey]) {
           const cleanKey = sanitizeThemeName(themeKey);
@@ -46,6 +44,9 @@ function CompilerPage() {
   const [executionMemory, setExecutionMemory] = useState(null);
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
+
+  // 🚧 MENTENANȚĂ ACTIVĂ PENTRU MIGRARE VPS (Schimbă pe false după ce VPS-ul e gata)
+  const [isMigrating, setIsMigrating] = useState(true);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
@@ -72,14 +73,14 @@ function CompilerPage() {
   }, []);
 
   useEffect(() => {
-  if (document.fonts) {
-    document.fonts.ready.then(() => {
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        setFontFontsLoaded(true);
+      });
+    } else {
       setFontsLoaded(true);
-    });
-  } else {
-    setFontsLoaded(true);
-  }
-}, []);
+    }
+  }, []);
   
   const temaEchipataDb = currentUser?.temaEchipata || 'theme_default';
 
@@ -203,6 +204,8 @@ function CompilerPage() {
   }, [isResizingV]);
 
   const handleRunCompilerCode = async () => {
+    if (isMigrating) return; // Siguranță în caz că se apelează manual programatic
+
     setLoadingCompiler(true);
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
 
@@ -219,10 +222,8 @@ function CompilerPage() {
 
       if (data.status === "Succes") {
         setCompilerOutput(data.output);
-        
         setExecutionTime(data.time);
         setExecutionMemory(data.memory);
-
         toast.success("Rulare încheiată cu succes!");
       } else {
         setCompilerOutput(`${data.status}:\n${data.error}`);
@@ -246,10 +247,11 @@ function CompilerPage() {
   }
 
   const handleEditorDidMount = (editorInstance) => {
-  setTimeout(() => {
-    editorInstance.layout();
-  }, 150);
-};
+    setTimeout(() => {
+      editorInstance.layout();
+    }, 150);
+  };
+
   const mainSplitStyle = isMobile 
     ? { height: `${editorHeightMobile}px`, width: '100%' }
     : { width: `${leftWidth}px`, height: '100%' };
@@ -271,8 +273,13 @@ function CompilerPage() {
           </h3>
         </div>
         <div>
-          <button onClick={handleRunCompilerCode} disabled={loadingCompiler} className="run-code-btn">
-            <Play size={14} fill="#fff" /> {loadingCompiler ? "..." : "Rulează"}
+          <button 
+            onClick={handleRunCompilerCode} 
+            disabled={loadingCompiler || isMigrating} 
+            className="run-code-btn"
+            style={isMigrating ? { opacity: 0.6, cursor: 'not-allowed', background: '#45475a' } : {}}
+          >
+            <Play size={14} fill="#fff" /> {loadingCompiler ? "..." : isMigrating ? "Mentenanță" : "Rulează"}
           </button>
         </div>
       </div>
@@ -280,30 +287,30 @@ function CompilerPage() {
       <div className="ide-main-body" ref={containerRef}>
         
         <div className="ide-editor-section" style={mainSplitStyle}>
-  {fontsLoaded ? (
-    <Editor
-  height="100%"
-  language="cpp"
-  theme={monacoThemeName} 
-  value={editorCode}
-  onChange={(val) => setEditorCode(val || "")}
-  onMount={handleEditorDidMount} 
-  options={{
-    fontSize: isMobile ? 14 : 16, 
-    minimap: { enabled: false },
-    automaticLayout: true,
-    scrollbar: { vertical: 'visible', handleMouseWheel: true },
-    tabSize: 4,
-    fontFamily: "Consolas, 'Courier New', monospace", 
-    tabFocusMode: false,
-  }}
-/>
-  ) : (
-    <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
-      Se încarcă fonturile...
-    </div>
-  )}
-</div>
+          {fontsLoaded ? (
+            <Editor
+              height="100%"
+              language="cpp"
+              theme={monacoThemeName} 
+              value={editorCode}
+              onChange={(val) => setEditorCode(val || "")}
+              onMount={handleEditorDidMount} 
+              options={{
+                fontSize: isMobile ? 14 : 16, 
+                minimap: { enabled: false },
+                automaticLayout: true,
+                scrollbar: { vertical: 'visible', handleMouseWheel: true },
+                tabSize: 4,
+                fontFamily: "Consolas, 'Courier New', monospace", 
+                tabFocusMode: false,
+              }}
+            />
+          ) : (
+            <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
+              Se încarcă fonturile...
+            </div>
+          )}
+        </div>
 
         <div 
           className={`resizer-horizontal ${isResizingH ? 'active' : ''}`} 
@@ -320,6 +327,7 @@ function CompilerPage() {
               onChange={(e) => setCompilerInput(e.target.value)}
               placeholder="Introdu datele de test aici..."
               className="box-textarea"
+              disabled={isMigrating}
             />
           </div>
 
@@ -332,6 +340,24 @@ function CompilerPage() {
           <div className="panel-box" style={{ height: `calc(100% - ${topHeight}px - 8px)` }}>
             <div className="box-header-title">CONSOLĂ REZULTAT (STDOUT)</div>
             
+            {/* BANNER MENTENANȚĂ VPS */}
+            {isMigrating && (
+              <div style={{
+                background: 'rgba(250, 179, 135, 0.12)',
+                borderLeft: '4px solid #fab387',
+                padding: '10px 14px',
+                margin: '8px',
+                borderRadius: '4px',
+                fontFamily: 'sans-serif',
+                fontSize: '13px',
+                color: '#fab387',
+                lineHeight: '1.45'
+              }}>
+                🚧 <strong>Sistemul de evaluare se mută pe server VPS dedicat!</strong> <br />
+                Compilarea live pentru codul C++ este temporar suspendată pentru upgrade de infrastructură (mutare cluster Docker). Toate animațiile și simulările vizuale de pe site rămân complet funcționale.
+              </div>
+            )}
+
             {executionTime !== null && executionMemory !== null && (
               <div className="performance-stats-bar" style={{
                 display: 'flex',
@@ -342,17 +368,16 @@ function CompilerPage() {
                 fontFamily: 'monospace',
                 fontSize: '13px',
                 color: '#a6adc8'
-              }}>{executionTime && executionMemory && (
-  <div className="performance-stats-bar">
-    <span>Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
-    <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
-  </div>
-)}
+              }}>
+                <div className="performance-stats-bar">
+                  <span>Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
+                  <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
+                </div>
               </div>
             )}
 
             <pre className="box-console-output">
-              {compilerOutput || "Apasă pe 'Rulează'."}
+              {compilerOutput || (isMigrating ? "Evaluator dezactivat pentru mentenanță." : "Apasă pe 'Rulează'.")}
             </pre>
           </div>
 
