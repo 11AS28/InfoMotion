@@ -343,6 +343,7 @@ function CompilerPage() {
             {/* BANNER MENTENANȚĂ VPS */}
             {isMigrating && (
               <div style={{
+                
                 background: 'rgba(250, 179, 135, 0.12)',
                 borderLeft: '4px solid #fab387',
                 padding: '10px 14px',
