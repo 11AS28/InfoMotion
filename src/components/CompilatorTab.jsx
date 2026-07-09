@@ -44,8 +44,8 @@ function CompilerPage() {
   const [executionMemory, setExecutionMemory] = useState(null);
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
-
-  const [isMigrating, setIsMigrating] = useState(true);
+  //doar schimbi false in true 
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
@@ -74,7 +74,7 @@ function CompilerPage() {
   useEffect(() => {
     if (document.fonts) {
       document.fonts.ready.then(() => {
-        setFontFontsLoaded(true);
+        setFontsLoaded(true); // era setFontFontsLoaded (typo) - rămânea blocat pe "Se încarcă fonturile..."
       });
     } else {
       setFontsLoaded(true);
@@ -203,7 +203,7 @@ function CompilerPage() {
   }, [isResizingV]);
 
   const handleRunCompilerCode = async () => {
-    if (isMigrating) return; // Siguranță în caz că se apelează manual programatic
+    if (isMigrating) return; // Siguranță în caz că mentenanța e reactivată din flag-ul de mai sus
 
     setLoadingCompiler(true);
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
@@ -339,10 +339,11 @@ function CompilerPage() {
           <div className="panel-box" style={{ height: `calc(100% - ${topHeight}px - 8px)` }}>
             <div className="box-header-title">CONSOLĂ REZULTAT (STDOUT)</div>
             
-            {/* BANNER MENTENANȚĂ VPS */}
+            {/* BANNER MENTENANȚĂ VPS — dezactivat, păstrat doar ca referință.
+            Dacă e nevoie să reactivezi mentenanța: pune `isMigrating` pe `true`
+            mai sus și scoate acest bloc din comentariu.
             {isMigrating && (
               <div style={{
-                
                 background: 'rgba(250, 179, 135, 0.12)',
                 borderLeft: '4px solid #fab387',
                 padding: '10px 14px',
@@ -358,6 +359,7 @@ function CompilerPage() {
                 O sa aveti din nou acces la compilatorul C++ în maxim 24 de ore. <br />
               </div>
             )}
+            */}
 
             {executionTime !== null && executionMemory !== null && (
               <div className="performance-stats-bar" style={{
