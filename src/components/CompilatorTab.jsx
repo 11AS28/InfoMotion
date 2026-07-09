@@ -45,7 +45,7 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   //doar schimbi false in true 
-  const [isMigrating, setIsMigrating] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(true);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
@@ -341,7 +341,7 @@ function CompilerPage() {
             
             {/* BANNER MENTENANȚĂ VPS — dezactivat, păstrat doar ca referință.
             Dacă e nevoie să reactivezi mentenanța: pune `isMigrating` pe `true`
-            mai sus și scoate acest bloc din comentariu.
+            mai sus și scoate acest bloc din comentariu.*/}
             {isMigrating && (
               <div style={{
                 background: 'rgba(250, 179, 135, 0.12)',
@@ -356,10 +356,10 @@ function CompilerPage() {
               }}>
                 <strong>Sistemul de evaluare se mută pe server VPS dedicat!</strong> <br />
                 Compilarea live pentru codul C++ este temporar suspendată pentru upgrade de infrastructură (mutare cluster Docker). Toate animațiile și simulările vizuale de pe site rămân complet funcționale.
-                O sa aveti din nou acces la compilatorul C++ în maxim 24 de ore. <br />
+               <br /> Am reusit sa mutam evaluatorul pe VPS-ul dedicat, dar mai avem adjustari de securitate de facut.
               </div>
             )}
-            */}
+            
 
             {executionTime !== null && executionMemory !== null && (
               <div className="performance-stats-bar" style={{
