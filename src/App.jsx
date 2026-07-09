@@ -26,6 +26,8 @@ import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
 import EmailNotVerified from './pages/EmailNotVerified';
+import AuthAction from './pages/AuthAction'; 
+
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -49,6 +51,8 @@ function App() {
     '/arena',
     '/marketplace',
     '/trimite-lectie',
+    '/verifica-email',
+    '/auth/action', 
     SECRET,
     SECRETU,
   ];
@@ -62,17 +66,19 @@ function App() {
   const isAdminPage = location.pathname === SECRET;
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
+  const isAuthActionPage = location.pathname === '/auth/action'; 
 
   return (
     <ThemeProvider>
       <AuthProvider>
         <Toaster richColors position="top-right" />
         
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Nav />}
+
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && !isAuthActionPage && <Nav />}
         
         <main style={{ 
           minHeight: '100vh', 
-          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page || isAuthActionPage ? '0' : '85px' 
         }}>
           <Routes>
 
@@ -82,6 +88,9 @@ function App() {
             <Route path="/despre" element={<Intro />} />
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
+
+            <Route path="/auth/action" element={<AuthAction />} />
+
 
             <Route
               path={SECRET}
@@ -250,7 +259,7 @@ function App() {
         </main>
 
         <Online />
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && !isAuthActionPage && <Footer />}
         
       </AuthProvider>
       <SpeedInsights />
