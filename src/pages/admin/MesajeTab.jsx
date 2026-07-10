@@ -9,6 +9,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
     const [numeAdmin, setNumeAdmin] = useState(adminUsername);
     const [trimitere, setTrimitere] = useState(false);
     const [filtru, setFiltru] = useState('toate');
+    const [stergere, setStergere] = useState(false);
 
      const [sectiune, setSectiune] = useState('mesaje');  
     const [anuntTip, setAnuntTip] = useState('toti');  
@@ -29,7 +30,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
             const { messages } = await res.json();
             setMesaje(messages || []);
         } catch (e) {
-            toast.error('Eroare la încărcarea mesajelor.');
+            toast.error('Eroare la incarcarea mesajelor.');
         } finally {
             setLoading(false);
         }
@@ -47,7 +48,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
             const data = await res.json();
             setTotiUserii(data.users || []);
         } catch (e) {
-            toast.error('Eroare la încărcarea listei de utilizatori.');
+            toast.error('Eroare la incarcarea listei de utilizatori.');
         } finally {
             setLoadingUseri(false);
         }
@@ -68,7 +69,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
     };
 
     const handleTrimiteRaspuns = async () => {
-        if (!raspuns.trim()) { toast.error('Răspunsul nu poate fi gol.'); return; }
+        if (!raspuns.trim()) { toast.error('Raspunsul nu poate fi gol.'); return; }
         if (!mesajSelectat.uid) { toast.error('Acest mesaj nu are un UID asociat.'); return; }
         setTrimitere(true);
         try {
@@ -83,7 +84,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
             });
             const result = await res.json();
             if(result.success) {
-                toast.success('Răspuns trimis cu succes!');
+                toast.success('Raspuns trimis cu succes!');
                 setMesajSelectat(null);
                 setRaspuns('');
                 await loadMesaje();
@@ -94,6 +95,38 @@ function MesajeTab({ adminUsername, adminPassword }) {
             toast.error('Eroare: ' + e.message);
         } finally {
             setTrimitere(false);
+        }
+    };
+
+    const handleStergeMesaj = async (mesaj) => {
+        if (!mesaj?.id) { toast.error('Acest mesaj nu are un ID asociat.'); return; }
+        const confirmat = window.confirm('Sigur vrei sa stergi acest mesaj din baza de date? Actiunea nu poate fi anulata.');
+        if (!confirmat) return;
+
+        setStergere(true);
+        try {
+            const res = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'delete_message',
+                    username: adminUsername, sessionToken: adminPassword,
+                    data: { messageId: mesaj.id }
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                toast.success('Mesaj sters cu succes.');
+                setMesajSelectat(null);
+                setRaspuns('');
+                await loadMesaje();
+            } else {
+                toast.error(result.message || 'Eroare la stergere.');
+            }
+        } catch (e) {
+            toast.error('Eroare: ' + e.message);
+        } finally {
+            setStergere(false);
         }
     };
 
@@ -109,13 +142,13 @@ function MesajeTab({ adminUsername, adminPassword }) {
     };
 
      const handleTrimiteAnunt = async () => {
-        if (!anuntText.trim()) { toast.error('Mesajul anunțului nu poate fi gol.'); return; }
+        if (!anuntText.trim()) { toast.error('Mesajul anuntului nu poate fi gol.'); return; }
 
         let targetUserId = null;
         if (anuntTip === 'unul') {
-            if (!anuntUserId.trim()) { toast.error('Selectează un user.'); return; }
+            if (!anuntUserId.trim()) { toast.error('Selecteaza un user.'); return; }
             const user = totiUserii.find(u => u.username === anuntUserId || u.email === anuntUserId || u.id === anuntUserId);
-            if (!user) { toast.error('Userul nu a fost găsit.'); return; }
+            if (!user) { toast.error('Userul nu a fost gasit.'); return; }
             targetUserId = user.id;
         }
 
@@ -138,12 +171,12 @@ function MesajeTab({ adminUsername, adminPassword }) {
 
             const result = await res.json();
             if (result.success) {
-                toast.success(result.message || 'Anunț trimis cu succes! 🎉');
+                toast.success(result.message || 'Anunt trimis cu succes!');
                 setAnuntText('');
                 setAnuntUserId('');
                 setAnuntUserSuggestii([]);
             } else {
-                toast.error(result.message || 'Eroare la trimiterea anunțului.');
+                toast.error(result.message || 'Eroare la trimiterea anuntului.');
             }
         } catch (e) {
             toast.error('Eroare la trimitere: ' + e.message);
@@ -172,13 +205,20 @@ function MesajeTab({ adminUsername, adminPassword }) {
         fontWeight: '700', fontSize: '14px',
         cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s'
     });
+    const btnDanger = (disabled) => ({
+        padding: '11px 28px', borderRadius: '30px', border: '1.5px solid #fecaca',
+        background: disabled ? '#f8fafc' : '#fff',
+        color: disabled ? '#94a3b8' : '#dc2626',
+        fontWeight: '700', fontSize: '14px',
+        cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s'
+    });
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', gap: '10px' }}>
                 {[
-                    { key: 'mesaje', label: '💬 Mesaje primite' },
-                    { key: 'anunt', label: '📢 Trimite anunț' },
+                    { key: 'mesaje', label: 'Mesaje primite' },
+                    { key: 'anunt', label: 'Trimite anunt' },
                 ].map(({ key, label }) => (
                     <button
                         key={key}
@@ -199,9 +239,9 @@ function MesajeTab({ adminUsername, adminPassword }) {
                 <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
                     <div style={{ flex: '0 0 380px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ ...cardStyle, padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                 <div className="admin-section-title" style={{ margin: 0 }}>Mesaje ({mesajeFiltrate.length})</div>
-                                <button onClick={loadMesaje} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>🔄</button>
+                                <button onClick={loadMesaje} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>Reincarca</button>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
                                 {['toate', 'noi', 'raspunse'].map(f => (
@@ -211,16 +251,16 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                         background: filtru === f ? '#01696f' : '#f1f5f9',
                                         color: filtru === f ? '#fff' : '#475569', transition: 'all 0.2s'
                                     }}>
-                                        {f === 'toate' ? 'Toate' : f === 'noi' ? '🔴 Noi' : '✅ Răspunse'}
+                                        {f === 'toate' ? 'Toate' : f === 'noi' ? 'Noi' : 'Raspunse'}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         {loading ? (
-                            <div style={{ ...cardStyle, padding: '20px', textAlign: 'center', color: '#94a3b8' }}>Se încarcă...</div>
+                            <div style={{ ...cardStyle, padding: '20px', textAlign: 'center', color: '#94a3b8' }}>Se incarca...</div>
                         ) : mesajeFiltrate.length === 0 ? (
-                            <div style={{ ...cardStyle, padding: '20px', textAlign: 'center', color: '#94a3b8' }}>Niciun mesaj în această categorie.</div>
+                            <div style={{ ...cardStyle, padding: '20px', textAlign: 'center', color: '#94a3b8' }}>Niciun mesaj in aceasta categorie.</div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '65vh', overflowY: 'auto', width: '380px' }}>
                                 {mesajeFiltrate.map(m => (
@@ -236,7 +276,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                                 fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px',
                                                 background: m.answered ? '#dcfce7' : '#fef2f2',
                                                 color: m.answered ? '#166534' : '#dc2626', flexShrink: 0,
-                                            }}>{m.answered ? '✅ Răspuns' : '🔴 Nou'}</span>
+                                            }}>{m.answered ? 'Raspuns' : 'Nou'}</span>
                                         </div>
                                         <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>{m.email}</div>
                                         <div style={{
@@ -253,9 +293,8 @@ function MesajeTab({ adminUsername, adminPassword }) {
                     <div style={{ flex: 1 }}>
                         {!mesajSelectat ? (
                             <div style={{ ...cardStyle, padding: '60px 20px', textAlign: 'center', color: '#94a3b8' }}>
-                                <div style={{ fontSize: '40px', marginBottom: '12px' }}>💬</div>
-                                <div style={{ fontWeight: '600', fontSize: '15px' }}>Selectează un mesaj din stânga</div>
-                                <div style={{ fontSize: '13px', marginTop: '6px' }}>pentru a vedea detaliile și a răspunde</div>
+                                <div style={{ fontWeight: '600', fontSize: '15px' }}>Selecteaza un mesaj din stanga</div>
+                                <div style={{ fontSize: '13px', marginTop: '6px' }}>pentru a vedea detaliile si a raspunde</div>
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -266,7 +305,20 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                             <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>{mesajSelectat.email}</div>
                                             <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>{formatData(mesajSelectat.createdAt)}</div>
                                         </div>
-                                        <button onClick={() => setMesajSelectat(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                            <button
+                                                onClick={() => handleStergeMesaj(mesajSelectat)}
+                                                disabled={stergere}
+                                                style={{
+                                                    background: 'none', border: '1px solid #fecaca', borderRadius: '8px',
+                                                    padding: '6px 12px', cursor: stergere ? 'not-allowed' : 'pointer',
+                                                    fontSize: '12px', fontWeight: '700', color: stergere ? '#94a3b8' : '#dc2626'
+                                                }}
+                                            >
+                                                {stergere ? 'Se sterge...' : 'Sterge mesajul'}
+                                            </button>
+                                            <button onClick={() => setMesajSelectat(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#94a3b8' }}>x</button>
+                                        </div>
                                     </div>
                                     <div style={{ padding: '16px', borderRadius: '12px', background: '#f8fafc', border: '1.5px solid #e2e8f0', fontSize: '14px', lineHeight: '1.7', color: '#1e293b', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                                         {mesajSelectat.message}
@@ -276,7 +328,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                 {mesajSelectat.answered && mesajSelectat.raspuns && (
                                     <div style={{ ...cardStyle, padding: '20px 24px', borderLeft: '4px solid #01696f' }}>
                                         <div style={{ fontWeight: '700', fontSize: '13px', color: '#01696f', marginBottom: '8px' }}>
-                                            ✅ Răspuns trimis de {mesajSelectat.raspunsAdmin} — {formatData(mesajSelectat.raspunsLa)}
+                                            Raspuns trimis de {mesajSelectat.raspunsAdmin} — {formatData(mesajSelectat.raspunsLa)}
                                         </div>
                                         <div style={{ fontSize: '14px', lineHeight: '1.7', color: '#1e293b', whiteSpace: 'pre-wrap' }}>{mesajSelectat.raspuns}</div>
                                     </div>
@@ -284,20 +336,25 @@ function MesajeTab({ adminUsername, adminPassword }) {
 
                                 <div style={{ ...cardStyle, padding: '20px 24px' }}>
                                     <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '16px' }}>
-                                        {mesajSelectat.answered ? '📝 Trimite un răspuns nou' : '📝 Răspunde'}
+                                        {mesajSelectat.answered ? 'Trimite un raspuns nou' : 'Raspunde'}
                                     </div>
                                     <div style={{ marginBottom: '12px' }}>
-                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>Răspuns de la</label>
+                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>Raspuns de la</label>
                                         <input type="text" value={numeAdmin} onChange={e => setNumeAdmin(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '14px', fontWeight: '600', background: '#f8fafc', outline: 'none', fontFamily: 'inherit' }} />
                                     </div>
                                     <div style={{ marginBottom: '16px' }}>
-                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>Mesajul tău</label>
-                                        <textarea value={raspuns} onChange={e => setRaspuns(e.target.value)} rows={5} placeholder="Scrie răspunsul tău aici..." style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = '#01696f'} onBlur={e => e.target.style.borderColor = '#e2e8f0'} />
+                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>Mesajul tau</label>
+                                        <textarea value={raspuns} onChange={e => setRaspuns(e.target.value)} rows={5} placeholder="Scrie raspunsul tau aici..." style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = '#01696f'} onBlur={e => e.target.style.borderColor = '#e2e8f0'} />
                                         <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right', marginTop: '4px' }}>{raspuns.length}/1000</div>
                                     </div>
-                                    <button onClick={handleTrimiteRaspuns} disabled={trimitere || !raspuns.trim()} style={btnPrimary(trimitere || !raspuns.trim())}>
-                                        {trimitere ? 'Se trimite...' : '📨 Trimite răspunsul'}
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                        <button onClick={handleTrimiteRaspuns} disabled={trimitere || !raspuns.trim()} style={btnPrimary(trimitere || !raspuns.trim())}>
+                                            {trimitere ? 'Se trimite...' : 'Trimite raspunsul'}
+                                        </button>
+                                        <button onClick={() => handleStergeMesaj(mesajSelectat)} disabled={stergere} style={btnDanger(stergere)}>
+                                            {stergere ? 'Se sterge...' : 'Sterge mesajul'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -308,11 +365,11 @@ function MesajeTab({ adminUsername, adminPassword }) {
             {sectiune === 'anunt' && (
                 <div style={{ maxWidth: '620px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ ...cardStyle, padding: '20px 24px' }}>
-                        <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '16px' }}>📢 Către cine trimiți?</div>
+                        <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '16px' }}>Catre cine trimiti?</div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             {[
-                                { key: 'toti', label: '👥 Toți utilizatorii', desc: `${totiUserii.length} conturi` },
-                                { key: 'unul', label: '👤 Un utilizator', desc: 'după username sau email' },
+                                { key: 'toti', label: 'Toti utilizatorii', desc: `${totiUserii.length} conturi` },
+                                { key: 'unul', label: 'Un utilizator', desc: 'dupa username sau email' },
                             ].map(({ key, label, desc }) => (
                                 <button key={key} onClick={() => { setAnuntTip(key); setAnuntUserId(''); setAnuntUserSuggestii([]); }} style={{
                                     flex: 1, padding: '14px 16px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left',
@@ -321,7 +378,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                     transition: 'all 0.2s',
                                 }}>
                                     <div style={{ fontWeight: '700', fontSize: '14px', color: anuntTip === key ? '#01696f' : '#1e293b' }}>{label}</div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px' }}>{loadingUseri ? 'Se încarcă...' : desc}</div>
+                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px' }}>{loadingUseri ? 'Se incarca...' : desc}</div>
                                 </button>
                             ))}
                         </div>
@@ -355,14 +412,14 @@ function MesajeTab({ adminUsername, adminPassword }) {
                     )}
 
                     <div style={{ ...cardStyle, padding: '20px 24px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '8px' }}>Mesajul anunțului</label>
+                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '8px' }}>Mesajul anuntului</label>
                         <textarea
                             value={anuntText}
                             onChange={e => setAnuntText(e.target.value)}
                             rows={5}
                             placeholder={anuntTip === 'toti'
-                                ? 'ex: Am adăugat o lecție nouă despre pointeri! Verifică secțiunea Lecții 🎉'
-                                : 'ex: Felicitări! Ai câștigat giveaway-ul nostru 🎁'}
+                                ? 'ex: Am adaugat o lectie noua despre pointeri! Verifica sectiunea Lectii'
+                                : 'ex: Felicitari! Ai castigat giveaway-ul nostru'}
                             style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
                             onFocus={e => e.target.style.borderColor = '#01696f'}
                             onBlur={e => e.target.style.borderColor = '#e2e8f0'}
@@ -386,8 +443,8 @@ function MesajeTab({ adminUsername, adminPassword }) {
                             {anuntTrimite
                                 ? 'Se trimite...'
                                 : anuntTip === 'toti'
-                                    ? `📢 Trimite la toți (${totiUserii.length})`
-                                    : '📨 Trimite notificarea'}
+                                    ? `Trimite la toti (${totiUserii.length})`
+                                    : 'Trimite notificarea'}
                         </button>
                     </div>
                 </div>

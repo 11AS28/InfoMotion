@@ -77,7 +77,6 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Ai revendicat deja recompensa pe ziua de azi!' });
         }
 
-       // Generăm o șansă între 0 și 1
         const sansa = Math.random();
         let fieldsToUpdate = {};
         let message = "";
