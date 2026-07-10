@@ -25,8 +25,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
-import EmailNotVerified from './pages/EmailNotVerified';
-import AuthAction from './pages/AuthAction'; 
+import EmailNotVerified from './pages/EmailNotVerified'; 
 
 
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -52,7 +51,6 @@ function App() {
     '/marketplace',
     '/trimite-lectie',
     '/verifica-email',
-    '/auth/action', 
     SECRET,
     SECRETU,
   ];
@@ -74,11 +72,11 @@ function App() {
         <Toaster richColors position="top-right" />
         
 
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && !isAuthActionPage && <Nav />}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page  && <Nav />}
         
         <main style={{ 
           minHeight: '100vh', 
-          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page || isAuthActionPage ? '0' : '85px' 
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
         }}>
           <Routes>
 
@@ -88,8 +86,6 @@ function App() {
             <Route path="/despre" element={<Intro />} />
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
-
-            <Route path="/auth/action" element={<AuthAction />} />
 
 
             <Route
@@ -259,7 +255,7 @@ function App() {
         </main>
 
         <Online />
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && !isAuthActionPage && <Footer />}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
         
       </AuthProvider>
       <SpeedInsights />
