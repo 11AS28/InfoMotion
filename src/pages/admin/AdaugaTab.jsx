@@ -272,14 +272,6 @@ export default function AdaugaTab({
               <button type="button" onClick={addPbRow} style={{ marginTop: '10px', background: '#f1f5f9', border: '1px dashed #cbd5e1', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#475569' }}>+ Adaugă link problemă</button>
             </div>
 
-            {/* Codeforces Tracker  */}
-            <div className="admin-field" style={{ marginTop: '15px' }}>
-              <div style={{ fontWeight: '700', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '14px', fontSize: '14px', color: '#0f172a' }}>Probleme Codeforces Tracker</div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input type="text" placeholder="Problemă 1 (ex: 123A)" value={cfProblems[0] || ''} onChange={(e) => setCfProblems([e.target.value, cfProblems[1] || ''])} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                <input type="text" placeholder="Problemă 2 (ex: 456B)" value={cfProblems[1] || ''} onChange={(e) => setCfProblems([cfProblems[0] || '', e.target.value])} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-              </div>
-            </div>
 
             {/* Quiz */}
             <div className="admin-field" style={{ marginTop: '15px' }}>

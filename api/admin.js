@@ -307,6 +307,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, messages });
       }
 
+      case 'list_proposals': {
+        const snap = await db.collection('propuneri_lectii').orderBy('createdAt', 'desc').get();
+        const proposals = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        return res.status(200).json({ success: true, proposals });
+      }
+
       case 'list_todos': {
         const snap = await db.collection('admin_todo').orderBy('createdAt', 'desc').get();
         const todoList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
