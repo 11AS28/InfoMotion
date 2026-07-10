@@ -293,6 +293,14 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
+      case 'delete_message': {
+        if (!data?.messageId) {
+          return res.status(400).json({ success: false, message: 'ID-ul mesajului lipsește.' });
+        }
+        await db.collection('contact_messages').doc(data.messageId).delete();
+        return res.status(200).json({ success: true });
+      }
+
       case 'list_messages': {
         const snap = await db.collection('contact_messages').orderBy('createdAt', 'desc').get();
         const messages = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
