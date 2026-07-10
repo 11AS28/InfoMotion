@@ -2,109 +2,80 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ==========================================
-    // 1. REGULI PENTRU UTILIZATORI (Elevi & Profesori)
-    // ==========================================
+
     match /users/{userId} {
-      // Oricine poate citi profilul (necesar pentru clasament / UtilizatoriTab)
       allow read: if true;
-      
-      // Permitem crearea contului propriu la înregistrare
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // Elevul logat își poate modifica doar propriile date, dar NU își poate schimba rolul (protecție împotriva escaladării de privilegii).
-      // Profesorul (rol 'teacher') poate modifica datele oricărui utilizator (pentru AdminUsers.jsx).
-      allow update: if request.auth != null && (
-        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
-      );
+      allow create: if request.auth != null && request.auth.uid == userId
+                    && (request.resource.data.role == 'student' || request.resource.data.role == 'teacher');
 
-      // Ștergerea contului: proprietarul sau un profesor
-      allow delete: if request.auth != null && (
-        request.auth.uid == userId ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
+      // Userul își poate edita propriile date, dar NICIODATĂ rolul, punctele
+      // totale sau câmpuri sensibile — astea trec doar prin api/admin.js.
+      allow update: if request.auth != null && request.auth.uid == userId && (
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'puncte', 'puncteTotale', 'hearts', 'streakCount'])
+        ||
+        (
+          (request.resource.data.puncte <= resource.data.puncte) &&
+          request.resource.data.puncteTotale == resource.data.puncteTotale &&
+          (request.resource.data.hearts < resource.data.hearts || request.resource.data.hearts <= 3) &&
+          (request.resource.data.streakCount == 0 || request.resource.data.streakCount == resource.data.streakCount + 1 || request.resource.data.streakCount == resource.data.streakCount) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+        )
       );
+      // Orice editare de admin (rol, puncte bonus etc.) -> POST /api/admin, action: update_user
 
-      // Subcolecția de notificări (rezolvă eroarea de snapshot listener din consolă)
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
       match /notifications/{notificationId} {
-        // Un utilizator își poate citi, bifa ca citite sau șterge propriile notificări
+        // Userul citește/bifează/șterge doar ale lui.
         allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-        
-        // Adminul poate crea notificări pentru utilizatori (se verifică prin cheia din conturi_admin)
-        allow create: if (request.auth != null && request.auth.uid == userId) || (
-          request.resource.data.cheieSecuritate != null && 
-          exists(/databases/$(database)/documents/conturi_admin/$(request.resource.data.adminUsername)) && 
-          get(/databases/$(database)/documents/conturi_admin/$(request.resource.data.adminUsername)).data.password == request.resource.data.cheieSecuritate
-        );
+        // Notificările "de la admin" se creează EXCLUSIV prin api/admin.js
+        // (Admin SDK, care ignoră aceste reguli). Userul poate crea doar
+        // notificări pentru el însuși (dacă vreodată ai nevoie de asta).
+        allow create: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // ==========================================
-    // 2. REGULI PENTRU LECȚII ȘI CHALLENGE-URI
-    // ==========================================
     match /lectii/{lessonId} {
-      // Toți vizitatorii și elevii pot citi lecțiile ca să învețe
       allow read: if true;
-      
-      // Blocăm modificarea directă din frontend. Scrierea se face prin Serverul de Admin
+      // Scriere EXCLUSIV prin api/admin.js, action: publish_lesson / delete_lesson
       allow write: if false;
     }
 
     match /propuneri_lectii/{proposalId} {
-      // Utilizatorii pot propune lecții, oricine le poate citi în dashboard
       allow read: if true;
       allow create: if request.auth != null;
-      
-      // Adminul poate modifica sau șterge propunerile (se validează prin cheia din conturi_admin)
-      allow update: if request.resource.data.cheieSecuritate != null && 
-                       exists(/databases/$(database)/documents/conturi_admin/$(request.resource.data.adminUsername)) && 
-                       get(/databases/$(database)/documents/conturi_admin/$(request.resource.data.adminUsername)).data.password == request.resource.data.cheieSecuritate;
-      
-      allow delete: if resource.data.cheieSecuritate != null && 
-                       exists(/databases/$(database)/documents/conturi_admin/$(resource.data.adminUsername)) && 
-                       get(/databases/$(database)/documents/conturi_admin/$(resource.data.adminUsername)).data.password == resource.data.cheieSecuritate;
+      // Aprobare = api/admin.js (publish_lesson cu propunereInCurs)
+      // Respingere = api/admin.js, action: reject_proposal
+      allow update, delete: if false;
     }
-    
+
     match /dailyChallenges/{challengeId} {
-      // Oricine poate vedea challenge-urile zilnice (necesar pentru Arenă)
       allow read: if true;
-      
-      // Elevii logați le pot crea sau adăuga rezolvitori
-      allow write: if request.auth != null;
+      // Userii logați pot doar ADĂUGA la lista de rezolvitori a unui
+      // challenge existent, nu crea/rescrie challenge-uri întregi.
+      allow create: if false;
+      allow update: if request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rezolvitori']);
+      allow delete: if false;
     }
 
-    // ==========================================
-    // 3. REGULI PENTRU ADMIN-TODO
-    // ==========================================
     match /admin_todo/{todoId} {
-      // Permitem citirea listei to-do doar pentru utilizatorii logați în aplicație (profesori / admini)
-      allow read: if request.auth != null;
-      
-      // Modificările se fac exclusiv prin API / Backend-ul securizat
-      allow write: if false;
+      // Citirea/scrierea trec EXCLUSIV prin api/admin.js
+      // (action: list_todos / add_todo / toggle_todo / delete_todo)
+      allow read, write: if false;
     }
 
-    // ==========================================
-    // 4. REGULI PENTRU SENSITIVE DATA (Conturi Admin)
-    // ==========================================
     match /conturi_admin/{adminId} {
-      // Permitem get (citire punctuală după ID) pentru a permite rularea logicii custom din Admin.jsx,
-      // dar blocăm complet listarea întregii colecții (list) sau modificarea din browser (write).
-      allow get: if true;
-      allow list, write: if false;
+      // Colecția asta nu mai e sursa de adevăr pentru autentificare —
+      // poate fi chiar ștearsă din Firestore. O lăsăm blocată total
+      // pentru orice eventualitate.
+      allow read, write: if false;
     }
 
-    // ==========================================
-    // 5. REGULI PENTRU CONTACT
-    // ==========================================
     match /contact_messages/{messageId} {
-      // Oricine poate trimite un mesaj din formularul de contact
       allow create: if true;
-      
-      // Nimeni nu poate citi sau modifica mesajele trimise direct din browser
+      // Citirea/răspunsul trec EXCLUSIV prin api/admin.js
+      // (action: list_messages / reply_message)
       allow read, update, delete: if false;
     }
   }
