@@ -10,6 +10,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
     const [trimitere, setTrimitere] = useState(false);
     const [filtru, setFiltru] = useState('toate');
     const [stergere, setStergere] = useState(false);
+    const [mesajDeSters, setMesajDeSters] = useState(null);
 
      const [sectiune, setSectiune] = useState('mesaje');  
     const [anuntTip, setAnuntTip] = useState('toti');  
@@ -98,11 +99,13 @@ function MesajeTab({ adminUsername, adminPassword }) {
         }
     };
 
-    const handleStergeMesaj = async (mesaj) => {
+    const handleStergeMesaj = (mesaj) => {
         if (!mesaj?.id) { toast.error('Acest mesaj nu are un ID asociat.'); return; }
-        const confirmat = window.confirm('Sigur vrei sa stergi acest mesaj din baza de date? Actiunea nu poate fi anulata.');
-        if (!confirmat) return;
+        setMesajDeSters(mesaj);
+    };
 
+    const confirmaStergere = async () => {
+        if (!mesajDeSters?.id) return;
         setStergere(true);
         try {
             const res = await fetch('/api/admin', {
@@ -111,7 +114,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                 body: JSON.stringify({
                     action: 'delete_message',
                     username: adminUsername, sessionToken: adminPassword,
-                    data: { messageId: mesaj.id }
+                    data: { messageId: mesajDeSters.id }
                 })
             });
             const result = await res.json();
@@ -119,6 +122,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                 toast.success('Mesaj sters cu succes.');
                 setMesajSelectat(null);
                 setRaspuns('');
+                setMesajDeSters(null);
                 await loadMesaje();
             } else {
                 toast.error(result.message || 'Eroare la stergere.');
@@ -446,6 +450,67 @@ function MesajeTab({ adminUsername, adminPassword }) {
                                     ? `Trimite la toti (${totiUserii.length})`
                                     : 'Trimite notificarea'}
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {mesajDeSters && (
+                <div
+                    onClick={() => !stergere && setMesajDeSters(null)}
+                    style={{
+                        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 1000, padding: '20px', backdropFilter: 'blur(2px)'
+                    }}
+                >
+                    <div
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            background: '#fff', borderRadius: '18px', padding: '28px',
+                            maxWidth: '400px', width: '100%',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                        }}
+                    >
+                        <div style={{
+                            width: '48px', height: '48px', borderRadius: '50%',
+                            background: '#fef2f2', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', marginBottom: '16px',
+                        }}>
+                            <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2.5px solid #dc2626' }} />
+                        </div>
+                        <div style={{ fontWeight: '800', fontSize: '17px', color: '#0f172a', marginBottom: '8px' }}>
+                            Stergi acest mesaj?
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
+                            Mesajul de la <strong style={{ color: '#334155' }}>{mesajDeSters.name}</strong> va fi sters
+                            definitiv din baza de date. Aceasta actiune nu poate fi anulata.
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                onClick={() => setMesajDeSters(null)}
+                                disabled={stergere}
+                                style={{
+                                    flex: 1, padding: '11px 20px', borderRadius: '30px',
+                                    border: '1.5px solid #e2e8f0', background: '#fff',
+                                    color: '#475569', fontWeight: '700', fontSize: '14px',
+                                    cursor: stergere ? 'not-allowed' : 'pointer', transition: 'all 0.2s'
+                                }}
+                            >
+                                Renunta
+                            </button>
+                            <button
+                                onClick={confirmaStergere}
+                                disabled={stergere}
+                                style={{
+                                    flex: 1, padding: '11px 20px', borderRadius: '30px', border: 'none',
+                                    background: stergere ? '#fca5a5' : '#dc2626',
+                                    color: '#fff', fontWeight: '700', fontSize: '14px',
+                                    cursor: stergere ? 'not-allowed' : 'pointer', transition: 'all 0.2s'
+                                }}
+                            >
+                                {stergere ? 'Se sterge...' : 'Da, sterge'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
