@@ -10,7 +10,7 @@ import TodoTab from './admin/TodoTab';
 import LectiiTab from './admin/LectiiTab';
 import AdaugaTab from './admin/AdaugaTab';
 import MesajeTab from './admin/MesajeTab';
-
+import DiplomeTab from './admin/DiplomeTab';
 
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -21,7 +21,7 @@ function LoginScreen({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const exactUsername = username;
 
     try {
@@ -92,7 +92,7 @@ function Dashboard({ adminInfo, onLogout }) {
   const loadedRef = useRef({ lessons: false, users: false, proposals: false, todos: false });
 
   const loadLessons = async (force = false) => {
-    if (loadedRef.current.lessons && !force) return; 
+    if (loadedRef.current.lessons && !force) return;
     try {
       const snapLectii = await getDocs(collection(db, 'lectii'));
       setFirebaseLessons(snapLectii.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -152,14 +152,14 @@ function Dashboard({ adminInfo, onLogout }) {
   useEffect(() => {
     const initTab = async () => {
       if (activeTab === 'overview' || activeTab === 'lectii') {
-            await loadLessons();
+        await loadLessons();
       } else if (activeTab === 'utilizatori') {
-            await loadUsers();
+        await loadUsers();
       } else if (activeTab === 'aprobari') {
-            await loadProposals();
-            await loadLessons(); 
+        await loadProposals();
+        await loadLessons();
       } else if (activeTab === 'todo') {
-            await loadTodos();
+        await loadTodos();
       }
     };
     initTab();
@@ -196,7 +196,7 @@ function Dashboard({ adminInfo, onLogout }) {
     if (!userId) return;
     try {
       await addDoc(collection(db, 'users', userId, 'notifications'), {
-        type, text, read: false, createdAt: serverTimestamp(), 
+        type, text, read: false, createdAt: serverTimestamp(),
         cheieSecuritate: adminPassword,
         adminUsername: username
       });
@@ -241,24 +241,26 @@ function Dashboard({ adminInfo, onLogout }) {
       </header>
 
       <div className="admin-tabs-bar">
-        {['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga', 'mesaje'].map((t) => (
+        {['overview', 'utilizatori', 'aprobari', 'todo', 'lectii', 'adauga', 'mesaje', 'diplome'].map((t) => (
           <button key={t} className={`admin-tab ${activeTab === t ? 'active' : ''}`} onClick={() => handleTabChange(t)}>
-{ {
-  overview: 'Prezentare generală',
-  utilizatori: 'Utilizatori',
-  aprobari: `Aprobări (${propuneri.length})`,
-  todo: `To-Do (${activeTodoCount})`,
-  lectii: 'Lecțiile mele',
-  adauga: isEditing ? '📝 Editare' : '➕ Adaugă',
-  mesaje: 'Mesaje'
-}[t] }          </button>
+            {{
+              overview: 'Prezentare generală',
+              utilizatori: 'Utilizatori',
+              aprobari: `Aprobări (${propuneri.length})`,
+              todo: `To-Do (${activeTodoCount})`,
+              lectii: 'Lecțiile mele',
+              adauga: isEditing ? '📝 Editare' : '➕ Adaugă',
+              mesaje: 'Mesaje',
+              diplome: 'Diplome'
+            }[t]}          </button>
         ))}
       </div>
 
       <main className="admin-main">
         {activeTab === 'overview' && <OverviewTab firebaseLessons={firebaseLessons} />}
         {activeTab === 'utilizatori' && <UtilizatoriTab firebaseUsers={firebaseUsers} />}
-{activeTab === 'mesaje' && <MesajeTab adminUsername={username} adminPassword={adminPassword} sendUserNotification={sendUserNotification} />}
+        {activeTab === 'mesaje' && <MesajeTab adminUsername={username} adminPassword={adminPassword} sendUserNotification={sendUserNotification} />}
+        {activeTab === 'diplome' && <DiplomeTab adminUsername={username} adminPassword={adminPassword} />}
         {activeTab === 'aprobari' && (
           <div className="admin-card">
             <div className="admin-section-title">Lecții propuse</div>

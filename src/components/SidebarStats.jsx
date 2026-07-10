@@ -22,8 +22,10 @@ function SidebarStats({ isOpen, onClose }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [modalRaspuns, setModalRaspuns] = useState(null);
+  const [diplomaLoading, setDiplomaLoading] = useState(false);
+  const [diplomaMessage, setDiplomaMessage] = useState(null);
   const isTeacher = currentUser?.role === 'teacher';
-  
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const totalProblemeDB = currentUser?.problemeRezolvateCount || 0;
@@ -57,60 +59,60 @@ function SidebarStats({ isOpen, onClose }) {
   }, [isOpen, isTeacher, actualizeazaStreak, currentUser]);
 
   useEffect(() => {
-  if (!currentUser?.uid) return;
- 
-  const q = query(
-    collection(db, "users", currentUser.uid, "notifications"),
-    orderBy("createdAt", "desc"),
-    limit(5)
-  );
- 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const dbNotif = snapshot.docs
-      .filter((docSnap) => docSnap.data().read !== true) 
-      .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
- 
-    const localKey = `notifications_${currentUser.uid}`;
-    const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
- 
-    const mapIdToNotif = new Map();
-    localNotif.forEach((n) => mapIdToNotif.set(n.id, n));
-    dbNotif.forEach((n) => mapIdToNotif.set(n.id, { ...n, read: false }));
- 
-    let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
-      const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
-      const timeB = b.createdAt?.seconds || new Date(b.createdAt).getTime() || 0;
-      return timeB - timeA;
+    if (!currentUser?.uid) return;
+
+    const q = query(
+      collection(db, "users", currentUser.uid, "notifications"),
+      orderBy("createdAt", "desc"),
+      limit(5)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const dbNotif = snapshot.docs
+        .filter((docSnap) => docSnap.data().read !== true)
+        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+
+      const localKey = `notifications_${currentUser.uid}`;
+      const localNotif = JSON.parse(localStorage.getItem(localKey) || "[]");
+
+      const mapIdToNotif = new Map();
+      localNotif.forEach((n) => mapIdToNotif.set(n.id, n));
+      dbNotif.forEach((n) => mapIdToNotif.set(n.id, { ...n, read: false }));
+
+      let combined = Array.from(mapIdToNotif.values()).sort((a, b) => {
+        const timeA = a.createdAt?.seconds || new Date(a.createdAt).getTime() || 0;
+        const timeB = b.createdAt?.seconds || new Date(b.createdAt).getTime() || 0;
+        return timeB - timeA;
+      });
+
+      if (combined.length > 5) combined = combined.slice(0, 5);
+
+      localStorage.setItem(localKey, JSON.stringify(combined));
+      setNotifications(combined);
     });
- 
-    if (combined.length > 5) combined = combined.slice(0, 5);
- 
-    localStorage.setItem(localKey, JSON.stringify(combined));
-    setNotifications(combined);
-  });
- 
-  return () => unsubscribe();
-}, [currentUser]);
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
 
-useEffect(() => {
-  if (!currentUser?.uid) return;
- 
-  const cleanupOldReadNotifications = async () => {
-    try {
-      const notifRef = collection(db, "users", currentUser.uid, "notifications");
-      const q = query(notifRef, where("read", "==", true), limit(5));
-      const snap = await getDocs(q);
-      for (const d of snap.docs) {
-        await deleteDoc(doc(db, "users", currentUser.uid, "notifications", d.id));
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const cleanupOldReadNotifications = async () => {
+      try {
+        const notifRef = collection(db, "users", currentUser.uid, "notifications");
+        const q = query(notifRef, where("read", "==", true), limit(5));
+        const snap = await getDocs(q);
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, "users", currentUser.uid, "notifications", d.id));
+        }
+      } catch (e) {
+        console.error("Eroare la curățare notificări vechi:", e);
       }
-    } catch (e) {
-      console.error("Eroare la curățare notificări vechi:", e);
-    }
-  };
- 
-  cleanupOldReadNotifications();
-}, [currentUser?.uid]); 
+    };
+
+    cleanupOldReadNotifications();
+  }, [currentUser?.uid]);
 
   const handleUpdateProfile = async () => {
     if (!currentUser) return;
@@ -140,6 +142,37 @@ useEffect(() => {
     } catch (error) { setUsernameError("Eroare la salvare."); }
   };
 
+  const handleRequestDiploma = async () => {
+    if (!currentUser?.uid) return;
+    setDiplomaLoading(true);
+    setDiplomaMessage(null);
+
+    try {
+      const auth = getAuth();
+      const userToken = await auth.currentUser.getIdToken();
+
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'request_diploma',
+          data: { userToken, userId: currentUser.uid }
+        })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        setDiplomaMessage({ type: 'success', text: 'Cerere trimisă! Un admin o va analiza în curând. 🎓' });
+      } else {
+        setDiplomaMessage({ type: 'error', text: result.error || 'Eroare la trimiterea cererii.' });
+      }
+    } catch (e) {
+      setDiplomaMessage({ type: 'error', text: 'Eroare de rețea. Încearcă din nou.' });
+    } finally {
+      setDiplomaLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm("⚠️ Ești sigur că vrei să îți ștergi contul definitiv? \n\nToate datele vor fi pierdute. Acțiunea este IREVERSIBILĂ!");
     if (!confirmDelete) return;
@@ -165,14 +198,14 @@ useEffect(() => {
     if (!currentUser?.uid) return;
     try {
       const localKey = `notifications_${currentUser.uid}`;
-      
+
       try {
         await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notifId));
       } catch (dbErr) {
         console.log("Notificarea era deja ștearsă din DB sau e doar locală.");
       }
 
-      const updated = notifications.map(n => 
+      const updated = notifications.map(n =>
         n.id === notifId ? { ...n, read: true } : n
       );
 
@@ -186,7 +219,7 @@ useEffect(() => {
     try {
       const localKey = `notifications_${currentUser.uid}`;
       const unreadNotifications = notifications.filter((n) => !n.read);
-      
+
       for (const notif of unreadNotifications) {
         await deleteDoc(doc(db, "users", currentUser.uid, "notifications", notif.id));
       }
@@ -269,9 +302,9 @@ useEffect(() => {
               )}
             </span>
             {!isTeacher && <span className="badge-nivel">{nivel}</span>}
-             <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
-            <LanguageSelect />
-          </div>
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+              <LanguageSelect />
+            </div>
           </div>
         </div>
 
@@ -426,6 +459,50 @@ useEffect(() => {
                   </p>
                 </div>
               </div>
+
+              {/* --- Secțiune Diplomă --- */}
+              <div style={{
+                marginTop: '18px',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px dashed #23a9b3',
+                background: theme === 'dark' ? 'rgba(35,169,179,0.08)' : '#f0fdfb',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '700', color: theme === 'dark' ? '#e2e8f0' : '#0f172a' }}>
+                  🎓 Diplomă de Absolvire
+                </p>
+                <button
+                  onClick={handleRequestDiploma}
+                  disabled={diplomaLoading}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                    color: '#fff',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: diplomaLoading ? 'not-allowed' : 'pointer',
+                    opacity: diplomaLoading ? 0.6 : 1
+                  }}
+                >
+                  {diplomaLoading ? 'Se trimite...' : 'Cere Diplomă'}
+                </button>
+
+                {diplomaMessage && (
+                  <p style={{
+                    marginTop: '10px',
+                    marginBottom: 0,
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: diplomaMessage.type === 'success' ? '#166534' : '#dc2626'
+                  }}>
+                    {diplomaMessage.text}
+                  </p>
+                )}
+              </div>
             </>
           ) : (
             <div style={{ padding: '15px', borderRadius: '8px', background: 'rgba(0,123,255,0.05)', border: '1px dashed var(--accent, #007bff)', marginBottom: '20px', fontSize: '14px' }}>
@@ -569,64 +646,64 @@ useEffect(() => {
 
       {modalRaspuns && createPortal(
         <div
-            onClick={() => setModalRaspuns(null)}
-            style={{
-                position: 'fixed', inset: 0, zIndex: 9999,
-                background: 'rgba(0,0,0,0.6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '20px',
-                backdropFilter: 'blur(4px)',
-            }}
+          onClick={() => setModalRaspuns(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
+            backdropFilter: 'blur(4px)',
+          }}
         >
-            <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                    background: '#fff', borderRadius: '24px',
-                    padding: '40px 36px', maxWidth: '480px', width: '100%',
-                    boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '18px', flexShrink: 0,
-                    }}>
-                        💬
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Răspuns de la echipa InfoMotion
-                        </div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                            Mesajul tău a primit un răspuns
-                        </div>
-                    </div>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff', borderRadius: '24px',
+              padding: '40px 36px', maxWidth: '480px', width: '100%',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '18px', flexShrink: 0,
+              }}>
+                💬
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Răspuns de la echipa InfoMotion
                 </div>
-
-                <div style={{
-                    background: '#f8fafc', borderRadius: '14px',
-                    padding: '20px', marginBottom: '24px',
-                    border: '1.5px solid #e2e8f0',
-                    fontSize: '16px', fontWeight: '500',
-                    color: '#1e293b', lineHeight: '1.7',
-                }}>
-                    {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                  Mesajul tău a primit un răspuns
                 </div>
-
-                <button
-                    onClick={() => setModalRaspuns(null)}
-                    style={{
-                        width: '100%', padding: '14px', borderRadius: '30px',
-                        border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                        color: '#fff', fontWeight: '700', fontSize: '15px',
-                        cursor: 'pointer', letterSpacing: '0.3px',
-                    }}
-                >
-                    Am înțeles
-                </button>
+              </div>
             </div>
+
+            <div style={{
+              background: '#f8fafc', borderRadius: '14px',
+              padding: '20px', marginBottom: '24px',
+              border: '1.5px solid #e2e8f0',
+              fontSize: '16px', fontWeight: '500',
+              color: '#1e293b', lineHeight: '1.7',
+            }}>
+              {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
+            </div>
+
+            <button
+              onClick={() => setModalRaspuns(null)}
+              style={{
+                width: '100%', padding: '14px', borderRadius: '30px',
+                border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                color: '#fff', fontWeight: '700', fontSize: '15px',
+                cursor: 'pointer', letterSpacing: '0.3px',
+              }}
+            >
+              Am înțeles
+            </button>
+          </div>
         </div>,
         document.body
       )}

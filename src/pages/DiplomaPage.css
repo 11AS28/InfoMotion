@@ -1,0 +1,280 @@
+/* --- Configurare Fundal Generat din Site (Dark Mode) --- */
+.diploma-page-wrapper {
+  min-height: 100vh;
+  background-color: #0d1117;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* --- Elemente UI Interfață (No-Print) --- */
+.print-btn-container {
+  margin-bottom: 24px;
+}
+
+.tier-selector-dropdown {
+  background-color: #161b22;
+  color: #ffffff;
+  border: 1px solid #30363d;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.print-certificate-btn {
+  background-color: #008080;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Montserrat', sans-serif;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.print-certificate-btn:hover { background-color: #006666; }
+.print-certificate-btn:active { transform: scale(0.97); }
+
+/* --- Corpul Diplomei Structură Generală --- */
+.diploma-container {
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 1.414 / 1;
+  background-color: #fafbfc;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  padding: 45px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+/* --- SISTEMUL DINAMIC DE CORURI / TIERS (Cromatica) --- */
+
+/* Clasa a IX-a: Teal Curat / Proaspăt */
+.tier-9 { border: 12px double #00a896; }
+.tier-9 .diploma-logo-svg, .tier-9 .diploma-divider-line, .tier-9 .diploma-divider-diamond { background-color: #00a896; color: #00a896; }
+.tier-9 .diploma-badge { background-color: #e0f2f1; color: #004d40; border: 1px solid #b2dfdb; }
+
+/* Clasa a X-a: Cyan Tech Solid */
+.tier-10 { border: 12px double #008080; }
+.tier-10 .diploma-logo-svg, .tier-10 .diploma-divider-line, .tier-10 .diploma-divider-diamond { background-color: #008080; color: #008080; }
+.tier-10 .diploma-badge { background-color: #e0f7fa; color: #006064; border: 1px solid #b2ebf2; }
+
+/* Clasa a XI-a: Indigo/Electric Space Cyan */
+.tier-11 { border: 12px double #0284c7; }
+.tier-11 .diploma-logo-svg, .tier-11 .diploma-divider-line, .tier-11 .diploma-divider-diamond { background-color: #0284c7; color: #0284c7; }
+.tier-11 .diploma-badge { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+/* DIPLOMA SUPREMĂ (Tot Liceul): Design Premium Deep Emerald-Teal cu margini masive */
+.tier-supreme { 
+  border: 18px double #004d40; 
+  background-color: #f4fcfb; 
+}
+.tier-supreme .diploma-logo-svg, .tier-supreme .diploma-divider-line, .tier-supreme .diploma-divider-diamond { background-color: #004d40; color: #004d40; }
+.tier-supreme .diploma-student-name { font-size: 68px; color: #004d40; border-bottom-style: solid; border-bottom-width: 2px; }
+.tier-supreme .diploma-badge { background-color: #004d40; color: #ffffff; border: 1px solid #002d24; font-weight: 800; letter-spacing: 1px; }
+
+/* Colțuri decorative */
+.diploma-corner {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border-color: rgba(0, 128, 128, 0.25);
+  border-style: solid;
+  pointer-events: none;
+}
+.corner-tl { top: 12px; left: 12px; border-top-width: 2px; border-left-width: 2px; }
+.corner-tr { top: 12px; right: 12px; border-top-width: 2px; border-right-width: 2px; }
+.corner-bl { bottom: 12px; left: 12px; border-bottom-width: 2px; border-left-width: 2px; }
+.corner-br { bottom: 12px; right: 12px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* --- Secțiunea Header --- */
+.diploma-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diploma-logo-svg {
+  width: 55px;
+  height: 55px;
+  margin-bottom: 8px;
+  background-color: transparent !important; /* Previne bug-ul de umplere */
+}
+
+.diploma-main-title {
+  color: #0f172a;
+  letter-spacing: 4px;
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin: 10px 0 5px 0;
+  font-family: 'Cinzel', serif;
+}
+
+.diploma-divider-line {
+  width: 180px;
+  height: 2px;
+  margin: 10px auto;
+  position: relative;
+}
+
+.diploma-divider-diamond {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+}
+
+/* --- Secțiunea Centrală --- */
+.diploma-content {
+  text-align: center;
+  margin: 10px 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.diploma-subtitle {
+  color: #64748b;
+  font-style: italic;
+  font-size: 15px;
+  margin: 0 0 4px 0;
+}
+
+.diploma-student-name {
+  font-size: 62px;
+  font-weight: 500;
+  margin: 5px auto;
+  font-family: 'Pinyon Script', cursive;
+  border-bottom: 1px dashed #008080;
+  max-w: 85%;
+  width: fit-content;
+  padding-bottom: 2px;
+  line-height: 1.1;
+}
+
+.diploma-course-text {
+  color: #64748b;
+  font-size: 14px;
+  margin: 15px 0 5px 0;
+}
+
+.diploma-course-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.3px;
+  margin: 5px 0 0 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* --- Secțiunea Footer --- */
+.diploma-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: end;
+  text-align: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 18px;
+}
+
+.diploma-footer-column.left { text-align: left; }
+.diploma-footer-column.right { text-align: right; }
+
+.diploma-field-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.diploma-field-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin: 4px 0 0 0;
+}
+
+.diploma-field-value.authority {
+  font-family: 'Space Grotesk', sans-serif;
+  color: #008080;
+  font-weight: 700;
+}
+
+.diploma-id-code {
+  font-family: monospace;
+}
+
+.diploma-badge {
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 5px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+/* --- PRINT ENGINE RULES --- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .diploma-page-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .diploma-container {
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box;
+    margin: 0 !important;
+    page-break-inside: avoid;
+  }
+}
