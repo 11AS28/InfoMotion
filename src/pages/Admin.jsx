@@ -235,7 +235,7 @@ function Dashboard({ adminInfo, onLogout }) {
         <div className="admin-header-logo">InfoMotion<span>.</span> <em>Admin</em></div>
         <div className="admin-header-right">
           <span className="admin-user-pill">👤 {username}</span>
-          <button className="admin-btn-refresh" onClick={async () => { await refreshData(); toast.success('Date reîncărcate! 🔄'); }} style={{ marginRight: '10px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 Refresh</button>
+          <button className="admin-btn-refresh" onClick={async () => { await refreshData(); toast.success('Date reîncărcate! 🔄'); }} style={{ marginRight: '10px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'black', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 Refresh</button>
           <button className="admin-btn-logout" onClick={() => { onLogout(); toast.info('Te-ai deconectat.'); }}>Deconectare</button>
         </div>
       </header>
