@@ -93,7 +93,7 @@ function DiplomaPage() {
           <p className="diploma-subtitle">Prezentul document atestă faptul că</p>
           <h2 className="diploma-student-name">{diploma.studentName}</h2>
           <p className="diploma-course-text">
-            {diploma.tier === 'liceu' ? 'a finalizat cu brio și a stăpânit în totalitate' : 'a parcurs cu succes și a absolvit examenul pentru cursul'}
+            {diploma.tier === 'liceu' ? 'a finalizat cu brio și a stăpânit în totalitate' : 'a demonstrat dedicare și a finalizat cu succes toate lecțiile pentru'}
           </p>
           <h3 className="diploma-course-name">{diploma.courseName || activeTierConfig.courseDefault}</h3>
         </div>
@@ -109,7 +109,7 @@ function DiplomaPage() {
           </div>
           <div className="diploma-footer-column right">
             <p className="diploma-field-label">Autoritate Emitentă</p>
-            <p className="diploma-field-value authority">{diploma.grantedBy || 'InfoMotion Team'}</p>
+            <p className="diploma-field-value authority">{'InfoMotion Team'}</p> {/*diploma.grantedBy || 'InfoMotion Team'*/}
           </div>
         </div>
       </div>
