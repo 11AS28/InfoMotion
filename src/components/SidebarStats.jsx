@@ -379,7 +379,7 @@ function SidebarStats({ isOpen, onClose }) {
                       type="button"
                       onClick={() => {
                         markNotificationAsRead(notif.id);
-                        if (notif.type === 'contact_raspuns') {
+                        if (notif.type === 'contact_raspuns' || notif.type === 'diploma_acordata') {
                           setModalRaspuns(notif);
                         }
                       }}
@@ -405,6 +405,7 @@ function SidebarStats({ isOpen, onClose }) {
                             {notif.type === 'streak_pierdut' && '  Streak Întrerupt'}
                             {notif.type === 'streak_inghetat' && '  Streak Înghețat'}
                             {notif.type === 'contact_raspuns' && '💬 Răspuns la mesajul tău'}
+                            {notif.type === 'diploma_acordata' && '🎓 Diplomă acordată'}
                           </div>
                           <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}
@@ -670,39 +671,111 @@ function SidebarStats({ isOpen, onClose }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '18px', flexShrink: 0,
               }}>
-                💬
+                {modalRaspuns.type === 'diploma_acordata' ? '🎓' : '💬'}
               </div>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Răspuns de la echipa InfoMotion
+                  {modalRaspuns.type === 'diploma_acordata' ? 'Echipa InfoMotion' : 'Răspuns de la echipa InfoMotion'}
                 </div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                  Mesajul tău a primit un răspuns
+                  {modalRaspuns.type === 'diploma_acordata' ? 'Felicitări! Ai primit o diplomă' : 'Mesajul tău a primit un răspuns'}
                 </div>
               </div>
             </div>
 
-            <div style={{
-              background: '#f8fafc', borderRadius: '14px',
-              padding: '20px', marginBottom: '24px',
-              border: '1.5px solid #e2e8f0',
-              fontSize: '16px', fontWeight: '500',
-              color: '#1e293b', lineHeight: '1.7',
-            }}>
-              {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
-            </div>
+            {modalRaspuns.type === 'diploma_acordata' ? (
+              (() => {
+                const match = modalRaspuns.text?.match(/(\/diploma\/[^\s]+)/);
+                const path = match ? match[1] : null;
+                const fullUrl = path ? `${window.location.origin}${path}` : null;
 
-            <button
-              onClick={() => setModalRaspuns(null)}
-              style={{
-                width: '100%', padding: '14px', borderRadius: '30px',
-                border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                color: '#fff', fontWeight: '700', fontSize: '15px',
-                cursor: 'pointer', letterSpacing: '0.3px',
-              }}
-            >
-              Am înțeles
-            </button>
+                return (
+                  <>
+                    <div style={{
+                      background: '#f8fafc', borderRadius: '14px',
+                      padding: '20px', marginBottom: '20px',
+                      border: '1.5px solid #e2e8f0',
+                      fontSize: '15px', fontWeight: '500',
+                      color: '#1e293b', lineHeight: '1.7',
+                    }}>
+                      Ai primit diploma ta! O poți vedea sau distribui folosind linkul de mai jos.
+                    </div>
+
+                    {fullUrl && (
+                      <div style={{
+                        background: '#f1f5f9',
+                        border: '1.5px solid #e2e8f0',
+                        borderRadius: '12px',
+                        padding: '12px 14px',
+                        marginBottom: '20px',
+                        wordBreak: 'break-all',
+                        fontSize: '13px',
+                        fontFamily: 'monospace',
+                        color: '#01696f'
+                      }}>
+                        {fullUrl}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      {fullUrl && (
+                        <button
+                          onClick={() => window.open(fullUrl, '_blank')}
+                          style={{
+                            flex: 1, padding: '14px', borderRadius: '30px',
+                            border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                            color: '#fff', fontWeight: '700', fontSize: '14px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Deschide Diploma
+                        </button>
+                      )}
+                      {fullUrl && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(fullUrl);
+                            alert('Link copiat!');
+                          }}
+                          style={{
+                            padding: '14px 18px', borderRadius: '30px',
+                            border: '1.5px solid #e2e8f0', background: '#fff',
+                            color: '#374151', fontWeight: '700', fontSize: '14px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Copiază
+                        </button>
+                      )}
+                    </div>
+                  </>
+                );
+              })()
+            ) : (
+              <>
+                <div style={{
+                  background: '#f8fafc', borderRadius: '14px',
+                  padding: '20px', marginBottom: '24px',
+                  border: '1.5px solid #e2e8f0',
+                  fontSize: '16px', fontWeight: '500',
+                  color: '#1e293b', lineHeight: '1.7',
+                }}>
+                  {modalRaspuns.text?.replace(/^.*ți-a răspuns la mesaj: "/, '').replace(/"$/, '') || modalRaspuns.text}
+                </div>
+
+                <button
+                  onClick={() => setModalRaspuns(null)}
+                  style={{
+                    width: '100%', padding: '14px', borderRadius: '30px',
+                    border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                    color: '#fff', fontWeight: '700', fontSize: '15px',
+                    cursor: 'pointer', letterSpacing: '0.3px',
+                  }}
+                >
+                  Am înțeles
+                </button>
+              </>
+            )}
           </div>
         </div>,
         document.body

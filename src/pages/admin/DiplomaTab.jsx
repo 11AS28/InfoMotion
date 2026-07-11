@@ -11,7 +11,7 @@ function DiplomeTab({ adminUsername, adminPassword }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedTiers, setSelectedTiers] = useState({}); // { [requestId]: tier }
+  const [selectedTiers, setSelectedTiers] = useState({});
   const [processingId, setProcessingId] = useState(null);
 
   const fetchRequests = () => {
@@ -21,25 +21,20 @@ function DiplomeTab({ adminUsername, adminPassword }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'list_diploma_requests',
-        adminUsername,
-        adminPassword
+        username: adminUsername,
+        sessionToken: adminPassword
       })
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
-          setRequests(data.requests);
-        } else {
-          setError(data.error || 'Eroare la încărcare.');
-        }
+        if (data.success) setRequests(data.requests);
+        else setError(data.error || 'Eroare la încărcare.');
       })
       .catch(() => setError('Eroare de rețea.'))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  useEffect(() => { fetchRequests(); }, []);
 
   const handleTierChange = (requestId, tier) => {
     setSelectedTiers(prev => ({ ...prev, [requestId]: tier }));
@@ -49,10 +44,8 @@ function DiplomeTab({ adminUsername, adminPassword }) {
     const tier = selectedTiers[requestId] || 'clasa_9';
 
     if (grant && !selectedTiers[requestId]) {
-      const confirmDefault = window.confirm(
-        `Nu ai ales un nivel pentru diplomă. Continui cu "${TIER_OPTIONS.find(t => t.value === tier).label}"?`
-      );
-      if (!confirmDefault) return;
+      const ok = window.confirm(`Nu ai ales un nivel. Continui cu "${TIER_OPTIONS.find(t => t.value === tier).label}"?`);
+      if (!ok) return;
     }
 
     setProcessingId(requestId);
@@ -62,13 +55,9 @@ function DiplomeTab({ adminUsername, adminPassword }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'approve_diploma',
-          adminUsername,
-          adminPassword,
-          data: {
-            requestId,
-            grant,
-            tier
-          }
+          username: adminUsername,
+          sessionToken: adminPassword,
+          data: { requestId, grant, tier }
         })
       });
       const result = await res.json();
@@ -84,62 +73,95 @@ function DiplomeTab({ adminUsername, adminPassword }) {
     }
   };
 
-  if (loading) return <p>Se încarcă cererile...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (requests.length === 0) return <p>Nu există cereri de diplomă în așteptare.</p>;
-
   return (
-    <div className="diplome-tab">
-      <h2>Cereri de diplomă în așteptare ({requests.length})</h2>
+    <div className="admin-card">
+      <div className="admin-section-title">Cereri de diplomă în așteptare ({requests.length})</div>
 
-      {requests.map(req => (
-        <div key={req.id} className="diploma-request-card" style={{
-          border: '1px solid #30363d',
-          borderRadius: '8px',
-          padding: '16px',
-          marginBottom: '12px'
-        }}>
-          <p><strong>Elev:</strong> {req.studentName}</p>
-          <p><strong>Cerut la:</strong> {new Date(req.createdAt).toLocaleString('ro-RO')}</p>
+      {loading ? (
+        <div className="admin-empty-state">Se încarcă...</div>
+      ) : error ? (
+        <div className="admin-empty-state" style={{ color: '#dc2626' }}>{error}</div>
+      ) : requests.length === 0 ? (
+        <div className="admin-empty-state">Nicio cerere de diplomă în așteptare.</div>
+      ) : (
+        <div className="admin-approvals-list">
+          {requests.map(req => (
+            <div key={req.id} className="admin-approval-card">
+              <div className="admin-approval-top">
+                <div className="admin-approval-main">
+                  <h3 className="admin-approval-title">{req.studentName}</h3>
+                  <div className="admin-approval-author">
+                    Cerut la {new Date(req.createdAt).toLocaleString('ro-RO')}
+                  </div>
+                </div>
 
-          <div style={{ margin: '10px 0' }}>
-            <strong>Statistici:</strong>
-            <ul style={{ margin: '4px 0' }}>
-              <li>Lecții completate: {req.stats?.lectiiCompletate ?? 'N/A'}</li>
-              <li>Puncte totale: {req.stats?.puncteTotale ?? 'N/A'}</li>
-            </ul>
-          </div>
+                <div className="admin-approval-actions">
+                  <select
+                    value={selectedTiers[req.id] || ''}
+                    onChange={(e) => handleTierChange(req.id, e.target.value)}
+                    disabled={processingId === req.id}
+                    style={{
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #e2e8f0',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#374151'
+                    }}
+                  >
+                    <option value="">Alege nivelul...</option>
+                    {TIER_OPTIONS.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '12px' }}>
-            <select
-              value={selectedTiers[req.id] || ''}
-              onChange={(e) => handleTierChange(req.id, e.target.value)}
-              disabled={processingId === req.id}
-            >
-              <option value="">Alege nivelul diplomei...</option>
-              {TIER_OPTIONS.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+                  <button
+                    className="admin-btn-approve"
+                    onClick={() => handleDecision(req.id, true)}
+                    disabled={processingId === req.id}
+                  >
+                    {processingId === req.id ? 'Se procesează...' : 'Acordă'}
+                  </button>
 
-            <button
-              onClick={() => handleDecision(req.id, true)}
-              disabled={processingId === req.id}
-              style={{ backgroundColor: '#008080', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              {processingId === req.id ? 'Se procesează...' : 'Acordă'}
-            </button>
+                  <button
+                    className="admin-btn-reject"
+                    onClick={() => handleDecision(req.id, false)}
+                    disabled={processingId === req.id}
+                  >
+                    Respinge
+                  </button>
+                </div>
+              </div>
 
-            <button
-              onClick={() => handleDecision(req.id, false)}
-              disabled={processingId === req.id}
-              style={{ backgroundColor: '#8b1e1e', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              Respinge
-            </button>
-          </div>
+              <div className="admin-approval-section">
+                <div className="admin-approval-section-title">Statistici elev</div>
+                <div className="admin-stat-grid" style={{ marginBottom: 0 }}>
+                  <div className="admin-stat-card">
+                    <div className="admin-stat-label">Clasa a IX-a</div>
+                    <div className="admin-stat-num">{req.stats?.lectiiClasa9 ?? 0}</div>
+                    <div className="admin-stat-sub">lecții terminate</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <div className="admin-stat-label">Clasa a X-a</div>
+                    <div className="admin-stat-num">{req.stats?.lectiiClasa10 ?? 0}</div>
+                    <div className="admin-stat-sub">lecții terminate</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <div className="admin-stat-label">Clasa a XI-a</div>
+                    <div className="admin-stat-num">{req.stats?.lectiiClasa11 ?? 0}</div>
+                    <div className="admin-stat-sub">lecții terminate</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <div className="admin-stat-label">Puncte Totale</div>
+                    <div className="admin-stat-num">{req.stats?.puncteTotale ?? 0}</div>
+                    <div className="admin-stat-sub">{req.stats?.problemeRezolvate ?? 0} probleme rezolvate</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

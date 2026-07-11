@@ -10,7 +10,7 @@ import TodoTab from './admin/TodoTab';
 import LectiiTab from './admin/LectiiTab';
 import AdaugaTab from './admin/AdaugaTab';
 import MesajeTab from './admin/MesajeTab';
-import DiplomeTab from './admin/DiplomeTab';
+import DiplomeTab from './admin/DiplomaTab';
 
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');

@@ -189,13 +189,43 @@ export default async function handler(req, res) {
 
         const userDoc = await db.collection('users').doc(userId).get();
         const userData = userDoc.data();
+        const progres = userData.progres || {};
+
+        // Iau TOATE lecțiile, ca să știu clasa fiecărui ID completat
+        const lectiiSnap = await db.collection('lectii').get();
+        const clasaPerLectie = {};
+        lectiiSnap.forEach(doc => {
+          clasaPerLectie[doc.id] = doc.data().clasa || 'necunoscut';
+        });
+
+        const statsClase = { 'clasa-9': 0, 'clasa-10': 0, 'clasa-11': 0 };
+
+        Object.keys(progres).forEach(lessonId => {
+          const dateProgres = progres[lessonId];
+          if (!dateProgres) return;
+
+          const eComplet = dateProgres.status === 'complet' ||
+            dateProgres === true ||
+            dateProgres === 'complet' ||
+            (typeof dateProgres === 'object' && !dateProgres.status);
+
+          if (!eComplet) return;
+
+          const clasa = clasaPerLectie[lessonId];
+          if (clasa === 'clasa-9') statsClase['clasa-9']++;
+          else if (clasa === 'clasa-10') statsClase['clasa-10']++;
+          else if (clasa === 'clasa-11') statsClase['clasa-11']++;
+        });
 
         const reqRef = await db.collection('diplomaRequests').add({
           studentId: userId,
-          studentName: userData.username || userData.email || 'Necunoscut',
+          studentName: userData.nume || userData.email || 'Necunoscut',
           stats: {
-            lectiiCompletate: userData.lectiiCompletate || 0,
+            lectiiClasa9: statsClase['clasa-9'],
+            lectiiClasa10: statsClase['clasa-10'],
+            lectiiClasa11: statsClase['clasa-11'],
             puncteTotale: userData.puncteTotale || 0,
+            problemeRezolvate: userData.problemeRezolvateCount || 0
           },
           status: 'pending',
           createdAt: currentTimestamp
