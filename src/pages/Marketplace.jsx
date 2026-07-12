@@ -117,7 +117,7 @@ export default function Marketplace() {
     { id: 'title_god', name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
     { id: 'title_noob', name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
     { id: 'title_grind', name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
-    { id: 'title_jeanG', name: 'Legendary coder', price: 78500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Cel mai bun programator C++ din lume!' }
+    { id: 'title_jeanG', name: 'Legendary coder', price: 78500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Cel mai    bun programator C++ din lume!' }
   ];
 
   const afiseazaMesaj = (tip, text) => {
