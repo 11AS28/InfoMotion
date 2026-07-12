@@ -48,6 +48,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  if (!process.env.SESSION_SECRET) {
+    console.error('SESSION_SECRET lipsește din variabilele de mediu!');
+    return res.status(500).json({
+      success: false,
+      error: 'Configurare server incompletă (SESSION_SECRET lipsă). Contactează administratorul.'
+    });
+  }
+
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -98,7 +106,16 @@ export default async function handler(req, res) {
       console.error('Eroare la resetarea contorului de încercări:', error);
     }
 
-    const sessionToken = generateSessionToken(username);
+    let sessionToken;
+    try {
+      sessionToken = generateSessionToken(username);
+    } catch (error) {
+      console.error('Eroare la generarea tokenului de sesiune:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Eroare la generarea sesiunii. Contactează administratorul.'
+      });
+    }
 
     return res.status(200).json({
       success: true,
