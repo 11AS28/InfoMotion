@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import crypto from 'crypto';
 
 let db = null;
 
@@ -15,6 +16,34 @@ function getFirestoreDb() {
   }
   db = admin.firestore();
   return db;
+}
+
+function verifySessionToken(username, sessionToken) {
+  if (!sessionToken || typeof sessionToken !== 'string') return false;
+
+  const parts = sessionToken.split('.');
+  if (parts.length !== 2) return false;
+
+  const [payloadEncoded, signature] = parts;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', process.env.SESSION_SECRET)
+    .update(payloadEncoded)
+    .digest('base64url');
+
+  const sigBufA = Buffer.from(signature);
+  const sigBufB = Buffer.from(expectedSignature);
+  if (sigBufA.length !== sigBufB.length) return false;
+  if (!crypto.timingSafeEqual(sigBufA, sigBufB)) return false;
+
+  const payload = Buffer.from(payloadEncoded, 'base64url').toString();
+  const [tokenUsername, expiryStr] = payload.split('.');
+  const expiry = parseInt(expiryStr, 10);
+
+  if (tokenUsername !== username) return false;
+  if (!expiry || Date.now() > expiry) return false;
+
+  return true;
 }
 
 export default async function handler(req, res) {
@@ -40,10 +69,11 @@ export default async function handler(req, res) {
     'Emi': process.env.ADMIN_4_PASS
   };
 
-  if (action !== 'claim_daily_reward' && action !== 'acorda_puncte') {
-    const expectedPassword = admins[username];
-    if (!expectedPassword || sessionToken !== expectedPassword) {
-      return res.status(403).json({ error: 'Neautorizat! Sesiune invalidă.' });
+  const ACTIUNI_FARA_SESIUNE_ADMIN = ['claim_daily_reward', 'acorda_puncte'];
+
+  if (!ACTIUNI_FARA_SESIUNE_ADMIN.includes(action)) {
+    if (!admins[username] || !verifySessionToken(username, sessionToken)) {
+      return res.status(403).json({ error: 'Neautorizat! Sesiune invalidă sau expirată.' });
     }
   }
 
@@ -101,8 +131,8 @@ export default async function handler(req, res) {
           message = `🎉 JACKPOT! Ai nimerit premiul cel mare de ${puncteJackpot} puncte! 🎉`;
 
         } else {
-          const puncteNormale = Math.floor(Math.random() * 11) + 20; 
-          
+          const puncteNormale = Math.floor(Math.random() * 11) + 20;
+
           fieldsToUpdate = {
             lastDailyClaim: aziStr,
             puncte: (userData.puncte || 0) + puncteNormale,
@@ -124,7 +154,7 @@ export default async function handler(req, res) {
 
 
       case 'acorda_puncte': {
-        const { userToken, userId, amount, extraFields } = data; 
+        const { userToken, userId, amount, extraFields } = data;
 
         if (!userToken || !userId || amount === undefined) {
           return res.status(400).json({ error: 'Date incomplete.' });
@@ -143,11 +173,11 @@ export default async function handler(req, res) {
         }
 
         const userData = userDoc.data();
-        
+
         const updateData = {
           puncte: (userData.puncte || 0) + amount,
           puncteTotale: (userData.puncteTotale || 0) + amount,
-          ...extraFields 
+          ...extraFields
         };
 
         await userRef.update(updateData);
