@@ -122,15 +122,13 @@ export default async function handler(req, res) {
 
       case 'approve_diploma': {
         const { requestId, grant } = data;
-
         const reqRef = db.collection('diplomaRequests').doc(requestId);
         const reqDoc = await reqRef.get();
         if (!reqDoc.exists) return res.status(404).json({ error: 'Cererea nu există.' });
-        const reqData = reqDoc.data();
 
-        if (!grant) {
-          await reqRef.update({ status: 'rejected', decidedBy: username, decidedAt: currentTimestamp });
-          return res.status(200).json({ success: true });
+        const reqData = reqDoc.data();
+        if (reqData.status !== 'pending') {
+          return res.status(400).json({ error: 'Cererea a fost deja procesată.' });
         }
 
         const diplomaRef = await db.collection('diplomas').add({
@@ -139,7 +137,7 @@ export default async function handler(req, res) {
           stats: reqData.stats,
           grantedBy: username,
           grantedAt: currentTimestamp,
-          tier: data.tier,               // 'clasa_9' | 'clasa_10' | 'clasa_11' | 'liceu'
+          tier: data.tier,
           courseName: data.courseName || null
         });
 
@@ -191,7 +189,6 @@ export default async function handler(req, res) {
         const userData = userDoc.data();
         const progres = userData.progres || {};
 
-        // Iau TOATE lecțiile, ca să știu clasa fiecărui ID completat
         const lectiiSnap = await db.collection('lectii').get();
         const clasaPerLectie = {};
         lectiiSnap.forEach(doc => {
