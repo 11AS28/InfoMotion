@@ -313,7 +313,7 @@
 
 .market-section-title {
   font-size: 1.3rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-weight: 600;
   white-space: nowrap;
   margin-right: 20px;
@@ -374,7 +374,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #161b22, #0d1117);
+  background: var(--bg-card);
   border: 1px solid #30363d;
   border-radius: 12px;
   padding: 24px;
@@ -405,7 +405,7 @@
   margin: 0 0 6px 0;
   font-size: 20px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .daily-desc {
@@ -471,8 +471,8 @@
 }
 
 .daily-claimed {
-  background: #21262d;
-  color: #8b949e;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
   border: 1px solid #30363d;
   cursor: not-allowed;
 }

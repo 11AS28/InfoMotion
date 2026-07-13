@@ -57,9 +57,15 @@ export default function Marketplace() {
     return () => clearInterval(interval);
   }, [currentUser?.xp_booster_expires_at]);
 
-  const playSound = (src) => {
+  const SOUND_VOLUMES = {
+  cash: 0.18,
+  epic: 0.12,
+};
+
+  const playSound = (src, volume = 0.1) => {
     const audio = new Audio(src);
-    audio.play();
+    audio.volume = volume;
+    audio.play().catch(()=>{});
   };
 
   const triggerErrorHaptic = () => {
