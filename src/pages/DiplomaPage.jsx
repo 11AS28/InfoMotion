@@ -28,7 +28,7 @@ const DIPLOMA_TIERS = {
 function DiplomaPage() {
   const { id } = useParams();
   const [diploma, setDiploma] = useState(null);
-  const [status, setStatus] = useState('loading'); // loading | ok | notfound | error
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -78,12 +78,16 @@ function DiplomaPage() {
         <div className="diploma-corner corner-br"></div>
 
         <div className="diploma-header">
-          <svg className="diploma-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-            <line x1="12" y1="22.08" x2="12" y2="12" />
-          </svg>
-          <p>InfoMotion</p>
+          {/* Aici este zona modificată pentru logo + text pe același rând */}
+          <div className="diploma-brand-wrapper">
+            <svg className="diploma-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+            <span className="diploma-brand-text">InfoMotion</span>
+          </div>
+          
           <h1 className="diploma-main-title">
             {diploma.tier === 'liceu' ? 'Diplomă de Excelență' : 'Certificat de Absolvire'}
           </h1>
@@ -110,7 +114,7 @@ function DiplomaPage() {
           </div>
           <div className="diploma-footer-column right">
             <p className="diploma-field-label">Autoritate Emitentă</p>
-            <p className="diploma-field-value authority">{'InfoMotion Team'}</p> {/*diploma.grantedBy || 'InfoMotion Team'*/}
+            <p className="diploma-field-value authority">{'InfoMotion Team'}</p>
           </div>
         </div>
       </div>

@@ -379,7 +379,7 @@ function SidebarStats({ isOpen, onClose }) {
                       type="button"
                       onClick={() => {
                         markNotificationAsRead(notif.id);
-                        if (notif.type === 'contact_raspuns' || notif.type === 'diploma_acordata') {
+                        if (notif.type === 'contact_raspuns' || notif.type === 'diploma_acordata' || notif.type === 'diploma_respinsa') {
                           setModalRaspuns(notif);
                         }
                       }}
@@ -406,6 +406,7 @@ function SidebarStats({ isOpen, onClose }) {
                             {notif.type === 'streak_inghetat' && '  Streak Înghețat'}
                             {notif.type === 'contact_raspuns' && '💬 Răspuns la mesajul tău'}
                             {notif.type === 'diploma_acordata' && '🎓 Diplomă acordată'}
+                            {notif.type === 'diploma_respinsa' && '📋 Cerere diplomă respinsă'}
                           </div>
                           <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}
@@ -459,50 +460,6 @@ function SidebarStats({ isOpen, onClose }) {
                     <FaFire color={streakColor(currentCount)} size={22} />
                   </p>
                 </div>
-              </div>
-
-              {/* --- Secțiune Diplomă --- */}
-              <div style={{
-                marginTop: '18px',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px dashed #23a9b3',
-                background: theme === 'dark' ? 'rgba(35,169,179,0.08)' : '#f0fdfb',
-                textAlign: 'center'
-              }}>
-                <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '700', color: theme === 'dark' ? '#e2e8f0' : '#0f172a' }}>
-                  🎓 Diplomă de Absolvire
-                </p>
-                <button
-                  onClick={handleRequestDiploma}
-                  disabled={diplomaLoading}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #01696f, #23a9b3)',
-                    color: '#fff',
-                    fontWeight: '700',
-                    fontSize: '13px',
-                    cursor: diplomaLoading ? 'not-allowed' : 'pointer',
-                    opacity: diplomaLoading ? 0.6 : 1
-                  }}
-                >
-                  {diplomaLoading ? 'Se trimite...' : 'Cere Diplomă'}
-                </button>
-
-                {diplomaMessage && (
-                  <p style={{
-                    marginTop: '10px',
-                    marginBottom: 0,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: diplomaMessage.type === 'success' ? '#166534' : '#dc2626'
-                  }}>
-                    {diplomaMessage.text}
-                  </p>
-                )}
               </div>
             </>
           ) : (
@@ -586,6 +543,58 @@ function SidebarStats({ isOpen, onClose }) {
                 </div>
 
                 <br />
+
+                {/* --- Secțiune Diplomă --- */}
+                <div style={{
+                  marginBottom: '18px',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '1px dashed #23a9b3',
+                  background: theme === 'dark' ? 'rgba(35,169,179,0.08)' : '#f0fdfb',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ margin: '0 0 6px 0', fontSize: '13px', fontWeight: '700', color: theme === 'dark' ? '#e2e8f0' : '#0f172a' }}>
+                    🎓 Diplomă de Absolvire
+                  </p>
+                  <p style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '11.5px',
+                    lineHeight: '1.5',
+                    color: theme === 'dark' ? '#94a3b8' : '#64748b'
+                  }}>
+                    După ce ai terminat lecțiile de la o clasă, poți solicita o diplomă. Îți vom răspunde în cel mai scurt timp. Poți solicita o diplomă o dată la 7 zile.
+                  </p>
+                  <button
+                    onClick={handleRequestDiploma}
+                    disabled={diplomaLoading}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                      color: '#fff',
+                      fontWeight: '700',
+                      fontSize: '13px',
+                      cursor: diplomaLoading ? 'not-allowed' : 'pointer',
+                      opacity: diplomaLoading ? 0.6 : 1
+                    }}
+                  >
+                    {diplomaLoading ? 'Se trimite...' : 'Cere Diplomă'}
+                  </button>
+
+                  {diplomaMessage && (
+                    <p style={{
+                      marginTop: '10px',
+                      marginBottom: 0,
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: diplomaMessage.type === 'success' ? '#166534' : '#dc2626'
+                    }}>
+                      {diplomaMessage.text}
+                    </p>
+                  )}
+                </div>
 
                 <div className="sidebar-badges-section">
                   <h5>Trofeele Mele (Arenă)</h5>
@@ -671,14 +680,14 @@ function SidebarStats({ isOpen, onClose }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '18px', flexShrink: 0,
               }}>
-                {modalRaspuns.type === 'diploma_acordata' ? '🎓' : '💬'}
+                {modalRaspuns.type === 'diploma_acordata' ? '🎓' : modalRaspuns.type === 'diploma_respinsa' ? '📋' : '💬'}
               </div>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {modalRaspuns.type === 'diploma_acordata' ? 'Echipa InfoMotion' : 'Răspuns de la echipa InfoMotion'}
+                  {modalRaspuns.type === 'diploma_acordata' || modalRaspuns.type === 'diploma_respinsa' ? 'Echipa InfoMotion' : 'Răspuns de la echipa InfoMotion'}
                 </div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                  {modalRaspuns.type === 'diploma_acordata' ? 'Felicitări! Ai primit o diplomă' : 'Mesajul tău a primit un răspuns'}
+                  {modalRaspuns.type === 'diploma_acordata' ? 'Felicitări! Ai primit o diplomă' : modalRaspuns.type === 'diploma_respinsa' ? 'Cererea ta de diplomă' : 'Mesajul tău a primit un răspuns'}
                 </div>
               </div>
             </div>
@@ -751,6 +760,30 @@ function SidebarStats({ isOpen, onClose }) {
                   </>
                 );
               })()
+            ) : modalRaspuns.type === 'diploma_respinsa' ? (
+              <>
+                <div style={{
+                  background: '#fef2f2', borderRadius: '14px',
+                  padding: '20px', marginBottom: '24px',
+                  border: '1.5px solid #fecaca',
+                  fontSize: '16px', fontWeight: '500',
+                  color: '#1e293b', lineHeight: '1.7',
+                }}>
+                  {modalRaspuns.text}
+                </div>
+
+                <button
+                  onClick={() => setModalRaspuns(null)}
+                  style={{
+                    width: '100%', padding: '14px', borderRadius: '30px',
+                    border: 'none', background: 'linear-gradient(135deg, #01696f, #23a9b3)',
+                    color: '#fff', fontWeight: '700', fontSize: '15px',
+                    cursor: 'pointer', letterSpacing: '0.3px',
+                  }}
+                >
+                  Am înțeles
+                </button>
+              </>
             ) : (
               <>
                 <div style={{

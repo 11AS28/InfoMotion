@@ -42,10 +42,19 @@ function DiplomeTab({ adminUsername, adminPassword }) {
 
   const handleDecision = async (requestId, grant) => {
     const tier = selectedTiers[requestId] || 'clasa_9';
+    let rejectReason = '';
 
     if (grant && !selectedTiers[requestId]) {
       const ok = window.confirm(`Nu ai ales un nivel. Continui cu "${TIER_OPTIONS.find(t => t.value === tier).label}"?`);
       if (!ok) return;
+    }
+
+    if (!grant) {
+      const raspuns = window.prompt(
+        'Scrie mesajul pe care îl va primi elevul (motivul respingerii). Lasă gol pentru un mesaj generic:'
+      );
+      if (raspuns === null) return; 
+      rejectReason = raspuns.trim();
     }
 
     setProcessingId(requestId);
@@ -57,7 +66,12 @@ function DiplomeTab({ adminUsername, adminPassword }) {
           action: 'approve_diploma',
           username: adminUsername,
           sessionToken: adminPassword,
-          data: { requestId, grant, tier }
+          data: {
+            requestId,
+            grant,
+            tier,
+            rejectReason: !grant ? rejectReason : undefined
+          }
         })
       });
       const result = await res.json();

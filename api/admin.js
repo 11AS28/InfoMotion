@@ -131,6 +131,26 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Cererea a fost deja procesată.' });
         }
 
+        if (!grant) {
+          await reqRef.update({
+            status: 'rejected',
+            decidedBy: username,
+            decidedAt: currentTimestamp,
+            rejectReason: data.rejectReason || null
+          });
+
+          await db.collection('users').doc(reqData.studentId).collection('notifications').add({
+            type: 'diploma_respinsa',
+            text: data.rejectReason
+              ? data.rejectReason
+              : 'Cererea ta de diplomă a fost respinsă. Mai lucrează și cere din nou peste ceva timp.',
+            read: false,
+            createdAt: currentTimestamp
+          });
+
+          return res.status(200).json({ success: true });
+        }
+
         const diplomaRef = await db.collection('diplomas').add({
           studentId: reqData.studentId,
           studentName: reqData.studentName,

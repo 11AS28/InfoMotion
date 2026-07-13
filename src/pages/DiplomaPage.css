@@ -240,7 +240,6 @@
   letter-spacing: 0.5px;
 }
 
-/* --- PRINT ENGINE RULES --- */
 @media print {
   @page {
     size: A4 landscape;
@@ -279,3 +278,29 @@
     page-break-inside: avoid;
   }
 }
+.diploma-brand-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px; 
+  margin-bottom: 5px;
+}
+
+.diploma-logo-svg {
+  width: 42px;  
+  height: 42px;
+  background-color: transparent !important;
+}
+
+.diploma-brand-text {
+  font-family: 'Space Grotesk', sans-serif; 
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #0f172a; 
+}
+
+.tier-9 .diploma-brand-text { color: #00a896; }
+.tier-10 .diploma-brand-text { color: #008080; }
+.tier-11 .diploma-brand-text { color: #0284c7; }
+.tier-supreme .diploma-brand-text { color: #004d40; font-family: 'Cinzel', serif; letter-spacing: 2px; }
