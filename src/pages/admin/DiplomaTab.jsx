@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const TIER_OPTIONS = [
   { value: 'clasa_9', label: 'Clasa a IX-a' },
@@ -13,6 +14,9 @@ function DiplomeTab({ adminUsername, adminPassword }) {
   const [error, setError] = useState('');
   const [selectedTiers, setSelectedTiers] = useState({});
   const [processingId, setProcessingId] = useState(null);
+
+  const [rejectModal, setRejectModal] = useState(null); // { requestId, studentName }
+  const [rejectText, setRejectText] = useState('');
 
   const fetchRequests = () => {
     setLoading(true);
@@ -40,22 +44,18 @@ function DiplomeTab({ adminUsername, adminPassword }) {
     setSelectedTiers(prev => ({ ...prev, [requestId]: tier }));
   };
 
-  const handleDecision = async (requestId, grant) => {
+  const openRejectModal = (req) => {
+    setRejectText('');
+    setRejectModal({ requestId: req.id, studentName: req.studentName });
+  };
+
+  const closeRejectModal = () => {
+    setRejectModal(null);
+    setRejectText('');
+  };
+
+  const submitDecision = async (requestId, grant, rejectReason) => {
     const tier = selectedTiers[requestId] || 'clasa_9';
-    let rejectReason = '';
-
-    if (grant && !selectedTiers[requestId]) {
-      const ok = window.confirm(`Nu ai ales un nivel. Continui cu "${TIER_OPTIONS.find(t => t.value === tier).label}"?`);
-      if (!ok) return;
-    }
-
-    if (!grant) {
-      const raspuns = window.prompt(
-        'Scrie mesajul pe care îl va primi elevul (motivul respingerii). Lasă gol pentru un mesaj generic:'
-      );
-      if (raspuns === null) return; 
-      rejectReason = raspuns.trim();
-    }
 
     setProcessingId(requestId);
     try {
@@ -70,7 +70,7 @@ function DiplomeTab({ adminUsername, adminPassword }) {
             requestId,
             grant,
             tier,
-            rejectReason: !grant ? rejectReason : undefined
+            rejectReason: !grant ? (rejectReason || '') : undefined
           }
         })
       });
@@ -85,6 +85,21 @@ function DiplomeTab({ adminUsername, adminPassword }) {
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const handleApprove = (requestId) => {
+    const tier = selectedTiers[requestId];
+    if (!tier) {
+      const ok = window.confirm('Nu ai ales un nivel. Continui cu "Clasa a IX-a"?');
+      if (!ok) return;
+    }
+    submitDecision(requestId, true);
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectModal) return;
+    submitDecision(rejectModal.requestId, false, rejectText.trim());
+    closeRejectModal();
   };
 
   return (
@@ -131,7 +146,7 @@ function DiplomeTab({ adminUsername, adminPassword }) {
 
                   <button
                     className="admin-btn-approve"
-                    onClick={() => handleDecision(req.id, true)}
+                    onClick={() => handleApprove(req.id)}
                     disabled={processingId === req.id}
                   >
                     {processingId === req.id ? 'Se procesează...' : 'Acordă'}
@@ -139,7 +154,7 @@ function DiplomeTab({ adminUsername, adminPassword }) {
 
                   <button
                     className="admin-btn-reject"
-                    onClick={() => handleDecision(req.id, false)}
+                    onClick={() => openRejectModal(req)}
                     disabled={processingId === req.id}
                   >
                     Respinge
@@ -175,6 +190,96 @@ function DiplomeTab({ adminUsername, adminPassword }) {
             </div>
           ))}
         </div>
+      )}
+
+      {rejectModal && createPortal(
+        <div
+          onClick={closeRejectModal}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#ffffff',
+              borderRadius: '20px',
+              padding: '32px',
+              maxWidth: '460px',
+              width: '100%',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+            }}
+          >
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{
+                fontSize: '11px', fontWeight: '700', color: '#94a3b8',
+                textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px'
+              }}>
+                Respinge cererea de diplomă
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>
+                {rejectModal.studentName}
+              </div>
+            </div>
+
+            <label style={{
+              display: 'block', fontSize: '0.85rem', fontWeight: 600,
+              color: '#374151', marginBottom: '8px'
+            }}>
+              Mesaj pentru elev (opțional)
+            </label>
+            <textarea
+              autoFocus
+              placeholder="Ex: Mai ai de terminat 2 lecții din clasa a X-a înainte să poți primi diploma."
+              value={rejectText}
+              onChange={(e) => setRejectText(e.target.value)}
+              style={{
+                width: '100%',
+                minHeight: '100px',
+                padding: '12px 14px',
+                borderRadius: '12px',
+                border: '1.5px solid #e2e8f0',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+                color: '#1e293b',
+                resize: 'vertical',
+                boxSizing: 'border-box',
+                marginBottom: '20px',
+                outline: 'none'
+              }}
+            />
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={closeRejectModal}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '10px',
+                  border: '1.5px solid #e2e8f0', background: '#fff',
+                  color: '#374151', fontWeight: '700', fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Anulează
+              </button>
+              <button
+                onClick={handleConfirmReject}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '10px',
+                  border: 'none', background: '#dc2626',
+                  color: '#fff', fontWeight: '700', fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Confirmă respingerea
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
