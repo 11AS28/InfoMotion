@@ -15,7 +15,7 @@ function DiplomeTab({ adminUsername, adminPassword }) {
   const [selectedTiers, setSelectedTiers] = useState({});
   const [processingId, setProcessingId] = useState(null);
 
-  const [rejectModal, setRejectModal] = useState(null); // { requestId, studentName }
+  const [rejectModal, setRejectModal] = useState(null);   
   const [rejectText, setRejectText] = useState('');
 
   const fetchRequests = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
 import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
@@ -91,6 +91,29 @@ function Arena({ datePreincarcate }) {
       const docRef = doc(db, 'dailyChallenges', dataAzi);
 
       try {
+        const existingSnap = await getDoc(docRef);
+
+        if (existingSnap.exists()) {
+          const d = existingSnap.data();
+          if (!isMounted) return;
+
+          setProblems({
+            easy: d.easy || problems.easy,
+            medium: d.medium || problems.medium,
+            hard: d.hard || problems.hard
+          });
+
+          const activeSolvers = d.solvers || [];
+          setSolvers(activeSolvers);
+
+          const badgeMap = {};
+          activeSolvers.forEach(s => {
+            badgeMap[s.uid] = s.problemeRezolvateCount || 0;
+          });
+          setUserBadgesMap(badgeMap);
+          return; 
+        }
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         const response = await fetch('https://codeforces.com/api/problemset.problems', { signal: controller.signal });
@@ -125,7 +148,7 @@ function Arena({ datePreincarcate }) {
           }
         }
       } catch (e) {
-        console.error("Avarie CF API:", e);
+        console.error("Avarie CF API / Firestore:", e);
       }
     };
 
