@@ -451,6 +451,21 @@
 }
 
 
+
+.view-performance-btn{
+  width: 100%;
+  padding: 10px;
+  background-color: #01696f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
 /* =========================================
    MEDIA QUERIES (RESPONSIVE)
    ========================================= */

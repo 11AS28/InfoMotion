@@ -9,6 +9,7 @@ import { FaFire, FaCheckCircle, FaLock } from "react-icons/fa";
 import { Coffee, Sparkles, PencilRuler, Flame, Crown, WandSparkles, Swords, HandFist, Leaf, GraduationCap, Star, UserRound, Coins } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import LanguageSelect from './LanguageSwitcher';
+import { useNavigate } from "react-router-dom";
 
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
@@ -36,7 +37,7 @@ function SidebarStats({ isOpen, onClose }) {
     title_god: { name: 'C++ Zeu', price: 800, color: '#e74c3c', bg: 'linear-gradient(135deg, #c0392b, #e74c3c)', desc: 'Stăpânul suprem al algoritmilor și pointerilor.' },
     title_noob: { name: 'Syntax Error', price: 150, color: '#95a5a6', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)', desc: 'Ironic și amuzant, perfect pentru momentele de bug-uri.' },
     title_grind: { name: 'No Sleep', price: 600, color: '#9b59b6', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)', desc: 'Dedicat programatorilor care codează până la răsărit.' },
-    title_jeanG: { name: 'Jean Gaoaza', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
+    title_jeanG: { name: 'Legendary Coder', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
   };
 
   useEffect(() => {
@@ -227,6 +228,9 @@ useEffect(() => {
     { id: 'b6', icon: <Crown size={16} color="#fff700" strokeWidth={2.5} />, nume: 'Arhitect Suprem', cerinta: 100, desc: 'Rezolvă 100 de probleme în Arenă' }
   ];
 
+
+  const navigate = useNavigate();
+
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
@@ -416,6 +420,13 @@ useEffect(() => {
                   <div className="progress-bar-fill" style={{ width: `${progresReal}%` }}></div>
                 </div>
               </div>
+
+              <button
+                className="view-performance-btn"
+                onClick={() => navigate("/performanta")}
+              >
+                Vezi Performanța Mea
+              </button>
 
               <div className="streak-section">
                 <span>Daily LogIn Streak</span>

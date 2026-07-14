@@ -26,6 +26,7 @@ import AdminUsers from './pages/AdminUsers';
 import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
 import EmailNotVerified from './pages/EmailNotVerified'; 
+import Performanta from './pages/performanta';
 
 
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -176,6 +177,17 @@ function App() {
               { <div>
                 <Nav />
                 <EmailNotVerified />
+                <Footer />
+              </div>
+              }
+            />
+
+            <Route
+              path="/performanta"
+              element={
+              <div>
+                <Nav />
+                <Performanta />
                 <Footer />
               </div>
               }
