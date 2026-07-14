@@ -78,7 +78,7 @@ app.post('/api/simulate', async (req, res) => {
         break;
       case 'strlen_dinamic':
       case 'strcpy_dinamic': {
-        const cuvant = inputData.map(ascii => String.fromCharCode(ascii)).join('');
+        const cuvant = array.map(ascii => String.fromCharCode(ascii)).join('');
         steps = await simulateStrlen(cuvant);
         break;
       }
