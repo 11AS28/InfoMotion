@@ -57,46 +57,54 @@ app.post('/api/security-log', (req, res) => {
 app.get('/api/admin/logs', (_req, res) => {
   return res.json({ logs: getLogs() });
 });
-
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithm, array } = req.body;
 
+    // 1. Validăm că am primit vectorul de intrare
     if (!array || !Array.isArray(array)) {
       return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
     }
+
+    // 2. Convertim toate elementele la numere ca să evităm bug-uri de comparare de string-uri (ex: "14" vs "8")
     const numericArray = array.map(Number);
     let steps = [];
 
     switch (algorithm) {
       case 'bubbleSort':
       case 'BubbleSortAnim':
-        steps = simulateBubbleSort(array);
+        steps = simulateBubbleSort(numericArray); // Folosește numericArray!
         break;
+
       case 'quick_sort_dinamic':
-        steps = simulateQuickSortJS(array);
+        steps = simulateQuickSortJS(numericArray); // Folosește numericArray!
         break;
+
       case 'strlen_dinamic':
       case 'strcpy_dinamic': {
+        // REZOLVAT: Acum mapăm direct din vectorul "array" primit de pe frontend
         const cuvant = array.map(ascii => String.fromCharCode(ascii)).join('');
         steps = await simulateStrlen(cuvant);
         break;
       }
+
       case 'cautare_binara_div_imp': {
-        const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : array[0];
-        steps = simulateCautareBinaraDivImpJS(array, targetCautat);
+        const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : numericArray[0];
+        steps = simulateCautareBinaraDivImpJS(numericArray, targetCautat);
         break;
       }
+
       case 'InterschimbareSort':
         steps = simulateExchangeSort(numericArray);
         break;
+
       case 'SelectieSort':
         steps = simulateSelectionSort(numericArray);
         break;
+
       case 'InserctieSort':
         steps = simulateInsertionSort(numericArray);
         break;
-
 
       default:
         return res.status(400).json({ error: 'Algoritm neimplementat' });
@@ -108,6 +116,8 @@ app.post('/api/simulate', async (req, res) => {
     return res.status(500).json({ error: 'Eroare internă de server' });
   }
 });
+
+
 
 app.post('/api/run-cpp', async (req, res) => {
   const { code, input, username } = req.body;
