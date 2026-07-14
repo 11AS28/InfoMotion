@@ -6,7 +6,7 @@ import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy } from 'lucide-react';
+import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
 import parse from 'html-react-parser';
 import WikiPreviewLink from '../components/WikiPreviewLink';
@@ -41,7 +41,7 @@ const CStringCompareReverseAnim = React.lazy(() => import('../components/animati
 
 function LessonPage() {
   const { idLectie } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, esteLectieSalvata, toggleBookmarkLectie } = useAuth();
 
   const [lectie, setLectie] = useState(null);
   const [toateLectiileDinClasa, setToateLectiileDinClasa] = useState([]);
@@ -55,10 +55,6 @@ function LessonPage() {
   const [loadingAnim, setLoadingAnim] = useState(false);
 
   usePageTitle(lectie ? `InfoMotion - ${lectie.titlu}` : 'InfoMotion - Lecție');
-
-
-
-
 
   const algoritmiBackend = [
     "bubbleSort",
@@ -78,6 +74,14 @@ function LessonPage() {
     } catch (err) {
       console.error("Eroare la copierea codului: ", err);
     }
+  };
+
+  const handleToggleBookmark = () => {
+    if (!currentUser) {
+      alert("Trebuie să fii logat ca să salvezi lecții!");
+      return;
+    }
+    toggleBookmarkLectie(idLectie);
   };
 
   const proceseazaTeorie = (html) => {
@@ -280,7 +284,30 @@ function LessonPage() {
           <Link to="/lectii" className="back-link">← Înapoi la Module</Link>
           <header className="lesson-header">
             <div className="lesson-badge">{lectie.clasa?.toUpperCase()}</div>
-            <h1>{lectie.titlu}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              <h1 style={{ margin: 0 }}>{lectie.titlu}</h1>
+              <button
+                onClick={handleToggleBookmark}
+                title={esteLectieSalvata(idLectie) ? "Elimină din bookmark-uri" : "Salvează pentru mai târziu"}
+                style={{
+                  background: 'rgba(31, 224, 249, 0.08)',
+                  border: '1px solid rgba(31, 224, 249, 0.3)',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Star
+                  size={24}
+                  strokeWidth={2}
+                  color="#1fe0f9"
+                  fill={esteLectieSalvata(idLectie) ? "#1fe0f9" : "none"}
+                />
+              </button>
+            </div>
             <p className="lesson-author">
               Lecție adăugată de <span className="lesson-author-name">{lectie.adaugatDe || "Echipa InfoMotion"}</span>
             </p>

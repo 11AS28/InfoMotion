@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import '../pages_css/Lectii.css';
-import { Search } from 'lucide-react';
+import { Search, Star } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
+import { useAuth } from '../context/AuthContext';
 
 function Lectii() {
+  const { currentUser, esteLectieSalvata, toggleBookmarkLectie } = useAuth();
+
   const [lessonsData, setLessonsData] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,6 +70,16 @@ function Lectii() {
     return () => { emontata = false; };
   }, []);
 
+  const handleToggleBookmark = (e, idLectie) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!currentUser) {
+      alert("Trebuie să fii logat ca să salvezi lecții!");
+      return;
+    }
+    toggleBookmarkLectie(idLectie);
+  };
+
   const filteredLessons = lessonsData
     .filter((lectie) => {
       const matchesSearch = 
@@ -76,6 +89,8 @@ function Lectii() {
       let matchesFilter = false;
       if (activeFilter === 'toate') {
         matchesFilter = true;
+      } else if (activeFilter === 'salvate') {
+        matchesFilter = esteLectieSalvata(lectie.id);
       } else if (activeFilter === 'olimpici') {
         matchesFilter = lectie.esteOlimpiada;
       } else if (activeFilter === 'concepte') {
@@ -123,13 +138,14 @@ function Lectii() {
     if (filter === 'toate') return 'Toate';
     if (filter === 'olimpici') return 'Olimpici';
     if (filter === 'concepte') return 'Concepte'; 
+    if (filter === 'salvate') return 'Salvate';
     return `Clasa ${filter.split('-')[1]}`;
   };
 
   const getDynamicSubtitle = () => {
     switch (activeFilter) {
      case 'toate':
-        return 'Salut! 👋 Bine ai venit în universul InfoMotion. Fie că ești la început de drum în C++ sau te pregătești pentru performanță, selectează o categorie de mai jos și hai să explorăm împreună algoritmii prin animații interactive.';
+        return 'Salut! Bine ai venit în universul InfoMotion. Fie că ești la început de drum în C++ sau te pregătești pentru performanță, selectează o categorie de mai jos și hai să explorăm împreună algoritmii prin animații interactive.';
       case 'clasa-9':
         return 'Fundamentele programării în C++. De la elemente de bază, structuri repetitive și decizionale, până la stăpânirea vectorilor.';
       case 'clasa-10':
@@ -140,6 +156,8 @@ function Lectii() {
         return 'Explorează algoritmi și tehnici specifice competițiilor. Te vor ajuta nu doar să obții punctaje maxime în concursuri, ci și să îți dezvolți o gândire analitică solidă, esențială pentru a stăpâni informatica cu adevărat.';
       case 'concepte':
         return 'Sintaxă, structuri de date și paradigme esențiale în C++. Baza de care ai nevoie pentru a scrie un cod curat, eficient și optimizat, indiferent de problema pe care încerci să o rezolvi.';
+      case 'salvate':
+        return 'Aici găsești toate lecțiile pe care le-ai salvat pentru mai târziu. Perfect pentru recapitulare rapidă înainte de un test sau o olimpiadă.';
       default:
         return 'Alege o lecție și descoperă algoritmii prin animații interactive.';
     }
@@ -168,7 +186,7 @@ function Lectii() {
           </div>
           
           <div className="class-filters">
-            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte'].map((f) => (
+            {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte', 'salvate'].map((f) => (
               <button 
                 key={f}
                 className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 
@@ -188,7 +206,39 @@ function Lectii() {
         ) : filteredLessons.length > 0 ? (
           <div className="lectii-grid">
             {filteredLessons.map((lectie) => (
-              <Link to={`/lectie/${lectie.id}`} key={lectie.id} className="lectie-card">
+              <Link
+                to={`/lectie/${lectie.id}`}
+                key={lectie.id}
+                className="lectie-card"
+                style={{ position: 'relative' }}
+              >
+                <button
+                  className="bookmark-star-btn"
+                  onClick={(e) => handleToggleBookmark(e, lectie.id)}
+                  title={esteLectieSalvata(lectie.id) ? "Elimină din bookmark-uri" : "Salvează pentru mai târziu"}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: 'rgba(0,0,0,0.35)',
+                    border: '1px solid rgba(31, 224, 249, 0.25)',
+                    borderRadius: '50%',
+                    padding: '6px',
+                    cursor: 'pointer',
+                    zIndex: 5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Star
+                    size={18}
+                    strokeWidth={2}
+                    color="#1fe0f9"
+                    fill={esteLectieSalvata(lectie.id) ? "#1fe0f9" : "none"}
+                  />
+                </button>
+
                 <div className={`lectie-badge ${lectie.esteOlimpiada ? 'badge-olimpiada' : lectie.esteConcept ? 'badge-concepte' : ''}`}>
                   {lectie.esteOlimpiada 
                     ? 'OLIMPIADĂ' 
@@ -208,8 +258,16 @@ function Lectii() {
           </div>
         ) : (
           <div className="no-results">
-            <h3>Nu am găsit nicio lecție.</h3>
-            <p>Încearcă să folosești alte cuvinte cheie.</p>
+            <h3>
+              {activeFilter === 'salvate'
+                ? "Nu ai salvat încă nicio lecție."
+                : "Nu am găsit nicio lecție."}
+            </h3>
+            <p>
+              {activeFilter === 'salvate'
+                ? "Apasă pe steluță pe orice lecție ca să o adaugi aici."
+                : "Încearcă să folosești alte cuvinte cheie."}
+            </p>
             <button className="reset-btn" onClick={() => { setSearchTerm(''); setActiveFilter('toate'); }}>
               Resetează filtrele
             </button>

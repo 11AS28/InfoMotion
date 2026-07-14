@@ -23,6 +23,7 @@ import {
   getDocs,
   increment,
   arrayUnion,
+  arrayRemove,
   addDoc,
   deleteDoc,
   serverTimestamp
@@ -355,6 +356,28 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const esteLectieSalvata = (idLectie) => {
+    if (!currentUser || !currentUser.lectiiSalvate) return false;
+    return currentUser.lectiiSalvate.includes(idLectie);
+  };
+
+  const toggleBookmarkLectie = async (idLectie) => {
+    if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
+
+    const esteSalvata = esteLectieSalvata(idLectie);
+    const userRef = doc(db, 'users', currentUser.uid);
+
+    try {
+      await updateDoc(userRef, {
+        lectiiSalvate: esteSalvata ? arrayRemove(idLectie) : arrayUnion(idLectie)
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Eroare la salvarea bookmark-ului:", error);
+      return { success: false, error: "Nu s-a putut salva bookmark-ul." };
+    }
+  };
+
   const cumparaStreakFreeze = async (cantitate, pretFreeze) => {
     if (!currentUser) return { success: false, error: "Trebuie să fii logat!" };
 
@@ -599,12 +622,15 @@ export function AuthProvider({ children }) {
     try {
       const response = await fetch(`https://codeforces.com/api/user.status?handle=${currentUser.codeforcesHandle}&from=1&count=1000`);
       const data = await response.json();
+
       if (data.status === "OK") {
         return data.result.some(submission => {
           const p = submission.problem;
           if (!p.contestId || !p.index) return false;
           return `${p.contestId}${p.index}`.toUpperCase() === targetId && submission.verdict === "OK";
         });
+      } else {
+        console.error("Codeforces API a răspuns cu eroare:", data.comment || data);
       }
     } catch (error) {
       console.error("Eroare la API-ul Codeforces:", error);
@@ -665,7 +691,7 @@ export function AuthProvider({ children }) {
 
     try {
       const token = await auth.currentUser.getIdToken(true);
-      
+
       const response = await fetch('/api/admin', {
         method: 'POST',
         headers: {
@@ -722,7 +748,9 @@ export function AuthProvider({ children }) {
     cumparaTitlu,
     echipeazaTitlu,
     revendicaDailyReward,
-    trimiteNotificareCuLimita
+    trimiteNotificareCuLimita,
+    esteLectieSalvata,
+    toggleBookmarkLectie
   };
 
   return (
