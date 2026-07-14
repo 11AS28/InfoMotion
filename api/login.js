@@ -34,7 +34,8 @@ function safeCompare(a, b) {
 
 function generateSessionToken(username) {
   const expiry = Date.now() + TOKEN_VALID_HOURS * 60 * 60 * 1000;
-  const payload = `${username}.${expiry}`;
+  
+  const payload = `${username}|${expiry}`;
   const payloadEncoded = Buffer.from(payload).toString('base64url');
   const signature = crypto
     .createHmac('sha256', process.env.SESSION_SECRET)

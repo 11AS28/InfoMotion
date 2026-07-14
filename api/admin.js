@@ -31,21 +31,27 @@ function verifySessionToken(username, sessionToken) {
     .update(payloadEncoded)
     .digest('base64url');
 
-  const sigBufA = Buffer.from(signature);
-  const sigBufB = Buffer.from(expectedSignature);
-  if (sigBufA.length !== sigBufB.length) return false;
-  if (!crypto.timingSafeEqual(sigBufA, sigBufB)) return false;
+  try {
+    const sigBufA = Buffer.from(signature);
+    const sigBufB = Buffer.from(expectedSignature);
+    if (sigBufA.length !== sigBufB.length) return false;
+    if (!crypto.timingSafeEqual(sigBufA, sigBufB)) return false;
+  } catch (e) {
+    return false;
+  }
 
   const payload = Buffer.from(payloadEncoded, 'base64url').toString();
-  const [tokenUsername, expiryStr] = payload.split('.');
+  const partsPayload = payload.split('|');
+  if (partsPayload.length !== 2) return false;
+
+  const [tokenUsername, expiryStr] = partsPayload;
   const expiry = parseInt(expiryStr, 10);
 
   if (tokenUsername !== username) return false;
-  if (!expiry || Date.now() > expiry) return false;
+  if (!expiry || isNaN(expiry) || Date.now() > expiry) return false;
 
   return true;
 }
-
 export default async function handler(req, res) {
   try {
     db = getFirestoreDb();
