@@ -364,6 +364,15 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, users });
       }
 
+      case 'check_server_time': {
+        return res.status(200).json({
+          success: true,
+          serverTimeISO: new Date().toISOString(),
+          serverTimestamp: Date.now(),
+          clientTimeISOFromRequest: data?.clientTime || 'N/A'
+        });
+      }
+
       case 'broadcast_announcement': {
         const { type, userId, text } = data;
 
