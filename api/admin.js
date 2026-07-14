@@ -69,7 +69,7 @@ export default async function handler(req, res) {
     'Emi': process.env.ADMIN_4_PASS
   };
 
-  const ACTIUNI_FARA_SESIUNE_ADMIN = ['claim_daily_reward', 'acorda_puncte'];
+  const ACTIUNI_FARA_SESIUNE_ADMIN = ['claim_daily_reward', 'acorda_puncte', 'check_server_time'];
 
   if (!ACTIUNI_FARA_SESIUNE_ADMIN.includes(action)) {
     if (!admins[username] || !verifySessionToken(username, sessionToken)) {
