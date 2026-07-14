@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
@@ -109,16 +109,22 @@ function LessonPage() {
       }
 
       try {
+        const VERSIUNE_CURENTA = "v2_simulari_noi";
+        const cacheVersiuneSalvata = localStorage.getItem('infoMotion_cache_version');
+
+        if (cacheVersiuneSalvata !== VERSIUNE_CURENTA) {
+          localStorage.removeItem('infoMotion_lectii');
+          localStorage.setItem('infoMotion_cache_version', VERSIUNE_CURENTA);
+        }
+
         const cachedLessonsRaw = localStorage.getItem('infoMotion_lectii');
 
         if (cachedLessonsRaw) {
           const toateLectiile = JSON.parse(cachedLessonsRaw);
-
           const lectieGasita = toateLectiile.find(l => l.id === idLectie);
 
           if (lectieGasita) {
             if (isMounted) setLectie(lectieGasita);
-
             const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
             if (isMounted) setToateLectiileDinClasa(filtrateLocal);
           } else {
@@ -254,15 +260,9 @@ function LessonPage() {
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
-
   };
 
-
-
-
   return (
-
-
     <div className="page-wrapper">
       <br />
       <div className="lesson-main-content-flex">
