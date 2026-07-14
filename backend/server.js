@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+// Importuri simulatoare vechi și noi
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
@@ -10,12 +11,14 @@ const { simulateExchangeSort } = require('./simulators/exchangeSortSim');
 const { simulateSelectionSort } = require('./simulators/selectionSortSim');
 const { simulateInsertionSort } = require('./simulators/insertionSortSim');
 
-
+// Logică Sandbox Docker C++ și Logger de pe Server
 const { submitCppJob, getQueueStats } = require('./jobQueue');
 const { addLog, getLogs } = require('./logger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Middleware agresiv de CORS
 app.use(cors({
   origin: [
     'https://infomotion.space',
@@ -28,6 +31,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// --- ENDPOINT-URI LOGGING & SECURITATE ---
 app.post('/api/log-event', (req, res) => {
   const { type, actionCode, message } = req.body;
 
@@ -57,33 +61,35 @@ app.post('/api/security-log', (req, res) => {
 app.get('/api/admin/logs', (_req, res) => {
   return res.json({ logs: getLogs() });
 });
+
+// --- ENDPOINT SIMULĂRI (Hibrid - acceptă și formatul nou și cel vechi) ---
 app.post('/api/simulate', async (req, res) => {
   try {
-    const { algorithm, array } = req.body;
+    const { algorithm, array, algorithmType, inputData } = req.body;
 
-    // 1. Validăm că am primit vectorul de intrare
-    if (!array || !Array.isArray(array)) {
+    const finalAlgorithm = algorithm || algorithmType;
+    const finalArray = array || inputData;
+
+    if (!finalArray || !Array.isArray(finalArray)) {
       return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
     }
 
-    // 2. Convertim toate elementele la numere ca să evităm bug-uri de comparare de string-uri (ex: "14" vs "8")
-    const numericArray = array.map(Number);
+    const numericArray = finalArray.map(Number);
     let steps = [];
 
-    switch (algorithm) {
+    switch (finalAlgorithm) {
       case 'bubbleSort':
       case 'BubbleSortAnim':
-        steps = simulateBubbleSort(numericArray); // Folosește numericArray!
+        steps = simulateBubbleSort(numericArray);
         break;
 
       case 'quick_sort_dinamic':
-        steps = simulateQuickSortJS(numericArray); // Folosește numericArray!
+        steps = simulateQuickSortJS(numericArray);
         break;
 
       case 'strlen_dinamic':
       case 'strcpy_dinamic': {
-        // REZOLVAT: Acum mapăm direct din vectorul "array" primit de pe frontend
-        const cuvant = array.map(ascii => String.fromCharCode(ascii)).join('');
+        const cuvant = finalArray.map(ascii => String.fromCharCode(ascii)).join('');
         steps = await simulateStrlen(cuvant);
         break;
       }
@@ -117,8 +123,7 @@ app.post('/api/simulate', async (req, res) => {
   }
 });
 
-
-
+// --- ENDPOINT EXECUTARE COD C++ (Păstrat intact de pe server) ---
 app.post('/api/run-cpp', async (req, res) => {
   const { code, input, username } = req.body;
 
