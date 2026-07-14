@@ -6,6 +6,10 @@ const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
 const { simulateCautareBinaraDivImpJS } = require('./simulators/cautareBinaraDivImpSim');
+const { simulateExchangeSort } = require('./simulators/exchangeSortSim');
+const { simulateSelectionSort } = require('./simulators/selectionSortSim');
+const { simulateInsertionSort } = require('./simulators/insertionSortSim');
+
 
 const { submitCppJob, getQueueStats } = require('./jobQueue');
 const { addLog, getLogs } = require('./logger');
@@ -56,21 +60,21 @@ app.get('/api/admin/logs', (_req, res) => {
 
 app.post('/api/simulate', async (req, res) => {
   try {
-    const { algorithmType, inputData } = req.body;
+    const { algorithm, array } = req.body;
 
-    if (!inputData || !Array.isArray(inputData)) {
+    if (!array || !Array.isArray(array)) {
       return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
     }
-
+    const numericArray = array.map(Number);
     let steps = [];
 
-    switch (algorithmType) {
+    switch (algorithm) {
       case 'bubbleSort':
       case 'BubbleSortAnim':
-        steps = simulateBubbleSort(inputData);
+        steps = simulateBubbleSort(array);
         break;
       case 'quick_sort_dinamic':
-        steps = simulateQuickSortJS(inputData);
+        steps = simulateQuickSortJS(array);
         break;
       case 'strlen_dinamic':
       case 'strcpy_dinamic': {
@@ -79,10 +83,21 @@ app.post('/api/simulate', async (req, res) => {
         break;
       }
       case 'cautare_binara_div_imp': {
-        const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : inputData[0];
-        steps = simulateCautareBinaraDivImpJS(inputData, targetCautat);
+        const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : array[0];
+        steps = simulateCautareBinaraDivImpJS(array, targetCautat);
         break;
       }
+      case 'InterschimbareSort':
+        steps = simulateExchangeSort(numericArray);
+        break;
+      case 'SelectieSort':
+        steps = simulateSelectionSort(numericArray);
+        break;
+      case 'InserctieSort':
+        steps = simulateInsertionSort(numericArray);
+        break;
+
+
       default:
         return res.status(400).json({ error: 'Algoritm neimplementat' });
     }

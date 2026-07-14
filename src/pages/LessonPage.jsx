@@ -62,7 +62,10 @@ function LessonPage() {
     "strlen_dinamic",
     "strcpy_dinamic",
     "quick_sort_dinamic",
-    "cautare_binara_div_imp"
+    "cautare_binara_div_imp",
+    "SelectieSort",       
+    "InterschimbareSort", 
+    "InserctieSort"
   ];
 
   const handleCopyCode = async () => {
@@ -178,8 +181,8 @@ function LessonPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          algorithmType: lectie.animatie,
-          inputData: parsedData,
+          algorithm: lectie.animatie,
+          array: parsedData,
           target: targetVal
         })
       });
