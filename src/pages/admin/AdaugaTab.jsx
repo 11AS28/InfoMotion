@@ -5,18 +5,18 @@ import Editor, {
 } from 'react-simple-wysiwyg';
 import { toast } from 'sonner';
 
- const emptyQuiz = () =>
+const emptyQuiz = () =>
   Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 }));
 
 export default function AdaugaTab({
   isEditing,
   propunereInCurs,
   propuneri = [],
-  initialData,        
-  onSuccess,          
+  initialData,
+  onSuccess,
   onCancel,
-  adminPassword,      
-  adminUsername,      
+  adminPassword,
+  adminUsername,
 }) {
   const d = initialData || {};
 
@@ -50,7 +50,7 @@ export default function AdaugaTab({
     setQuiz(q);
   };
 
-   const sendUserNotification = async (userId, type, text) => {
+  const sendUserNotification = async (userId, type, text) => {
     if (!userId) return;
     try {
       await fetch('/api/admin', {
@@ -58,7 +58,7 @@ export default function AdaugaTab({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'send_notification',
-          username: adminUsername, 
+          username: adminUsername,
           sessionToken: adminPassword,
           data: { userId, type, text }
         })
@@ -115,9 +115,48 @@ export default function AdaugaTab({
         throw new Error((await response.json()).error || 'Eroare necunoscută la API.');
       }
 
-       localStorage.removeItem("infoMotion_lectii");
+      try {
+        const cachedLessonsRaw = localStorage.getItem('infomotion_lessons_cache_v3');
+        
+        if (cachedLessonsRaw) {
+          const cachedLessons = JSON.parse(cachedLessonsRaw);
 
-       if (propunereInCurs && propuneri.length > 0) {
+          let extrasClasa = 9;
+          if (clasaFinala) {
+            const digits = clasaFinala.toString().match(/\d+/);
+            if (digits) {
+              extrasClasa = parseInt(digits[0], 10);
+            }
+          }
+
+          const nouaLectieCache = {
+            id: fId.trim(),
+            ...lectieData,
+            clasaNumerica: extrasClasa,
+            esteOlimpiada: clasaFinala === 'olimpici',
+            esteConcept: clasaFinala === 'concepte'
+          };
+
+          let updatedLessons = [];
+
+          if (isEditing) {
+            updatedLessons = cachedLessons.map((lectie) => 
+              lectie.id === fId.trim() ? nouaLectieCache : lectie
+            );
+          } else {
+            updatedLessons = [nouaLectieCache, ...cachedLessons];
+          }
+
+          localStorage.setItem('infomotion_lessons_cache_v3', JSON.stringify(updatedLessons));
+        } else {
+          localStorage.removeItem('infomotion_lessons_cache_v3');
+        }
+      } catch (cacheError) {
+        console.error("Eroare la actualizarea silențioasă a cache-ului local:", cacheError);
+        localStorage.removeItem('infomotion_lessons_cache_v3');
+      }
+
+      if (propunereInCurs && propuneri.length > 0) {
         const propGasita = propuneri.find((p) => p.id === propunereInCurs);
         if (propGasita?.autorId) {
           await sendUserNotification(propGasita.autorId, 'lectie_aprobata',
@@ -252,7 +291,7 @@ export default function AdaugaTab({
           />
         </div>
 
-         {!esteConcept && (
+        {!esteConcept && (
           <>
             {/* Pbinfo */}
             <div className="admin-field" style={{ marginTop: '10px' }}>
