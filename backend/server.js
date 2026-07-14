@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-// Importuri simulatoare vechi și noi
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
 const { simulateQuickSortJS } = require('./simulators/quickSortSim');
@@ -11,14 +10,12 @@ const { simulateExchangeSort } = require('./simulators/exchangeSortSim');
 const { simulateSelectionSort } = require('./simulators/selectionSortSim');
 const { simulateInsertionSort } = require('./simulators/insertionSortSim');
 
-// Logică Sandbox Docker C++ și Logger de pe Server
 const { submitCppJob, getQueueStats } = require('./jobQueue');
 const { addLog, getLogs } = require('./logger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware agresiv de CORS
 app.use(cors({
   origin: [
     'https://infomotion.space',
@@ -31,7 +28,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// --- ENDPOINT-URI LOGGING & SECURITATE ---
 app.post('/api/log-event', (req, res) => {
   const { type, actionCode, message } = req.body;
 
@@ -62,7 +58,6 @@ app.get('/api/admin/logs', (_req, res) => {
   return res.json({ logs: getLogs() });
 });
 
-// --- ENDPOINT SIMULĂRI (Hibrid - acceptă și formatul nou și cel vechi) ---
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithm, array, algorithmType, inputData } = req.body;
@@ -123,7 +118,6 @@ app.post('/api/simulate', async (req, res) => {
   }
 });
 
-// --- ENDPOINT EXECUTARE COD C++ (Păstrat intact de pe server) ---
 app.post('/api/run-cpp', async (req, res) => {
   const { code, input, username } = req.body;
 
