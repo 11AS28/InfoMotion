@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import '../components_css/arena.css';
-import { Rocket, TriangleAlert, Code2, CheckCircle2 } from 'lucide-react';
+import { Rocket, TriangleAlert, Code2, CheckCircle2, Flame, Zap, Trophy } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -12,17 +12,17 @@ function Arena({ datePreincarcate }) {
   const { currentUser, acordaPuncte, verificaProblemaCodeforces } = useAuth();
   const navigate = useNavigate();
   const { trigger } = useWebHaptics();
-  
+
   const [problems, setProblems] = useState({
     easy: { titlu: "Watermelon (Rating: 800)", link: "https://codeforces.com/problemset/problem/4/A", idCF: "4A" },
     medium: { titlu: "Taxi (Rating: 1100)", link: "https://codeforces.com/problemset/problem/158/B", idCF: "158B" },
     hard: { titlu: "Registration System (Rating: 1300)", link: "https://codeforces.com/problemset/problem/4/C", idCF: "4C" }
   });
-  
+
   const [solvers, setSolvers] = useState([]);
-  const [userBadgesMap, setUserBadgesMap] = useState({}); 
-  const [activeTab, setActiveTab] = useState('easy'); 
-  const [isChecking, setIsChecking] = useState(false); 
+  const [userBadgesMap, setUserBadgesMap] = useState({});
+  const [activeTab, setActiveTab] = useState('easy');
+  const [isChecking, setIsChecking] = useState(false);
 
   const [customProblemId, setCustomProblemId] = useState('');
   const [isCheckingCustom, setIsCheckingCustom] = useState(false);
@@ -111,7 +111,7 @@ function Arena({ datePreincarcate }) {
             badgeMap[s.uid] = s.problemeRezolvateCount || 0;
           });
           setUserBadgesMap(badgeMap);
-          return; 
+          return;
         }
 
         const controller = new AbortController();
@@ -121,7 +121,7 @@ function Arena({ datePreincarcate }) {
 
         if (!response.ok) return;
         const data = await response.json();
-        
+
         if (data.status === 'OK' && data.result && data.result.problems) {
           const allProblems = data.result.problems;
           const easyPool = allProblems.filter(p => p.rating >= 800 && p.rating <= 1100);
@@ -132,7 +132,7 @@ function Arena({ datePreincarcate }) {
             const pEasy = easyPool[Math.floor(Math.random() * easyPool.length)];
             const pMed = medPool[Math.floor(Math.random() * medPool.length)];
             const pHard = hardPool[Math.floor(Math.random() * hardPool.length)];
-            
+
             const newChallengePackage = {
               data: dataAzi,
               solvers: [],
@@ -140,7 +140,7 @@ function Arena({ datePreincarcate }) {
               medium: { titlu: `${pMed.name} (Rating: ${pMed.rating || 1300})`, link: `https://codeforces.com/problemset/problem/${pMed.contestId}/${pMed.index}`, idCF: `${pMed.contestId}${pMed.index}` },
               hard: { titlu: `${pHard.name} (Rating: ${pHard.rating || 1600})`, link: `https://codeforces.com/problemset/problem/${pHard.contestId}/${pHard.index}`, idCF: `${pHard.contestId}${pHard.index}` }
             };
-            
+
             await setDoc(docRef, newChallengePackage);
             if (!isMounted) return;
             setProblems({ easy: newChallengePackage.easy, medium: newChallengePackage.medium, hard: newChallengePackage.hard });
@@ -189,23 +189,23 @@ function Arena({ datePreincarcate }) {
           else if (dificultateTinta === 'medium') puncteDeAcordat = esteInPrimii3 ? 50 : 40;
           else if (dificultateTinta === 'hard') puncteDeAcordat = esteInPrimii3 ? 65 : 50;
           await acordaPuncte(puncteDeAcordat);
-          triggerSuccessHaptic(); 
+          triggerSuccessHaptic();
           toast.success(`Felicitări! Ai primit +${puncteDeAcordat} XP!`, { id: idValidare });
         } else {
-          triggerSuccessHaptic(); 
+          triggerSuccessHaptic();
           toast.info("Antrenament privat validat!", { id: idValidare });
         }
-        
+
         const numarCurentProbleme = (currentUser.problemeRezolvateCount || 0) + 1;
         await updateDoc(doc(db, 'users', currentUser.uid), { problemeRezolvateCount: increment(1) });
 
-        const nouSolver = { 
-          nume: currentUser.nume || "Utilizator", 
-          uid: currentUser.uid, 
+        const nouSolver = {
+          nume: currentUser.nume || "Utilizator",
+          uid: currentUser.uid,
           dificultate: dificultateTinta,
           aPrimitPuncte: !hasAnyPointsToday,
-          problemeRezolvateCount: numarCurentProbleme, 
-          ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) 
+          problemeRezolvateCount: numarCurentProbleme,
+          ora: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })
         };
 
         await updateDoc(doc(db, 'dailyChallenges', dataAzi), { solvers: arrayUnion(nouSolver) });
@@ -258,7 +258,7 @@ function Arena({ datePreincarcate }) {
           problemeRezolvateCount: increment(1)
         });
 
-        triggerSuccessHaptic(); 
+        triggerSuccessHaptic();
         toast.success(`Validat! +${xpDeOferit} XP adăugați pentru problema ${idCurat}.`, { id: idToast });
         setCustomProblemId('');
       } else {
@@ -279,15 +279,16 @@ function Arena({ datePreincarcate }) {
   const currentSolvers = solversFiltrati.slice(idxFirst, idxLast);
   const totalPages = Math.ceil(solversFiltrati.length / solversPerPage);
   const utilizatorulAAlesPuncteAzi = solvers.some(s => s.uid === currentUser?.uid && s.aPrimitPuncte === true);
-  
+
   return (
     usePageTitle("InfoMotion - Arena"),
     <div className="arena-wrapper">
       <div className="arena-container">
         <h2><Rocket size={50} color="#832211" strokeWidth={0.75} /> Arena Problemelor</h2>
+        
 
         <div className="arena-mobile-tabs">
-          <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
+          <button className={activeTab === 'easy' ? 'active' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Usor</button>
           <button className={activeTab === 'medium' ? 'active' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
           <button className={activeTab === 'hard' ? 'active' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>Grea</button>
         </div>
@@ -295,7 +296,7 @@ function Arena({ datePreincarcate }) {
         <div className="arena-grid-layout">
           <div className={`arena-custom-card card-easy ${activeTab === 'easy' ? 'mobile-active' : ''}`}>
             <div className="card-top">
-              <span className="card-tag tag-easy"> Easy</span>
+              <span className="card-tag tag-easy"> Usoara</span>
               <h3>{problems.easy.titlu}</h3>
               <p className="card-xp">20 XP | 40 XP în primii 3</p>
             </div>
@@ -306,8 +307,8 @@ function Arena({ datePreincarcate }) {
               </button>
             </div>
           </div>
-          
-          
+
+
           <div className={`arena-custom-card card-medium ${activeTab === 'medium' ? 'mobile-active' : ''}`}>
             <div className="card-top">
               <span className="card-tag tag-medium"> Medie</span>
@@ -339,7 +340,7 @@ function Arena({ datePreincarcate }) {
 
         {utilizatorulAAlesPuncteAzi && (
           <p className="arena-warning-text">
-            <TriangleAlert size={30} color="#e3ad16" strokeWidth={1} /> Ai încasat deja XP-ul pe azi. Restul problemelor se validează ca antrenament (0 XP).
+            Ai încasat deja XP-ul pe azi. Restul problemelor se validează ca antrenament (0 XP).
           </p>
         )}
 
@@ -361,11 +362,11 @@ function Arena({ datePreincarcate }) {
               <h3>Verifică orice problemă Codeforces</h3>
             </div>
             <p>Ai rezolvat o problemă care nu se află printre cele zilnice? Bagă ID-ul ei mai jos ca să îți iei punctele.</p>
-            
+
             <div className="custom-input-group">
-              <input 
-                type="text" 
-                placeholder="Ex: 4A, 158B, 122A..." 
+              <input
+                type="text"
+                placeholder="Ex: 4A, 158B, 122A..."
                 value={customProblemId}
                 onChange={(e) => setCustomProblemId(e.target.value)}
                 disabled={isCheckingCustom}
@@ -382,12 +383,12 @@ function Arena({ datePreincarcate }) {
           <div className="solvers-list-header">
             <h3>Top Solveri - {activeTab === 'easy' ? " Easy" : activeTab === 'medium' ? " Medie" : " Grea"}</h3>
             <div className="desktop-rank-switch">
-              <button className={activeTab === 'easy' ? 'active-mini' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Easy</button>
+              <button className={activeTab === 'easy' ? 'active-mini' : ''} onClick={() => { setActiveTab('easy'); setCurrentPage(1); }}>Usoara</button>
               <button className={activeTab === 'medium' ? 'active-mini' : ''} onClick={() => { setActiveTab('medium'); setCurrentPage(1); }}>Medie</button>
               <button className={activeTab === 'hard' ? 'active-mini' : ''} onClick={() => { setActiveTab('hard'); setCurrentPage(1); }}>Grea</button>
             </div>
           </div>
-          
+
           {solversFiltrati.length > 0 ? (
             <>
               {currentSolvers.map((s, idx) => {
@@ -406,7 +407,7 @@ function Arena({ datePreincarcate }) {
                   </div>
                 );
               })}
-              
+
               {totalPages > 1 && (
                 <div className="pagination-controls">
                   <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Înapoi</button>
