@@ -8,6 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
+import GraphVisualizer from '../components/GraphVisualizer';
 import parse from 'html-react-parser';
 import WikiPreviewLink from '../components/WikiPreviewLink';
 import usePageTitle from '../hooks/usePageTitle';
@@ -63,9 +64,11 @@ function LessonPage() {
     "strcpy_dinamic",
     "quick_sort_dinamic",
     "cautare_binara_div_imp",
-    "SelectieSort",       
-    "InterschimbareSort", 
-    "InserctieSort"
+    "SelectieSort",
+    "InterschimbareSort",
+    "InserctieSort",
+    "fibonacci_recursiv",
+    "bfs_dinamic"
   ];
 
   const handleCopyCode = async () => {
@@ -158,6 +161,47 @@ function LessonPage() {
 
     setLoadingAnim(true);
     try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+      if (lectie.animatie === "bfs_dinamic") {
+        const muchii = customInput
+          .split(',')
+          .map(pereche => pereche.trim().split('-').map(s => s.trim()))
+          .filter(pereche => pereche.length === 2 && pereche[0] && pereche[1]);
+
+        if (muchii.length === 0) {
+          setLoadingAnim(false);
+          return alert("Formatul muchiilor este invalid! Ex: 1-2, 1-3, 2-4");
+        }
+
+        const startInput = document.getElementById("start-node-input");
+        const startNode = startInput ? startInput.value.trim() : null;
+
+        if (!startNode) {
+          setLoadingAnim(false);
+          return alert("Te rog introdu nodul de start!");
+        }
+
+        const response = await fetch(`${baseUrl}/api/simulate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            algorithm: 'bfs_dinamic',
+            edges: muchii,
+            startNode: startNode
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.steps) {
+          setAnimationSteps(data.steps);
+        } else {
+          alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+        }
+        return;
+      }
+
       const esteLectieSiruri = lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic";
       let parsedData;
 
@@ -181,7 +225,6 @@ function LessonPage() {
         targetVal = targetInput ? parseInt(targetInput.value) : null;
         if (isNaN(targetVal)) return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
       }
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
       const response = await fetch(`${baseUrl}/api/simulate`, {
         method: 'POST',
@@ -349,6 +392,10 @@ function LessonPage() {
                         <label className="input-zone-label">
                           {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                             ? " INTRODU CUVÂNTUL TĂU DE TEST:"
+                            : lectie.animatie === "bfs_dinamic"
+                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 1-3, 2-4):"
+                            : lectie.animatie === "fibonacci_recursiv"
+                            ? " INTRODU VALOAREA LUI N:"
                             : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
                         </label>
 
@@ -359,6 +406,10 @@ function LessonPage() {
                             placeholder={
                               lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                                 ? "Ex: infomotion"
+                                : lectie.animatie === "bfs_dinamic"
+                                ? "Ex: 1-2, 1-3, 2-4, 3-4"
+                                : lectie.animatie === "fibonacci_recursiv"
+                                ? "Ex: 6"
                                 : "Ex: 14, 8, 32, 5, 21"
                             }
                             value={customInput}
@@ -383,6 +434,22 @@ function LessonPage() {
                             </div>
                           )}
 
+                          {lectie.animatie === "bfs_dinamic" && (
+                            <div style={{ width: '100%' }}>
+                              <label className="input-zone-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#1fe0f9' }}>
+                                CARE ESTE NODUL DE START?
+                              </label>
+                              <input
+                                type="text"
+                                id="start-node-input"
+                                className="custom-array-input"
+                                placeholder="Ex: 1"
+                                style={{ width: '200px' }}
+                                disabled={loadingAnim}
+                              />
+                            </div>
+                          )}
+
                           <button
                             className="generate-anim-btn"
                             onClick={handleGenerateAnimation}
@@ -396,7 +463,9 @@ function LessonPage() {
 
                       <div className="animation-render-zone" style={{ marginTop: '20px', width: '100%' }}>
                         {animationSteps && animationSteps.length > 0 ? (
-                          lectie.animatie === "cautare_binara_div_imp" ? (
+                          lectie.animatie === "bfs_dinamic" ? (
+                            <GraphVisualizer steps={animationSteps} />
+                          ) : lectie.animatie === "cautare_binara_div_imp" || lectie.animatie === "fibonacci_recursiv" ? (
                             <TreeVisualizer steps={animationSteps} />
                           ) : (
                             <ArrayVisualizer steps={animationSteps} />
