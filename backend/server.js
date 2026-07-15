@@ -59,6 +59,16 @@ app.post('/api/security-log', (req, res) => {
 app.get('/api/admin/logs', (_req, res) => {
   return res.json({ logs: getLogs() });
 });
+
+const rateLimit = require('express-rate-limit');
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 15, 
+  message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!"
+});
+app.use('/api/simulate', apiLimiter);
+
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithm, array, algorithmType, inputData } = req.body;
