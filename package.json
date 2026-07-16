@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/roboto": "^5.2.10",
     "@monaco-editor/react": "^4.7.0",
+    "@react-pdf/renderer": "^4.5.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "analytics": "^0.8.19",
+    "buffer": "^6.0.3",
     "dompurify": "^3.4.11",
     "firebase": "^12.12.1",
     "firebase-admin": "^13.10.0",

@@ -27,7 +27,7 @@ import TrimiteLectii from './pages/TrimiteLectii';
 import Marketplace from './pages/Marketplace'; 
 import EmailNotVerified from './pages/EmailNotVerified'; 
 import Performanta from './pages/performanta';
-
+import PreviewPDF from './components/PreviewPDF';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -87,7 +87,7 @@ function App() {
             <Route path="/despre" element={<Intro />} />
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
-
+            <Route path="/preview-pdf" element={import.meta.env.DEV ? <PreviewPDF /> : <Navigate to="/" />} />
 
             <Route
               path={SECRET}

@@ -6,14 +6,17 @@ import '../pages_css/Lectii.css';
 import { Search, Star } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import CheatSheetPDF from '../components/CheatSheetPDF';
 
 function Lectii() {
   const { currentUser, esteLectieSalvata, toggleBookmarkLectie } = useAuth();
 
-  const [lessonsData, setLessonsData] = useState([]); 
-  const [loading, setLoading] = useState(true); 
+  const [lessonsData, setLessonsData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('toate');
+  const [selectatePDF, setSelectatePDF] = useState([]);
 
   useEffect(() => {
     let emontata = true;
@@ -33,8 +36,8 @@ function Lectii() {
           const data = doc.data();
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
-          
-          let extrasClasa = 9; 
+
+          let extrasClasa = 9;
           if (data.clasa) {
             const digits = data.clasa.toString().match(/\d+/);
             if (digits) {
@@ -80,12 +83,26 @@ function Lectii() {
     toggleBookmarkLectie(idLectie);
   };
 
+  const toggleSelectiePDF = (e, lectie) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectatePDF((prev) => {
+      const existaDeja = prev.find((l) => l.id === lectie.id);
+      if (existaDeja) {
+        return prev.filter((l) => l.id !== lectie.id);
+      }
+      return [...prev, lectie];
+    });
+  };
+
+  const esteSelectataPDF = (id) => selectatePDF.some((l) => l.id === id);
+
   const filteredLessons = lessonsData
     .filter((lectie) => {
-      const matchesSearch = 
+      const matchesSearch =
         (lectie.titlu?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (lectie.descriere?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-     
+
       let matchesFilter = false;
       if (activeFilter === 'toate') {
         matchesFilter = true;
@@ -99,7 +116,7 @@ function Lectii() {
         const clasaTinta = parseInt(activeFilter.split('-')[1]);
         matchesFilter = lectie.clasaNumerica === clasaTinta && !lectie.esteOlimpiada && !lectie.esteConcept;
       }
-      
+
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -111,7 +128,7 @@ function Lectii() {
           return 4;
         }
         if (item.esteOlimpiada) return 10;
-        if (item.esteConcept) return 20; 
+        if (item.esteConcept) return 20;
         return 999;
       };
 
@@ -128,7 +145,7 @@ function Lectii() {
 
       const ordineA = a.ordine !== undefined && a.ordine !== null ? parseInt(a.ordine, 10) : 999;
       const ordineB = b.ordine !== undefined && b.ordine !== null ? parseInt(b.ordine, 10) : 999;
-      
+
       if (ordineA !== ordineB) return ordineA - ordineB;
 
       return (a.titlu || "").localeCompare(b.titlu || "");
@@ -137,14 +154,14 @@ function Lectii() {
   const getFilterLabel = (filter) => {
     if (filter === 'toate') return 'Toate';
     if (filter === 'olimpici') return 'Olimpici';
-    if (filter === 'concepte') return 'Concepte'; 
+    if (filter === 'concepte') return 'Concepte';
     if (filter === 'salvate') return 'Salvate';
     return `Clasa ${filter.split('-')[1]}`;
   };
 
   const getDynamicSubtitle = () => {
     switch (activeFilter) {
-     case 'toate':
+      case 'toate':
         return 'Salut! Bine ai venit în universul InfoMotion. Fie că ești la început de drum în C++ sau te pregătești pentru performanță, selectează o categorie de mai jos și hai să explorăm împreună algoritmii prin animații interactive.';
       case 'clasa-9':
         return 'Fundamentele programării în C++. De la elemente de bază, structuri repetitive și decizionale, până la stăpânirea vectorilor.';
@@ -177,19 +194,19 @@ function Lectii() {
         <div className="filters-section">
           <div className="search-bar">
             <span className="search-icon"><Search size={22} color="#23a9b3" strokeWidth={3} /></span>
-            <input 
-              type="text" 
-              placeholder="Caută o lecție (ex: Complexitate, vectori...)" 
+            <input
+              type="text"
+              placeholder="Caută o lecție (ex: Complexitate, vectori...)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <div className="class-filters">
             {['toate', 'clasa-9', 'clasa-10', 'clasa-11', 'olimpici', 'concepte', 'salvate'].map((f) => (
-              <button 
+              <button
                 key={f}
-                className={activeFilter === f ? 'filter-btn active' : 'filter-btn'} 
+                className={activeFilter === f ? 'filter-btn active' : 'filter-btn'}
                 onClick={() => setActiveFilter(f)}
               >
                 {getFilterLabel(f)}
@@ -239,11 +256,36 @@ function Lectii() {
                   />
                 </button>
 
+                <button
+                  onClick={(e) => toggleSelectiePDF(e, lectie)}
+                  title={esteSelectataPDF(lectie.id) ? "Elimină din Copiuță" : "Adaugă în Copiuță"}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '48px',
+                    background: esteSelectataPDF(lectie.id) ? '#1fe0f9' : 'rgba(0,0,0,0.35)',
+                    border: '1px solid rgba(31, 224, 249, 0.25)',
+                    borderRadius: '50%',
+                    width: '30px',
+                    height: '30px',
+                    cursor: 'pointer',
+                    zIndex: 5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: esteSelectataPDF(lectie.id) ? '#000' : '#1fe0f9',
+                    fontSize: '14px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {esteSelectataPDF(lectie.id) ? '✓' : '+'}
+                </button>
+
                 <div className={`lectie-badge ${lectie.esteOlimpiada ? 'badge-olimpiada' : lectie.esteConcept ? 'badge-concepte' : ''}`}>
-                  {lectie.esteOlimpiada 
-                    ? 'OLIMPIADĂ' 
-                    : lectie.esteConcept 
-                    ? 'CONCEPTE GENERAL' 
+                  {lectie.esteOlimpiada
+                    ? 'OLIMPIADĂ'
+                    : lectie.esteConcept
+                    ? 'CONCEPTE GENERAL'
                     : (lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`)}
                   {lectie.ordine ? ` • Modulul ${lectie.ordine}` : ''}
                 </div>
@@ -274,6 +316,69 @@ function Lectii() {
           </div>
         )}
       </main>
+
+      {selectatePDF.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 100,
+            background: "#0F172A",
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}
+        >
+          <span style={{ color: '#94A3B8', fontSize: '13px' }}>
+            {selectatePDF.length} selectate
+          </span>
+          <PDFDownloadLink
+  document={
+    <CheatSheetPDF
+      lectii={selectatePDF.map((l) => ({
+        id: l.id,
+        titlu: l.titlu,
+        descriere: l.descriere,
+        cod: l.codCPlusPlus
+      }))}
+    />
+  }
+  fileName="copiuta-infomotion.pdf"
+  style={{
+    display: 'inline-block',
+    color: '#0F172A',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    background: '#2ea8b0',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    border: 'none'
+  }}
+>
+  {({ loading: loadingPDF }) =>
+    loadingPDF ? 'Se generează...' : 'Descarcă Copiuța'
+  }
+</PDFDownloadLink>
+          <button
+            onClick={() => setSelectatePDF([])}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94A3B8',
+              cursor: 'pointer',
+              fontSize: '13px'
+            }}
+          >
+            Golește
+          </button>
+        </div>
+      )}
     </div>
   );
 }

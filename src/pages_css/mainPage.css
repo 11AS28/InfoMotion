@@ -243,6 +243,7 @@ span {
   outline: 2px solid var(--accent);
   display: inline-block;
   margin: 0 auto;
+  background-color: transparent;
 }
 
 .button:hover {
