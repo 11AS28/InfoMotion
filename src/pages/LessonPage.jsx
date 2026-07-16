@@ -68,8 +68,12 @@ function LessonPage() {
     "InterschimbareSort",
     "InserctieSort",
     "fibonacci_recursiv",
-    "bfs_dinamic"
+    "bfs_dinamic",
+    "simulare_introducere"
   ];
+
+  const algoritmiGraf = ["bfs_dinamic", "simulare_introducere"];
+  const algoritmiArbore = ["cautare_binara_div_imp", "fibonacci_recursiv"];
 
   const handleCopyCode = async () => {
     if (!lectie?.codCPlusPlus) return;
@@ -163,15 +167,52 @@ function LessonPage() {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-      if (lectie.animatie === "bfs_dinamic") {
+
+      if (lectie.animatie === "simulare_introducere") {
         const muchii = customInput
           .split(',')
-          .map(pereche => pereche.trim().split('-').map(s => s.trim()))
-          .filter(pereche => pereche.length === 2 && pereche[0] && pereche[1]);
+          .map(bucata => bucata.trim().split('-').map(s => s.trim()))
+          .filter(parti => parti.length === 2 && parti[0] && parti[1])
+          .map(parti => ({ from: parti[0], to: parti[1] }));
 
         if (muchii.length === 0) {
           setLoadingAnim(false);
-          return alert("Formatul muchiilor este invalid! Ex: 1-2, 1-3, 2-4");
+          return alert("Formatul muchiilor este invalid! Ex: 1-2, 2-3, 1-3");
+        }
+
+        const response = await fetch(`${baseUrl}/api/simulate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            algorithm: 'simulare_introducere',
+            edges: muchii
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.steps) {
+          setAnimationSteps(data.steps);
+        } else {
+          alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+        }
+        return;
+      }
+
+      if (lectie.animatie === "bfs_dinamic") {
+        const muchii = customInput
+          .split(',')
+          .map(bucata => bucata.trim().split('-').map(s => s.trim()))
+          .filter(parti => parti.length >= 2 && parti[0] && parti[1])
+          .map(parti => ({
+            from: parti[0],
+            to: parti[1],
+            weight: parti[2] !== undefined ? parseFloat(parti[2]) : undefined
+          }));
+
+        if (muchii.length === 0) {
+          setLoadingAnim(false);
+          return alert("Formatul muchiilor este invalid! Ex: 1-2 sau 1-2-5 (cu pondere)");
         }
 
         const startInput = document.getElementById("start-node-input");
@@ -182,13 +223,17 @@ function LessonPage() {
           return alert("Te rog introdu nodul de start!");
         }
 
+        const directedInput = document.getElementById("directed-graph-checkbox");
+        const directionat = directedInput ? directedInput.checked : false;
+
         const response = await fetch(`${baseUrl}/api/simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             algorithm: 'bfs_dinamic',
             edges: muchii,
-            startNode: startNode
+            startNode: startNode,
+            directed: directionat
           })
         });
 
@@ -273,6 +318,8 @@ function LessonPage() {
 
   const esteAnimatieNoua = algoritmiBackend.includes(lectie.animatie);
   const esteConceptGeneral = lectie.clasa === 'concepte' || lectie.categorie === 'concepte';
+  const esteAlgoritmGraf = algoritmiGraf.includes(lectie.animatie);
+  const esteAlgoritmArbore = algoritmiArbore.includes(lectie.animatie);
 
   const ComponentaAnimatieVeche = () => {
     switch (lectie.animatie) {
@@ -392,8 +439,10 @@ function LessonPage() {
                         <label className="input-zone-label">
                           {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                             ? " INTRODU CUVÂNTUL TĂU DE TEST:"
+                            : lectie.animatie === "simulare_introducere"
+                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3, 1-3):"
                             : lectie.animatie === "bfs_dinamic"
-                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 1-3, 2-4):"
+                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3-5 CU PONDERE):"
                             : lectie.animatie === "fibonacci_recursiv"
                             ? " INTRODU VALOAREA LUI N:"
                             : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
@@ -406,8 +455,10 @@ function LessonPage() {
                             placeholder={
                               lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                                 ? "Ex: infomotion"
+                                : lectie.animatie === "simulare_introducere"
+                                ? "Ex: 1-2, 2-3, 1-3"
                                 : lectie.animatie === "bfs_dinamic"
-                                ? "Ex: 1-2, 1-3, 2-4, 3-4"
+                                ? "Ex: 1-2, 2-3-5, 1-3"
                                 : lectie.animatie === "fibonacci_recursiv"
                                 ? "Ex: 6"
                                 : "Ex: 14, 8, 32, 5, 21"
@@ -447,6 +498,10 @@ function LessonPage() {
                                 style={{ width: '200px' }}
                                 disabled={loadingAnim}
                               />
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', color: '#c7d0e0', fontSize: '13px', cursor: 'pointer' }}>
+                                <input type="checkbox" id="directed-graph-checkbox" disabled={loadingAnim} />
+                                Graf orientat (muchiile au un singur sens)
+                              </label>
                             </div>
                           )}
 
@@ -463,9 +518,9 @@ function LessonPage() {
 
                       <div className="animation-render-zone" style={{ marginTop: '20px', width: '100%' }}>
                         {animationSteps && animationSteps.length > 0 ? (
-                          lectie.animatie === "bfs_dinamic" ? (
+                          esteAlgoritmGraf ? (
                             <GraphVisualizer steps={animationSteps} />
-                          ) : lectie.animatie === "cautare_binara_div_imp" || lectie.animatie === "fibonacci_recursiv" ? (
+                          ) : esteAlgoritmArbore ? (
                             <TreeVisualizer steps={animationSteps} />
                           ) : (
                             <ArrayVisualizer steps={animationSteps} />

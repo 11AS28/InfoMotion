@@ -1,19 +1,24 @@
-function simulateBFS(muchii, nodStart) {
+const { construiesteAdiacenta, formateazaEdgesPentruSnapshot } = require('./graphUtils');
+
+// muchii: [{ from, to, weight? }, ...]
+// directionat: boolean
+function simulateBFS(muchii, nodStart, directionat) {
   const steps = [];
-  const adiacenta = {};
-  const noduriSet = new Set();
+  const { adiacenta, noduri } = construiesteAdiacenta(muchii, directionat);
 
-  muchii.forEach(([a, b]) => {
-    noduriSet.add(a); noduriSet.add(b);
-    if (!adiacenta[a]) adiacenta[a] = [];
-    if (!adiacenta[b]) adiacenta[b] = [];
-    adiacenta[a].push(b);
-    adiacenta[b].push(a);
-  });
-
-  const noduri = [...noduriSet];
   const statusNod = {};
   noduri.forEach(n => statusNod[n] = 'nevizitat');
+
+  if (!noduri.includes(nodStart)) {
+    return [{
+      graphState: {
+        nodes: noduri.map(n => ({ id: n, status: statusNod[n] })),
+        edges: formateazaEdgesPentruSnapshot(muchii, directionat, null),
+        coada: []
+      },
+      explanation: `Nodul de start "${nodStart}" nu există în graful introdus.`
+    }];
+  }
 
   const coada = [nodStart];
   statusNod[nodStart] = 'in_coada';
@@ -22,10 +27,7 @@ function simulateBFS(muchii, nodStart) {
     steps.push({
       graphState: {
         nodes: noduri.map(n => ({ id: n, status: statusNod[n] })),
-        edges: muchii.map(([a, b]) => ({
-          from: a, to: b,
-          activa: muchieActiva && ((muchieActiva[0] === a && muchieActiva[1] === b) || (muchieActiva[0] === b && muchieActiva[1] === a))
-        })),
+        edges: formateazaEdgesPentruSnapshot(muchii, directionat, muchieActiva),
         coada: [...coada]
       },
       explanation: explicatie
@@ -39,7 +41,8 @@ function simulateBFS(muchii, nodStart) {
     statusNod[curent] = 'curent';
     faSnapshot(`Scoatem din coadă nodul ${curent} și îl procesăm.`);
 
-    for (const vecin of adiacenta[curent]) {
+    const vecini = adiacenta[curent] || [];
+    for (const { nod: vecin } of vecini) {
       if (statusNod[vecin] === 'nevizitat') {
         statusNod[vecin] = 'in_coada';
         coada.push(vecin);

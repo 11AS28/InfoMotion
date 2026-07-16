@@ -11,6 +11,7 @@ const { simulateSelectionSort } = require('./simulators/selectionSortSim');
 const { simulateInsertionSort } = require('./simulators/insertionSortSim');
 const { simulateFibonacciRecursiv } = require('./simulators/simulateFibonacci');
 const { simulateBFS } = require('./simulators/simulateBFS');
+const { simulateConceptGrafuri } = require('./simulators/simulare_introducere');
 
 const { submitCppJob, getQueueStats } = require('./jobQueue');
 const { addLog, getLogs } = require('./logger');
@@ -63,8 +64,8 @@ app.get('/api/admin/logs', (_req, res) => {
 const rateLimit = require('express-rate-limit');
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 15, 
+  windowMs: 15 * 60 * 1000,
+  max: 15,
   message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!"
 });
 app.use('/api/simulate', apiLimiter);
@@ -72,101 +73,112 @@ app.use('/api/simulate', apiLimiter);
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithm, array, algorithmType, inputData } = req.body;
-
+ 
     const finalAlgorithm = algorithm || algorithmType;
     const finalArray = array || inputData;
-
+ 
+    const algoritmiFaraArray = ['bfs_dinamic', 'simulare_introducere'];
+ 
+    if (!algoritmiFaraArray.includes(finalAlgorithm)) {
+      if (!finalArray || !Array.isArray(finalArray)) {
+        return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
+      }
+    }
+ 
     let steps = [];
-
+ 
     switch (finalAlgorithm) {
-      // Algoritmii care au nevoie STRICT de un array valid de numere
       case 'bubbleSort':
-      case 'BubbleSortAnim':
-      case 'quick_sort_dinamic':
-      case 'InterschimbareSort':
-      case 'SelectieSort':
-      case 'InserctieSort': {
-        if (!finalArray || !Array.isArray(finalArray)) {
-          return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide (trebuie să fie un vector)!' });
-        }
+      case 'BubbleSortAnim': {
         const numericArray = finalArray.map(Number);
-        
-        if (finalAlgorithm === 'bubbleSort' || finalAlgorithm === 'BubbleSortAnim') {
-          steps = simulateBubbleSort(numericArray);
-        } else if (finalAlgorithm === 'quick_sort_dinamic') {
-          steps = simulateQuickSortJS(numericArray);
-        } else if (finalAlgorithm === 'InterschimbareSort') {
-          steps = simulateExchangeSort(numericArray);
-        } else if (finalAlgorithm === 'SelectieSort') {
-          steps = simulateSelectionSort(numericArray);
-        } else if (finalAlgorithm === 'InserctieSort') {
-          steps = simulateInsertionSort(numericArray);
-        }
+        steps = simulateBubbleSort(numericArray);
         break;
       }
-
-      // Căutarea binară (are nevoie de array + target)
+ 
+      case 'quick_sort_dinamic': {
+        const numericArray = finalArray.map(Number);
+        steps = simulateQuickSortJS(numericArray);
+        break;
+      }
+ 
+      case 'strlen_dinamic':
+      case 'strcpy_dinamic': {
+        const cuvant = finalArray.map(ascii => String.fromCharCode(ascii)).join('');
+        steps = await simulateStrlen(cuvant);
+        break;
+      }
+ 
       case 'cautare_binara_div_imp': {
-        if (!finalArray || !Array.isArray(finalArray)) {
-          return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
-        }
         const numericArray = finalArray.map(Number);
         const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : numericArray[0];
         steps = simulateCautareBinaraDivImpJS(numericArray, targetCautat);
         break;
       }
-
-      // Strlen / Strcpy (lucrează cu caractere transmise ca coduri ASCII într-un array)
-      case 'strlen_dinamic':
-      case 'strcpy_dinamic': {
-        if (!finalArray || !Array.isArray(finalArray)) {
-          return res.status(400).json({ error: 'Cuvântul lipsește sau este invalid!' });
-        }
-        const cuvant = finalArray.map(ascii => String.fromCharCode(ascii)).join('');
-        steps = await simulateStrlen(cuvant);
+ 
+      case 'InterschimbareSort': {
+        const numericArray = finalArray.map(Number);
+        steps = simulateExchangeSort(numericArray);
         break;
       }
-
-      // Fibonacci (are nevoie doar de primul element din input ca număr simplu)
+ 
+      case 'SelectieSort': {
+        const numericArray = finalArray.map(Number);
+        steps = simulateSelectionSort(numericArray);
+        break;
+      }
+ 
+      case 'InserctieSort': {
+        const numericArray = finalArray.map(Number);
+        steps = simulateInsertionSort(numericArray);
+        break;
+      }
+ 
       case 'fibonacci_recursiv': {
-        if (!finalArray || (Array.isArray(finalArray) && finalArray.length === 0)) {
-          return res.status(400).json({ error: 'Lipsește valoarea pentru Fibonacci!' });
-        }
-        // Luăm prima valoare indiferent dacă vine ca array sau valoare simplă
-        const n = Array.isArray(finalArray) ? Number(finalArray[0]) : Number(finalArray);
-        if (isNaN(n)) {
-          return res.status(400).json({ error: 'Valoarea introdusă nu este un număr valid!' });
-        }
-        steps = simulateFibonacciRecursiv(n);
+        const numericArray = finalArray.map(Number);
+        steps = simulateFibonacciRecursiv(numericArray[0]);
         break;
       }
-
-      // BFS pe graf (nu folosește deloc finalArray, ci edges și startNode)
+ 
       case 'bfs_dinamic': {
-        const muchii = req.body.edges;
+        const muchii = req.body.edges; 
         const start = req.body.startNode;
-
+        const directionat = !!req.body.directed;
+ 
         if (!muchii || !Array.isArray(muchii) || muchii.length === 0) {
           return res.status(400).json({ error: 'Lipsesc muchiile grafului!' });
         }
-        if (start === undefined || start === null) {
+        if (!start) {
           return res.status(400).json({ error: 'Lipsește nodul de start!' });
         }
-
-        steps = simulateBFS(muchii, start);
+ 
+        steps = simulateBFS(muchii, start, directionat);
         break;
       }
-
+ 
+      case 'simulare_introducere': {
+        const muchii = req.body.edges; 
+ 
+        if (!muchii || !Array.isArray(muchii) || muchii.length === 0) {
+          return res.status(400).json({ error: 'Lipsesc muchiile grafului!' });
+        }
+ 
+        steps = simulateConceptGrafuri(muchii);
+        break;
+      }
+ 
       default:
         return res.status(400).json({ error: 'Algoritm neimplementat' });
     }
-
+ 
     return res.json({ steps });
   } catch (error) {
     console.error('Eroare la simulare:', error);
     return res.status(500).json({ error: 'Eroare internă de server' });
   }
 });
+ 
+
+
 
 app.post('/api/run-cpp', async (req, res) => {
   const { code, input, username } = req.body;
