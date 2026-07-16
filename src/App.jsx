@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, matchPath } from 'react-router-dom';
+import { Routes, Route, useLocation, matchPath, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SpeedInsights } from "@vercel/speed-insights/react";
