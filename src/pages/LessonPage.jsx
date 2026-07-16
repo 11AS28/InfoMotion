@@ -54,6 +54,7 @@ function LessonPage() {
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
+  const [animError, setAnimError] = useState(null); //
 
   usePageTitle(lectie ? `InfoMotion - ${lectie.titlu}` : 'InfoMotion - Lecție');
 
@@ -113,6 +114,7 @@ function LessonPage() {
       if (isMounted) {
         setAnimationSteps([]);
         setCustomInput("");
+        setAnimError(null);
       }
 
       try {
@@ -164,9 +166,10 @@ function LessonPage() {
     if (!customInput) return alert("Te rog introdu datele de test!");
 
     setLoadingAnim(true);
+    setAnimError(null);
+
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
 
       if (lectie.animatie === "simulare_introducere") {
         const muchii = customInput
@@ -189,12 +192,19 @@ function LessonPage() {
           })
         });
 
+        if (!response.ok) {
+          const textEroare = await response.text();
+          setAnimError(textEroare || "A apărut o eroare la conexiunea cu serverul.");
+          setLoadingAnim(false);
+          return;
+        }
+
         const data = await response.json();
 
         if (data.steps) {
           setAnimationSteps(data.steps);
         } else {
-          alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+          setAnimError(data.error || "Eroare necunoscută trimisă de server.");
         }
         return;
       }
@@ -237,12 +247,19 @@ function LessonPage() {
           })
         });
 
+        if (!response.ok) {
+          const textEroare = await response.text();
+          setAnimError(textEroare || "A apărut o eroare la conexiunea cu serverul.");
+          setLoadingAnim(false);
+          return;
+        }
+
         const data = await response.json();
 
         if (data.steps) {
           setAnimationSteps(data.steps);
         } else {
-          alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+          setAnimError(data.error || "Eroare necunoscută trimisă de server.");
         }
         return;
       }
@@ -261,6 +278,7 @@ function LessonPage() {
       }
 
       if (parsedData.length === 0) {
+        setLoadingAnim(false);
         return alert(esteLectieSiruri ? "Te rog introdu un cuvânt valid!" : "Formatul numerelor este invalid!");
       }
 
@@ -268,7 +286,10 @@ function LessonPage() {
       if (lectie.animatie === "cautare_binara_div_imp") {
         const targetInput = document.getElementById("target-search-input");
         targetVal = targetInput ? parseInt(targetInput.value) : null;
-        if (isNaN(targetVal)) return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
+        if (isNaN(targetVal)) {
+          setLoadingAnim(false);
+          return alert("Te rog introdu și numărul pe care vrei să îl căutăm!");
+        }
       }
 
       const response = await fetch(`${baseUrl}/api/simulate`, {
@@ -280,6 +301,13 @@ function LessonPage() {
           target: targetVal
         })
       });
+
+      if (!response.ok) {
+        const textEroare = await response.text();
+        setAnimError(textEroare || "A apărut o eroare la conexiunea cu serverul.");
+        setLoadingAnim(false);
+        return;
+      }
 
       const data = await response.json();
 
@@ -303,11 +331,11 @@ function LessonPage() {
 
         setAnimationSteps(pasiCuratatiPentruVisualizer);
       } else {
-        alert("Eroare trimisă de server: " + (data.error || "Necunoscută"));
+        setAnimError(data.error || "Eroare necunoscută trimisă de server.");
       }
     } catch (error) {
       console.error("Eroare conexiune backend:", error);
-      alert("Nu s-a putut contacta serverul din backend.");
+      setAnimError("Nu s-a putut contacta serverul din backend. Verifică dacă backend-ul este activ.");
     } finally {
       setLoadingAnim(false);
     }
@@ -440,12 +468,12 @@ function LessonPage() {
                           {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                             ? " INTRODU CUVÂNTUL TĂU DE TEST:"
                             : lectie.animatie === "simulare_introducere"
-                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3, 1-3):"
-                            : lectie.animatie === "bfs_dinamic"
-                            ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3-5 CU PONDERE):"
-                            : lectie.animatie === "fibonacci_recursiv"
-                            ? " INTRODU VALOAREA LUI N:"
-                            : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
+                              ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3, 1-3):"
+                              : lectie.animatie === "bfs_dinamic"
+                                ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3-5 CU PONDERE):"
+                                : lectie.animatie === "fibonacci_recursiv"
+                                  ? " INTRODU VALOAREA LUI N:"
+                                  : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
                         </label>
 
                         <div className="input-action-flex" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
@@ -456,12 +484,12 @@ function LessonPage() {
                               lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
                                 ? "Ex: infomotion"
                                 : lectie.animatie === "simulare_introducere"
-                                ? "Ex: 1-2, 2-3, 1-3"
-                                : lectie.animatie === "bfs_dinamic"
-                                ? "Ex: 1-2, 2-3-5, 1-3"
-                                : lectie.animatie === "fibonacci_recursiv"
-                                ? "Ex: 6"
-                                : "Ex: 14, 8, 32, 5, 21"
+                                  ? "Ex: 1-2, 2-3, 1-3"
+                                  : lectie.animatie === "bfs_dinamic"
+                                    ? "Ex: 1-2, 2-3-5, 1-3"
+                                    : lectie.animatie === "fibonacci_recursiv"
+                                      ? "Ex: 6"
+                                      : "Ex: 14, 8, 32, 5, 21"
                             }
                             value={customInput}
                             onChange={(e) => setCustomInput(e.target.value)}
@@ -516,6 +544,33 @@ function LessonPage() {
                         </div>
                       </div>
 
+                      {animError && (
+                        <div style={{
+                          marginTop: '20px',
+                          padding: '16px 20px',
+                          background: '#1a1216',
+                          border: '1px solid #3a2129',
+                          borderLeft: '3px solid #e5484d',
+                          borderRadius: '10px'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '6px',
+                            color: '#e5484d',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            letterSpacing: '0.02em'
+                          }}>
+                            Limită de simulări atinsă (15 minute)
+                          </div>
+                          <p style={{ margin: 0, color: '#c7cfdb', fontSize: '14px', lineHeight: '1.5' }}>
+                            {animError}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="animation-render-zone" style={{ marginTop: '20px', width: '100%' }}>
                         {animationSteps && animationSteps.length > 0 ? (
                           esteAlgoritmGraf ? (
@@ -526,9 +581,11 @@ function LessonPage() {
                             <ArrayVisualizer steps={animationSteps} />
                           )
                         ) : (
-                          <div className="animation-placeholder">
-                            Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
-                          </div>
+                          !animError && (
+                            <div className="animation-placeholder">
+                              Introdu datele de test mai sus și apasă pe buton pentru a porni simularea dinamică.
+                            </div>
+                          )
                         )}
                       </div>
                     </>
