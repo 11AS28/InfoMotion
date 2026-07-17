@@ -582,26 +582,39 @@ export function AuthProvider({ children }) {
       }
     };
 
+    let unsubscribeDb = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (unsubscribeDb) {
+        unsubscribeDb();
+        unsubscribeDb = null;
+      }
+
       if (user) {
         preiaSiIncarcaLectii();
 
         const userRef = doc(db, 'users', user.uid);
-        const unsubscribeDb = onSnapshot(userRef, (docSnap) => {
+
+        unsubscribeDb = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const isDev = user.email === "smmaria@gmail.com";
             const data = docSnap.data();
 
-            if (data.role === 'student' && (data.hearts ?? 3) < 3)
+            if (data.role === 'student' && (data.hearts ?? 3) < 3) {
               verificaRegenerareInimi(data, userRef);
+            }
 
-            setCurrentUser({ ...user, ...docSnap.data(), emailVerified: isDev ? true : user.emailVerified });
+            setCurrentUser({
+              ...user,
+              ...data,
+              emailVerified: isDev ? true : user.emailVerified
+            });
           } else {
             setCurrentUser(user);
           }
           setLoading(false);
         });
-        return () => unsubscribeDb();
+
       } else {
         setCurrentUser(null);
         setLectii([]);
@@ -610,7 +623,12 @@ export function AuthProvider({ children }) {
       }
     });
 
-    return unsubscribeAuth;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeDb) {
+        unsubscribeDb();
+      }
+    };
   }, []);
 
   const verificaProblemaCodeforces = async (problemId) => {
