@@ -45,6 +45,7 @@ export default function HanoiAnim() {
   const playingRef = useRef(false);
   const animatingRef = useRef(false);
   const timeoutsRef = useRef([]);
+  const epochRef = useRef(0);
 
   useEffect(() => {
     playingRef.current = playing;
