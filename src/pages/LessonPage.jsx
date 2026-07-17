@@ -41,6 +41,8 @@ const StrtokAnim = React.lazy(() => import('../components/animatii/StrtokAnim'))
 const CStringCompareReverseAnim = React.lazy(() => import('../components/animatii/CStringCompareReverseAnim'));
 const Pacanelesimulare = React.lazy(() => import('../components/animatii/pacanele_simulare'));
 const SimulareJocuri = React.lazy(() => import('../components/animatii/simulare_jocuri'));
+const Hanoi = React.lazy(() => import('../components/animatii/Hanoi'));
+
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -380,6 +382,7 @@ function LessonPage() {
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
       case "pacanele_simulare": return <Pacanelesimulare />;
       case "simulare_jocuri": return <SimulareJocuri />;
+      case "hanoi": return <Hanoi />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };
