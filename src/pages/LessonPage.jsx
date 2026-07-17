@@ -39,6 +39,8 @@ const CombinatoricaAnim = React.lazy(() => import('../components/animatii/Combin
 const CstringSearchAnim = React.lazy(() => import('../components/animatii/CstringSearchAnim'));
 const StrtokAnim = React.lazy(() => import('../components/animatii/StrtokAnim'));
 const CStringCompareReverseAnim = React.lazy(() => import('../components/animatii/CStringCompareReverseAnim'));
+const Pacanelesimulare = React.lazy(() => import('../components/animatii/pacanele_simulare'));
+const SimulareJocuri = React.lazy(() => import('../components/animatii/simulare_jocuri'));
 
 function LessonPage() {
   const { idLectie } = useParams();
@@ -376,6 +378,8 @@ function LessonPage() {
       case "CstringSearchAnim": return <CstringSearchAnim />;
       case "StrtokAnim": return <StrtokAnim />;
       case "CStringCompareReverseAnim": return <CStringCompareReverseAnim />;
+      case "pacanele_simulare": return <Pacanelesimulare />;
+      case "simulare_jocuri": return <SimulareJocuri />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
   };

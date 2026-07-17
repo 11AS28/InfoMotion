@@ -1,0 +1,399 @@
+.ps-wrap {
+  --ps-bg-panel: #0d1424;
+  --ps-bezel: #1a2338;
+  --ps-gold: #f0b429;
+  --ps-gold-dim: #7a5c1e;
+  --ps-teal: #1fe0f9;
+  --ps-danger: #ff4d4f;
+  --ps-win: #4ade80;
+
+  background: radial-gradient(ellipse at top, #131c33 0%, var(--ps-bg-panel) 65%);
+  border: 1px solid #202b45;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+}
+
+.ps-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #eef2ff;
+  text-align: center;
+  margin: 0 0 20px;
+  letter-spacing: 0.01em;
+}
+
+/* --- bara de control (seed, toggle-uri) --- */
+.ps-controls-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #26314d;
+}
+
+.ps-seed-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps-label-muted {
+  font-size: 0.75rem;
+  color: #7d8bab;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ps-input {
+  width: 108px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #2c3a5c;
+  background: #101a2f;
+  color: #eef2ff;
+  font-family: 'Consolas', 'SF Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ps-input:focus {
+  border-color: var(--ps-teal);
+  box-shadow: 0 0 0 3px rgba(31, 224, 249, 0.15);
+}
+
+.ps-btn-mini {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid #2c3a5c;
+  background: #16223b;
+  color: #cdd8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ps-btn-mini:hover { background: #1d2d4d; border-color: var(--ps-teal); color: var(--ps-teal); }
+
+/* --- toggle-uri custom (checkbox stilizat ca switch) --- */
+.ps-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #9fb0d1;
+  user-select: none;
+}
+.ps-toggle input { display: none; }
+.ps-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: #202c48;
+  border: 1px solid #33456e;
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.ps-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #6b7ca3;
+  transition: transform 0.2s, background 0.2s;
+}
+.ps-toggle input:checked + .ps-switch { background: rgba(31, 224, 249, 0.18); border-color: var(--ps-teal); }
+.ps-toggle input:checked + .ps-switch::after { transform: translateX(16px); background: var(--ps-teal); }
+
+.ps-toggle.ps-toggle-danger input:checked + .ps-switch { background: rgba(255, 77, 79, 0.18); border-color: var(--ps-danger); }
+.ps-toggle.ps-toggle-danger input:checked + .ps-switch::after { background: var(--ps-danger); }
+.ps-toggle.ps-toggle-danger.ps-active { color: var(--ps-danger); font-weight: 700; }
+
+/* --- cabinetul cu role (elementul semnatura) --- */
+.ps-cabinet {
+  position: relative;
+  display: inline-flex;
+  gap: 14px;
+  padding: 16px 20px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #202c48 0%, var(--ps-bezel) 12%, var(--ps-bezel) 88%, #202c48 100%);
+  border-radius: 14px;
+  border: 1px solid #2e3c60;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.ps-cabinet::before,
+.ps-cabinet::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ps-gold-dim), transparent);
+}
+.ps-cabinet::before { top: 6px; }
+.ps-cabinet::after { bottom: 6px; }
+.ps-cabinet.ps-hack-active {
+  border-color: var(--ps-danger);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 22px rgba(255, 77, 79, 0.35);
+}
+
+.ps-reel {
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.3rem;
+  background: #0b1120;
+  border-radius: 10px;
+  border: 2px solid #2c3a5c;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6);
+  transition: filter 0.1s, border-color 0.2s, transform 0.1s;
+}
+.ps-reel.ps-spinning {
+  filter: blur(2px) brightness(1.2);
+  transform: scaleY(1.04);
+}
+.ps-reel.ps-hack {
+  border-color: var(--ps-danger);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 77, 79, 0.45);
+}
+
+.ps-math-line {
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: #7d8bab;
+  text-align: center;
+  min-height: 36px;
+  font-family: 'Consolas', 'SF Mono', monospace;
+}
+.ps-math-warning {
+  color: #ff9a9b;
+  margin-top: 4px;
+  font-family: inherit;
+}
+
+/* --- randul de actiuni --- */
+.ps-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.ps-btn-spin {
+  padding: 12px 34px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(180deg, #ffcf5c 0%, var(--ps-gold) 100%);
+  color: #2a1c02;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(240, 180, 41, 0.35);
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.ps-btn-spin:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(240, 180, 41, 0.5); }
+.ps-btn-spin:disabled { opacity: 0.6; cursor: default; }
+
+.ps-turbo-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ps-btn-turbo {
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--ps-teal);
+  background: rgba(31, 224, 249, 0.08);
+  color: var(--ps-teal);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ps-btn-turbo:hover:not(:disabled) { background: rgba(31, 224, 249, 0.18); }
+.ps-btn-turbo:disabled { opacity: 0.5; cursor: default; }
+
+.ps-btn-reset {
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: 1px solid #33456e;
+  background: transparent;
+  color: #8b9ac0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ps-btn-reset:hover { border-color: #52618a; color: #cdd8f0; }
+
+/* --- statistici + grafic --- */
+.ps-stats-section {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px dashed #26314d;
+}
+
+.ps-stats-col { flex: 1 1 260px; min-width: 240px; }
+
+.ps-chips-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.ps-chip {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #16223b;
+  border: 1px solid #2c3a5c;
+  font-size: 0.78rem;
+  color: #cdd8f0;
+  font-family: 'Consolas', 'SF Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.ps-chip-rtp {
+  font-weight: 800;
+  border: 1px solid var(--ps-win);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--ps-win);
+}
+.ps-chip-rtp.ps-hack { border-color: var(--ps-danger); background: rgba(255, 77, 79, 0.12); color: #ff9a9b; }
+
+.ps-hint {
+  font-size: 0.74rem;
+  color: #66759c;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ps-chart-wrap {
+  background: #0b1120;
+  border: 1px solid #2c3a5c;
+  border-radius: 10px;
+  padding: 6px;
+}
+.ps-chart-empty {
+  font-size: 0.8rem;
+  color: #66759c;
+  text-align: center;
+  padding: 40px 10px;
+}
+
+/* --- istoric rotiri --- */
+.ps-history-wrap { margin-top: 20px; }
+.ps-history-list { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ps-history-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: #16223b;
+  border: 1px solid #2c3a5c;
+  font-size: 1rem;
+}
+.ps-history-item.ps-win-item {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: var(--ps-win);
+}
+.ps-history-payout {
+  font-size: 0.7rem;
+  color: var(--ps-win);
+  margin-left: 5px;
+  font-weight: 700;
+}
+
+/* --- modal de avertizare responsabila --- */
+.ps-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 16, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+  animation: ps-fade-in 0.2s ease-out;
+}
+
+@keyframes ps-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ps-modal-card {
+  max-width: 440px;
+  width: 100%;
+  background: linear-gradient(180deg, #16223b 0%, #0d1424 100%);
+  border: 1px solid var(--ps-danger, #ff4d4f);
+  border-radius: 14px;
+  padding: 26px 26px 22px;
+  text-align: center;
+  box-shadow: 0 0 0 1px rgba(255, 77, 79, 0.15), 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: ps-pop-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+
+@keyframes ps-pop-in {
+  from { transform: scale(0.94) translateY(6px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.ps-modal-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+}
+
+.ps-modal-title {
+  color: #ff9a9b;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.ps-modal-text {
+  color: #cdd8f0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 0 0 12px;
+  text-align: left;
+}
+.ps-modal-text strong { color: #ff9a9b; }
+
+.ps-modal-btn {
+  margin-top: 8px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ps-teal, #1fe0f9);
+  color: #06222a;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.ps-modal-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(31, 224, 249, 0.4); }
+
+@media (max-width: 480px) {
+  .ps-cabinet { padding: 12px 14px; gap: 8px; }
+  .ps-reel { width: 64px; height: 64px; font-size: 1.8rem; }
+  .ps-btn-spin { padding: 11px 24px; }
+}
