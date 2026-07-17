@@ -3,7 +3,7 @@ import '../animatii_css/matchmakingAnim.css';
 
 // Aceleasi date exacte ca in codul C++ din lectie
 const JUCATORI_INITIAL = [
-  { nume: 'Emi_MateInfo', skill: 2100, ping: 15 },
+  { nume: 'sammaria', skill: 2100, ping: 15 },
   { nume: 'Random_Toxic_1', skill: 1450, ping: 45 },
   { nume: 'Gigel_Dijkstra', skill: 1950, ping: 20 },
   { nume: 'NoobSlayer99', skill: 1200, ping: 32 },
@@ -224,13 +224,26 @@ export default function MatchmakingAnim() {
 
         <div className="mm-dw-axis-wrap">
           <div className="mm-dw-axis">
-            <div
-              className="mm-dw-window"
-              style={{
-                left: `${pozitiePeAxa(MMR_JUCATOR - fereastra)}%`,
-                width: `${pozitiePeAxa(MMR_JUCATOR + fereastra) - pozitiePeAxa(MMR_JUCATOR - fereastra)}%`,
-              }}
-            />
+            {(() => {
+              // Calculăm procentele brute pentru marginile ferestrei
+              const stangaBrut = pozitiePeAxa(MMR_JUCATOR - fereastra);
+              const dreaptaBrut = pozitiePeAxa(MMR_JUCATOR + fereastra);
+
+              // Limităm (clamp) valorile să nu iasă din intervalul [0, 100]
+              const stangaLimitata = Math.max(0, Math.min(100, stangaBrut));
+              const dreaptaLimitata = Math.max(0, Math.min(100, dreaptaBrut));
+              const latimeLimitata = dreaptaLimitata - stangaLimitata;
+
+              return (
+                <div
+                  className="mm-dw-window"
+                  style={{
+                    left: `${stangaLimitata}%`,
+                    width: `${latimeLimitata}%`,
+                  }}
+                />
+              );
+            })()}
             <div className="mm-dw-player-marker" style={{ left: `${pozitiePeAxa(MMR_JUCATOR)}%` }}>
               <div className="mm-dw-player-dot" />
               <span className="mm-dw-player-label">Tu</span>
@@ -244,12 +257,25 @@ export default function MatchmakingAnim() {
                   className={`mm-dw-candidate ${inWindow ? 'mm-dw-candidate-in' : 'mm-dw-candidate-out'}`}
                   style={{ left: `${pozitiePeAxa(c.mmr)}%` }}
                   title={`${c.nume}: ${c.mmr} MMR`}
-                >
-                  {c.nume}
-                </div>
+                />
               );
             })}
           </div>
+        </div>
+
+        <div className="mm-dw-legend">
+          {candidatiDemo.map((c) => {
+            const inWindow = Math.abs(c.mmr - MMR_JUCATOR) <= fereastra;
+            return (
+              <div key={c.nume} className={`mm-dw-legend-item ${inWindow ? 'mm-dw-legend-in' : ''}`}>
+                <span
+                  className="mm-dw-legend-dot"
+                  style={{ background: inWindow ? 'var(--mm-good)' : '#3a4a70' }}
+                />
+                {c.nume}: {c.mmr}
+              </div>
+            );
+          })}
         </div>
 
         <p className="mm-dw-count">

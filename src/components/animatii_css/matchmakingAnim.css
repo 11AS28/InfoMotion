@@ -373,15 +373,36 @@
 .mm-dw-candidate-in { background: var(--mm-good); box-shadow: 0 0 6px rgba(74, 222, 128, 0.7); }
 .mm-dw-candidate-out { background: #3a4a70; }
 
-.mm-dw-candidate::after {
-  content: attr(title);
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.6rem;
+/* legenda de sub axa, in loc de etichete plutitoare care se suprapuneau */
+.mm-dw-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 26px;
+}
+.mm-dw-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #0f172a;
+  border: 1px solid #263353;
+  font-size: 0.68rem;
+  font-family: 'Consolas', monospace;
   color: #7d8bab;
-  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mm-dw-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mm-dw-legend-item.mm-dw-legend-in {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #a7f3d0;
 }
 
 .mm-dw-count {
