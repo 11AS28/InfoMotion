@@ -6,7 +6,7 @@ import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star } from 'lucide-react';
+import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star, Wand2 } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
 import GraphVisualizer from '../components/GraphVisualizer';
 import parse from 'html-react-parser';
@@ -43,7 +43,6 @@ const Pacanelesimulare = React.lazy(() => import('../components/animatii/pacanel
 const SimulareJocuri = React.lazy(() => import('../components/animatii/simulare_jocuri'));
 const Hanoi = React.lazy(() => import('../components/animatii/Hanoi'));
 
-
 function LessonPage() {
   const { idLectie } = useParams();
   const { currentUser, esteLectieSalvata, toggleBookmarkLectie } = useAuth();
@@ -58,7 +57,13 @@ function LessonPage() {
   const [customInput, setCustomInput] = useState("");
   const [animationSteps, setAnimationSteps] = useState([]);
   const [loadingAnim, setLoadingAnim] = useState(false);
-  const [animError, setAnimError] = useState(null); //
+  const [animError, setAnimError] = useState(null);
+
+  // Stări noi pentru opțiunile generate de AI
+  const [aiCases, setAiCases] = useState(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [isAiPopoverOpen, setIsAiPopoverOpen] = useState(false);
+  const [copiedAiKey, setCopiedAiKey] = useState(null); // Ține minte ce buton a fost copiat recent
 
   usePageTitle(lectie ? `InfoMotion - ${lectie.titlu}` : 'InfoMotion - Lecție');
 
@@ -80,6 +85,9 @@ function LessonPage() {
   const algoritmiGraf = ["bfs_dinamic", "simulare_introducere"];
   const algoritmiArbore = ["cautare_binara_div_imp", "fibonacci_recursiv"];
 
+  // Algoritmi care folosesc exclusiv o singură valoare numerică sau care nu au sens pentru seturi de date extinse
+  const algoritmiFaraDateExtinse = ["fibonacci_recursiv"];
+
   const handleCopyCode = async () => {
     if (!lectie?.codCPlusPlus) return;
     try {
@@ -97,6 +105,61 @@ function LessonPage() {
       return;
     }
     toggleBookmarkLectie(idLectie);
+  };
+
+  const handleFetchAiCases = async () => {
+    if (loadingAi) return; // 🔒 Protecție suplimentară: ignorăm click-urile în timp ce se încarcă
+
+    if (aiCases) {
+      setIsAiPopoverOpen(!isAiPopoverOpen);
+      return;
+    }
+
+    setLoadingAi(true);
+    setIsAiPopoverOpen(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/generate-cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          algoritm: lectie.titlu || lectie.animatie,
+          tipModul: 'animatie'
+        })
+      });
+
+      if (!response.ok) throw new Error("Eroare la comunicarea cu serverul AI");
+      const data = await response.json();
+      setAiCases(data);
+    } catch (err) {
+      console.error(err);
+      alert("Nu s-au putut prelua cazurile de test de la AI.");
+      setIsAiPopoverOpen(false);
+    } finally {
+      setLoadingAi(false); // Deblocăm DOAR după ce a venit răspunsul
+    }
+  };
+
+  const handleCopyAiValue = async (valoareCaz, cheieCaz, tipGrafCamp = null) => {
+    let textDeCopiat = "";
+
+    if (typeof valoareCaz === 'string') {
+      textDeCopiat = valoareCaz;
+    } else if (typeof valoareCaz === 'object' && valoareCaz !== null) {
+      if (tipGrafCamp === 'muchii') textDeCopiat = valoareCaz.muchii;
+      if (tipGrafCamp === 'start') textDeCopiat = valoareCaz.start;
+    }
+
+    if (!textDeCopiat) return;
+
+    try {
+      await navigator.clipboard.writeText(textDeCopiat);
+      const unqKey = tipGrafCamp ? `${cheieCaz}_${tipGrafCamp}` : cheieCaz;
+      setCopiedAiKey(unqKey);
+      setTimeout(() => setCopiedAiKey(null), 2000);
+    } catch (err) {
+      console.error("Eroare la copiere:", err);
+    }
   };
 
   const proceseazaTeorie = (html) => {
@@ -119,6 +182,8 @@ function LessonPage() {
         setAnimationSteps([]);
         setCustomInput("");
         setAnimError(null);
+        setAiCases(null);
+        setIsAiPopoverOpen(false);
       }
 
       try {
@@ -353,6 +418,9 @@ function LessonPage() {
   const esteAlgoritmGraf = algoritmiGraf.includes(lectie.animatie);
   const esteAlgoritmArbore = algoritmiArbore.includes(lectie.animatie);
 
+  // Condiție care verifică dacă animația are nevoie de date de test complexe (array/graf)
+  const areNevoeDeDateAi = esteAnimatieNoua && !algoritmiFaraDateExtinse.includes(lectie.animatie);
+
   const ComponentaAnimatieVeche = () => {
     switch (lectie.animatie) {
       case "CautareBinaraAnim": return <CautareBinaraAnim />;
@@ -385,6 +453,53 @@ function LessonPage() {
       case "hanoi": return <Hanoi />;
       default: return <div className="animation-placeholder">Animația va fi disponibilă curând.</div>;
     }
+  };
+
+  // Helper local pentru a randa butoanele de copiere din interiorul listei AI
+  const renderAiRow = (label, colorStyle, dataKey, valoareString) => {
+    if (!valoareString) return null;
+
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '8px 10px',
+        backgroundColor: '#111115',
+        borderRadius: '6px',
+        border: '1px solid #27272a',
+        gap: '8px'
+      }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: colorStyle, marginBottom: '2px' }}>{label}</div>
+          <div style={{
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            color: '#a1a1aa',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {valoareString}
+          </div>
+        </div>
+        <button
+          onClick={() => handleCopyAiValue(valoareString, dataKey)}
+          style={{
+            fontSize: '11px',
+            background: '#27272a',
+            border: 'none',
+            color: copiedAiKey === dataKey ? '#00ffcc' : '#e4e4e7',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
+        >
+          {copiedAiKey === dataKey ? 'Copiat!' : 'Aplică'}
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -470,18 +585,75 @@ function LessonPage() {
                 {lectie.animatie ? (
                   esteAnimatieNoua ? (
                     <>
-                      <div className="input-control-zone">
-                        <label className="input-zone-label">
-                          {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
-                            ? " INTRODU CUVÂNTUL TĂU DE TEST:"
-                            : lectie.animatie === "simulare_introducere"
-                              ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3, 1-3):"
-                              : lectie.animatie === "bfs_dinamic"
-                                ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3-5 CU PONDERE):"
-                                : lectie.animatie === "fibonacci_recursiv"
-                                  ? " INTRODU VALOAREA LUI N:"
-                                  : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
-                        </label>
+                      <div className="input-control-zone" style={{ position: 'relative' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '8px' }}>
+                          <label className="input-zone-label" style={{ margin: 0 }}>
+                            {lectie.animatie === "strlen_dinamic" || lectie.animatie === "strcpy_dinamic"
+                              ? " INTRODU CUVÂNTUL TĂU DE TEST:"
+                              : lectie.animatie === "simulare_introducere"
+                                ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3, 1-3):"
+                                : lectie.animatie === "bfs_dinamic"
+                                  ? " INTRODU MUCHIILE GRAFULUI (EX: 1-2, 2-3-5 CU PONDERE):"
+                                  : lectie.animatie === "fibonacci_recursiv"
+                                    ? " INTRODU VALOAREA LUI N:"
+                                    : " INTRODU DATELE TALE DE TEST (NUMERE SEPARATE PRIN VIRGULĂ):"}
+                          </label>
+
+                          {/* Randăm componenta AI doar dacă lecția cere seturi de date dinamice */}
+                          {areNevoeDeDateAi && (
+                            <div style={{ position: 'relative' }}>
+                              <button
+                                onClick={handleFetchAiCases}
+                                disabled={loadingAi}
+                                style={{
+                                  background: 'rgba(31, 224, 249, 0.08)',
+                                  border: '1px solid rgba(31, 224, 249, 0.3)',
+                                  color: '#1fe0f9',
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  cursor: loadingAi ? 'not-allowed' : 'pointer',
+                                  opacity: loadingAi ? 0.6 : 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                <Wand2 size={14} />
+                                {loadingAi ? 'Generare...' : 'Cazuri de Test AI'}
+                              </button>
+
+                              {isAiPopoverOpen && aiCases && (
+                                <div style={{
+                                  position: 'absolute',
+                                  right: 0,
+                                  marginTop: '8px',
+                                  width: '300px',
+                                  backgroundColor: '#18181b',
+                                  border: '1px solid #27272a',
+                                  borderRadius: '8px',
+                                  padding: '12px',
+                                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                                  zIndex: 100,
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '10px'
+                                }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Alege complexitatea testului
+                                  </div>
+
+                                  {renderAiRow('Date Normale (Average)', 'text-emerald-400', 'normal', aiCases.normal)}
+                                  {renderAiRow('Worst Case (Cel mai rău)', 'text-rose-400', 'worstCase', aiCases.worstCase)}
+                                  {renderAiRow('Best Case (Cel mai bun)', 'text-cyan-400', 'bestCase', aiCases.bestCase)}
+                                  {renderAiRow('Stress Test / Edge Case', 'text-amber-400', 'stressTest', aiCases.stressTest)}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
 
                         <div className="input-action-flex" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
                           <input

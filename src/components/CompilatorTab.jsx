@@ -2,23 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import Editor, { loader } from '@monaco-editor/react'; 
-import { Play } from 'lucide-react';
+import Editor, { loader } from '@monaco-editor/react';
+import { Play, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '../context/AuthContext'; 
-import { customThemes } from './shopItems';  
+import { useAuth } from '../context/AuthContext';
+import { customThemes } from './shopItems';
 import '../components_css/compiler.css';
 
 const sanitizeThemeName = (name) => {
   if (!name) return 'vsdark';
-  return name.replace(/[^a-zA-Z0-9]/g, ''); 
+  return name.replace(/[^a-zA-Z0-9]/g, '');
 };
 
 loader.init().then((monacoInstance) => {
   if (customThemes && typeof customThemes === 'object') {
     Object.keys(customThemes).forEach((themeKey) => {
       if (!themeKey || themeKey === 'vs' || themeKey === 'vs-dark' || themeKey === 'hc-black') {
-        return; 
+        return;
       }
       try {
         if (customThemes[themeKey]) {
@@ -34,8 +34,8 @@ loader.init().then((monacoInstance) => {
 
 function CompilerPage() {
   const { idLectie } = useParams();
-  const { currentUser } = useAuth(); 
-  
+  const { currentUser } = useAuth();
+
   const [titluLectie, setTitluLectie] = useState("Workspace C++");
   const [editorCode, setEditorCode] = useState("");
   const [compilerInput, setCompilerInput] = useState("");
@@ -44,8 +44,12 @@ function CompilerPage() {
   const [executionMemory, setExecutionMemory] = useState(null);
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
-  //doar schimbi false in true 
   const [isMigrating, setIsMigrating] = useState(false);
+
+  const [aiCases, setAiCases] = useState(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [isAiPopoverOpen, setIsAiPopoverOpen] = useState(false);
+  const [copiedAiKey, setCopiedAiKey] = useState(null);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [leftWidth, setLeftWidth] = useState(window.innerWidth * 0.6);
@@ -54,11 +58,11 @@ function CompilerPage() {
 
   const [isResizingH, setIsResizingH] = useState(false);
   const [isResizingV, setIsResizingV] = useState(false);
-  
+
   const containerRef = useRef(null);
   const sidePanelRef = useRef(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  
+
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
@@ -74,21 +78,28 @@ function CompilerPage() {
   useEffect(() => {
     if (document.fonts) {
       document.fonts.ready.then(() => {
-        setFontsLoaded(true); // era setFontFontsLoaded (typo) - rămânea blocat pe "Se încarcă fonturile..."
+        setFontsLoaded(true);
       });
     } else {
       setFontsLoaded(true);
     }
   }, []);
-  
+
   const temaEchipataDb = currentUser?.temaEchipata || 'theme_default';
 
-  const monacoThemeName = (customThemes && customThemes[temaEchipataDb]) 
-    ? sanitizeThemeName(temaEchipataDb) 
+  const monacoThemeName = (customThemes && customThemes[temaEchipataDb])
+    ? sanitizeThemeName(temaEchipataDb)
     : 'vs-dark';
 
   useEffect(() => {
     async function incarcaCodSursa() {
+      if (!idLectie || idLectie === "liber") {
+        setTitluLectie("Sandbox Liber");
+        setEditorCode("// Scrie codul tău C++ aici...\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}");
+        setLoadingPage(false);
+        return;
+      }
+
       try {
         const docRef = doc(db, "lectii", idLectie);
         const docSnap = await getDoc(docRef);
@@ -115,12 +126,64 @@ function CompilerPage() {
         setTopHeight(window.innerHeight * 0.45);
       } else {
         setEditorHeightMobile(window.innerHeight * 0.5);
-        setTopHeight(window.innerHeight * 0.22); 
+        setTopHeight(window.innerHeight * 0.22);
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Funcție securizată pentru preluarea cazurilor din backend-ul AI
+  const handleFetchAiCases = async () => {
+    if (loadingAi) return; // Blochează execuția dacă se încarcă deja
+
+    if (aiCases) {
+      setIsAiPopoverOpen(!isAiPopoverOpen);
+      return;
+    }
+
+    setLoadingAi(true);
+    setIsAiPopoverOpen(true);
+    try {
+      const response = await fetch(`${baseUrl}/api/generate-cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          algoritm: titluLectie,
+          tipModul: 'compiler'
+        })
+      });
+
+      if (!response.ok) throw new Error("Eroare la comunicarea cu serverul AI");
+      const data = await response.json();
+      setAiCases(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Nu s-au putut genera datele de test.");
+      setIsAiPopoverOpen(false);
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
+  // Funcție îmbunătățită: copiază în clipboard ȘI pune direct în STDIN text-ul
+  const handleApplyAiValue = async (valoareString, cheieCaz) => {
+    if (!valoareString) return;
+
+    try {
+      // Injectăm textul direct în textarea STDIN din pagină
+      setCompilerInput(valoareString);
+      
+      // Opțional, îl copiem și în clipboard pentru siguranță
+      await navigator.clipboard.writeText(valoareString);
+      
+      setCopiedAiKey(cheieCaz);
+      toast.success("Datele AI au fost aplicate direct în STDIN!");
+      setTimeout(() => setCopiedAiKey(null), 2000);
+    } catch (err) {
+      console.error("Eroare la aplicarea datelor:", err);
+    }
+  };
 
   useEffect(() => {
     const handleMoveMain = (clientX, clientY) => {
@@ -128,14 +191,14 @@ function CompilerPage() {
 
       if (!isMobile) {
         let newWidth = clientX;
-        if (newWidth < 150) newWidth = 0; 
-        if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth; 
+        if (newWidth < 150) newWidth = 0;
+        if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth;
         setLeftWidth(newWidth);
       } else {
-        let newHeight = clientY - 55; 
+        let newHeight = clientY - 55;
         const disponibil = window.innerHeight - 55;
-        if (newHeight < 60) newHeight = 0; 
-        if (newHeight > disponibil - 60) newHeight = disponibil; 
+        if (newHeight < 60) newHeight = 0;
+        if (newHeight > disponibil - 60) newHeight = disponibil;
         setEditorHeightMobile(newHeight);
       }
     };
@@ -172,8 +235,8 @@ function CompilerPage() {
       const panelRect = sidePanelRef.current.getBoundingClientRect();
       let newHeight = clientY - panelRect.top;
 
-      if (newHeight < 40) newHeight = 0; 
-      if (newHeight > panelRect.height - 40) newHeight = panelRect.height; 
+      if (newHeight < 40) newHeight = 0;
+      if (newHeight > panelRect.height - 40) newHeight = panelRect.height;
 
       setTopHeight(newHeight);
     };
@@ -203,14 +266,14 @@ function CompilerPage() {
   }, [isResizingV]);
 
   const handleRunCompilerCode = async () => {
-    if (isMigrating) return; // Siguranță în caz că mentenanța e reactivată din flag-ul de mai sus
+    if (isMigrating) return;
 
     setLoadingCompiler(true);
     setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
 
     setExecutionTime(null);
     setExecutionMemory(null);
-    
+
     try {
       const response = await fetch(`${baseUrl}/api/run-cpp`, {
         method: 'POST',
@@ -251,7 +314,7 @@ function CompilerPage() {
     }, 150);
   };
 
-  const mainSplitStyle = isMobile 
+  const mainSplitStyle = isMobile
     ? { height: `${editorHeightMobile}px`, width: '100%' }
     : { width: `${leftWidth}px`, height: '100%' };
 
@@ -259,9 +322,57 @@ function CompilerPage() {
     ? { height: `calc(100vh - 55px - ${editorHeightMobile}px - 8px)`, width: '100%' }
     : { width: `calc(100vw - ${leftWidth}px - 8px)`, height: '100%' };
 
+  const esteInWorkspaceLectie = idLectie && idLectie !== "liber";
+
+  const renderAiRow = (label, colorStyle, dataKey, valoareString) => {
+    if (!valoareString) return null;
+
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '8px 10px', 
+        backgroundColor: '#111115', 
+        borderRadius: '6px', 
+        border: '1px solid #27272a', 
+        gap: '8px' 
+      }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: colorStyle, marginBottom: '2px' }}>{label}</div>
+          <div style={{ 
+            fontSize: '11px', 
+            fontFamily: 'monospace', 
+            color: '#a1a1aa', 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap' 
+          }}>
+            {valoareString}
+          </div>
+        </div>
+        <button
+          onClick={() => handleApplyAiValue(valoareString, dataKey)}
+          style={{ 
+            fontSize: '11px', 
+            background: '#27272a', 
+            border: 'none', 
+            color: copiedAiKey === dataKey ? '#00ffcc' : '#e4e4e7', 
+            padding: '4px 8px', 
+            borderRadius: '4px', 
+            cursor: 'pointer', 
+            flexShrink: 0 
+          }}
+        >
+          {copiedAiKey === dataKey ? 'Aplicat!' : 'Aplică'}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className={`compiler-page-container ${isResizingH ? 'resizing-h-active' : ''} ${isResizingV ? 'resizing-v-active' : ''}`}>
-      
+
       <div className="ide-header">
         <div className="header-dots-zone">
           <span className="dot dot-red"></span>
@@ -271,10 +382,10 @@ function CompilerPage() {
             InfoMotion IDE — {titluLectie}
           </h3>
         </div>
-        <div>
-          <button 
-            onClick={handleRunCompilerCode} 
-            disabled={loadingCompiler || isMigrating} 
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={handleRunCompilerCode}
+            disabled={loadingCompiler || isMigrating}
             className="run-code-btn"
             style={isMigrating ? { opacity: 0.6, cursor: 'not-allowed', background: '#45475a' } : {}}
           >
@@ -284,23 +395,23 @@ function CompilerPage() {
       </div>
 
       <div className="ide-main-body" ref={containerRef}>
-        
+
         <div className="ide-editor-section" style={mainSplitStyle}>
           {fontsLoaded ? (
             <Editor
               height="100%"
               language="cpp"
-              theme={monacoThemeName} 
+              theme={monacoThemeName}
               value={editorCode}
               onChange={(val) => setEditorCode(val || "")}
-              onMount={handleEditorDidMount} 
+              onMount={handleEditorDidMount}
               options={{
-                fontSize: isMobile ? 14 : 16, 
+                fontSize: isMobile ? 14 : 16,
                 minimap: { enabled: false },
                 automaticLayout: true,
                 scrollbar: { vertical: 'visible', handleMouseWheel: true },
                 tabSize: 4,
-                fontFamily: "Consolas, 'Courier New', monospace", 
+                fontFamily: "Consolas, 'Courier New', monospace",
                 tabFocusMode: false,
               }}
             />
@@ -311,16 +422,71 @@ function CompilerPage() {
           )}
         </div>
 
-        <div 
-          className={`resizer-horizontal ${isResizingH ? 'active' : ''}`} 
+        <div
+          className={`resizer-horizontal ${isResizingH ? 'active' : ''}`}
           onMouseDown={() => setIsResizingH(true)}
-          onTouchStart={() => setIsResizingH(true)} 
+          onTouchStart={() => setIsResizingH(true)}
         />
 
         <div className="ide-side-panel" ref={sidePanelRef} style={sidePanelStyle}>
-          
-          <div className="panel-box" style={{ height: `${topHeight}px` }}>
-            <div className="box-header-title">DATE DE INTRARE (STDIN)</div>
+
+          <div className="panel-box" style={{ height: `${topHeight}px`, position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '10px' }}>
+              <div className="box-header-title">DATE DE INTRARE (STDIN)</div>
+
+              {esteInWorkspaceLectie && (
+                <div style={{ position: 'relative', zIndex: 110 }}>
+                  <button
+                    onClick={handleFetchAiCases}
+                    disabled={loadingAi}
+                    style={{
+                      background: 'rgba(31, 224, 249, 0.08)',
+                      border: '1px solid rgba(31, 224, 249, 0.3)',
+                      color: '#1fe0f9',
+                      padding: '4px 10px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: loadingAi ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      marginTop: '4px',
+                      opacity: loadingAi ? 0.6 : 1
+                    }}
+                  >
+                    <Wand2 size={12} />
+                    {loadingAi ? 'Generare...' : 'Cazuri AI'}
+                  </button>
+
+                  {isAiPopoverOpen && aiCases && (
+                    <div style={{
+                      position: 'absolute',
+                      right: 0,
+                      marginTop: '6px',
+                      width: '280px',
+                      backgroundColor: '#18181b',
+                      border: '1px solid #27272a',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.7)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Seturi brute de text (STDIN)
+                      </div>
+                      {renderAiRow('Average Case', '#34d399', 'normal', aiCases.normal)}
+                      {renderAiRow('Worst Case', '#f43f5e', 'worstCase', aiCases.worstCase)}
+                      {renderAiRow('Best Case', '#22d3ee', 'bestCase', aiCases.bestCase)}
+                      {renderAiRow('Stress Test / Edge', '#fbbf24', 'stressTest', aiCases.stressTest)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <textarea
               value={compilerInput}
               onChange={(e) => setCompilerInput(e.target.value)}
@@ -330,18 +496,15 @@ function CompilerPage() {
             />
           </div>
 
-          <div 
-            className={`resizer-vertical ${isResizingV ? 'active' : ''}`} 
+          <div
+            className={`resizer-vertical ${isResizingV ? 'active' : ''}`}
             onMouseDown={() => setIsResizingV(true)}
-            onTouchStart={() => setIsResizingV(true)} 
+            onTouchStart={() => setIsResizingV(true)}
           />
 
           <div className="panel-box" style={{ height: `calc(100% - ${topHeight}px - 8px)` }}>
             <div className="box-header-title">CONSOLĂ REZULTAT (STDOUT)</div>
-            
-            {/* BANNER MENTENANȚĂ VPS — dezactivat, păstrat doar ca referință.
-            Dacă e nevoie să reactivezi mentenanța: pune `isMigrating` pe `true`
-            mai sus și scoate acest bloc din comentariu.*/}
+
             {isMigrating && (
               <div style={{
                 background: 'rgba(250, 179, 135, 0.12)',
@@ -355,11 +518,10 @@ function CompilerPage() {
                 lineHeight: '1.45'
               }}>
                 <strong>Sistemul de evaluare se mută pe server VPS dedicat!</strong> <br />
-                Compilarea live pentru codul C++ este temporar suspendată pentru upgrade de infrastructură (mutare cluster Docker). Toate animațiile și simulările vizuale de pe site rămân complet funcționale.
-               <br /> Am reusit sa mutam evaluatorul pe VPS-ul dedicat, dar mai avem adjustari de securitate de facut.
+                Compilarea live pentru codul C++ este temporar suspendată pentru upgrade de infrastructură (mutare cluster Docker). Toate animațiile și simulările vizuale de pe site rămân complet functionale.
+                <br /> Am reusit sa mutam evaluatorul pe VPS-ul dedicat, dar mai avem adjustari de securitate de facut.
               </div>
             )}
-            
 
             {executionTime !== null && executionMemory !== null && (
               <div className="performance-stats-bar" style={{

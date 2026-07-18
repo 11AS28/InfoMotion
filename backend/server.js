@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { GoogleGenAI } = require('@google/genai');
 
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
@@ -20,6 +21,8 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
+const ai = new GoogleGenAI({});
+
 app.use(cors({
   origin: [
     'https://infomotion.space',
@@ -31,6 +34,62 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 app.use(express.json());
+
+const rateLimit = require('express-rate-limit');
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!",
+  skip: (req, res) => {
+    return req.ip === '::1' || req.ip === '127.0.0.1' || process.env.NODE_ENV !== 'production';
+  }
+});
+
+app.use('/api/generate-cases', apiLimiter);
+
+
+app.post('/api/generate-cases', async (req, res) => {
+  try {
+    const { algoritm, tipModul } = req.body;
+
+    if (!algoritm) {
+      return res.status(400).json({ error: "Lipsește numele algoritmului." });
+    }
+
+    const prompt = `
+      Ești un asistent AI integrat pe platforma InfoMotion. 
+      Trebuie să generezi 4 seturi de date de test pentru algoritmul/lecția: "${algoritm}".
+      Contextul paginii este: "${tipModul || 'compiler'}".
+
+      Cerință strictă de formatare:
+      - Returnează EXACT un obiect JSON valid cu cheile: "normal", "worstCase", "bestCase", "stressTest".
+      - Valoarea fiecărei chei TREBUIE să fie direct un STRING simplu (fără sub-obiecte, fără explicații).
+      
+      Reguli pentru conținutul string-ului în funcție de tipModul:
+      1. Dacă tipModul este 'compiler', generează textul brut pentru consolă (STDIN). De exemplu, pentru vectori pune N pe prima linie și elementele separate prin spațiu pe linia a doua.
+      2. Dacă tipModul este 'animation' (sau altceva decât compiler), generează doar elementele separate prin virgulă (ex: "5, 4, 3, 2, 1" sau "1, 2, 3, 4, 5") așa cum cere input-ul din pagina de animație.
+
+      Nu include blocuri de cod markdown (\`\`\`json). Returnează doar obiectul JSON pur.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    // Parsăm JSON-ul simplu primit de la Gemini
+    const testCases = JSON.parse(response.text);
+    res.json(testCases);
+
+  } catch (error) {
+    console.error("Eroare Gemini:", error);
+    res.status(500).json({ error: "Eroare la generarea cazurilor simple." });
+  }
+});
 
 app.post('/api/log-event', (req, res) => {
   const { type, actionCode, message } = req.body;
@@ -62,13 +121,7 @@ app.get('/api/admin/logs', (_req, res) => {
   return res.json({ logs: getLogs() });
 });
 
-const rateLimit = require('express-rate-limit');
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 15,
-  message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!"
-});
 app.use('/api/simulate', apiLimiter);
 
 app.post('/api/simulate', async (req, res) => {

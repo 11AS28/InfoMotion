@@ -1,37 +1,17 @@
 [
   {
-    "text": "[19:38] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Runtime Error",
-    "timestampMs": 1781627938889,
-    "createdAt": "2026-06-16T16:38:58.889Z"
+    "text": "[20:36] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Time Limit Exceeded (TLE)",
+    "timestampMs": 1784396202553,
+    "createdAt": "2026-07-18T17:36:42.553Z"
   },
   {
-    "text": "[19:39] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Runtime Error",
-    "timestampMs": 1781627946115,
-    "createdAt": "2026-06-16T16:39:06.115Z"
+    "text": "[20:37] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Time Limit Exceeded (TLE)",
+    "timestampMs": 1784396238560,
+    "createdAt": "2026-07-18T17:37:18.560Z"
   },
   {
-    "text": "[19:39] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Runtime Error",
-    "timestampMs": 1781627953962,
-    "createdAt": "2026-06-16T16:39:13.962Z"
-  },
-  {
-    "text": "[19:40] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Runtime Error",
-    "timestampMs": 1781628036181,
-    "createdAt": "2026-06-16T16:40:36.181Z"
-  },
-  {
-    "text": "[19:41] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Runtime Error",
-    "timestampMs": 1781628115327,
-    "createdAt": "2026-06-16T16:41:55.327Z"
-  },
-  {
-    "text": "[19:57] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Eroare de compilare",
-    "timestampMs": 1781629031767,
-    "createdAt": "2026-06-16T16:57:11.767Z"
-  },
-  {
-    "text": "[20:02] [WARN] [LOGIN_FAILED] - [User: smmaria@gmail.com] - Parolă greșită la logare.",
-    "timestampMs": 1781629360791,
-    "createdAt": "2026-06-16T17:02:40.791Z"
+    "text": "[20:45] [INFO] [CPP_EXECUTION_ERROR] - Codul C++ rulat a returnat starea: Time Limit Exceeded (TLE)",
+    "timestampMs": 1784396751738,
+    "createdAt": "2026-07-18T17:45:51.738Z"
   }
 ]
