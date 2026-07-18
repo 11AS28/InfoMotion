@@ -40,13 +40,11 @@ const rateLimit = require('express-rate-limit');
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 15,
-  message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!",
-  skip: (req, res) => {
-    return req.ip === '::1' || req.ip === '127.0.0.1' || process.env.NODE_ENV !== 'production';
-  }
+  message: "Prea multe simulări trimise de pe acest IP. Încearcă din nou mai târziu!"
 });
 
-app.use('/api/generate-cases', apiLimiter);
+//app.use('/api/generate-cases', apiLimiter);
+ 
 
 
 app.post('/api/generate-cases', async (req, res) => {
