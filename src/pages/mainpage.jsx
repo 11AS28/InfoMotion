@@ -72,20 +72,21 @@ function MainPage() {
         
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '40px' }}>
           {currentUser 
-            ? "Mă bucur să te văd! Ești deja logat, alege o lecție, rezolvă o problemă din Arena sau descoperă ce e nou în Marketplace." 
+            ? "Încearcă și extensia noastră pentru a vizualiza algoritmii direct în browser!" 
             : "Alătură-te elevilor de elită. Creează un cont gratuit și deblochează lecțiile, arena si multe pagini!"}
         </p>
-
         
         {currentUser ? (
-          <Link to="/lectii" className="button" style={{ textDecoration: 'none' }}>
-            Începe să înveți
+          <Link to="/extensie" className="button" style={{ textDecoration: 'none' }}>
+            Descoperă Extensia
           </Link>
         ) : (
           <Link to="/auth" className="button" style={{ textDecoration: 'none' }}>
             Logare / Creare Cont
           </Link>
         )}
+        
+
       </section>
       
       <section className="hero-section">

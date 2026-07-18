@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "InfoMotion Explainer",
+  "version": "1.0",
+  "description": "Descoperă animațiile InfoMotion direct de pe pbInfo. \n Transformă explicațiile în animații interactive pentru o înțelegere mai bună.",
+  "permissions": ["activeTab", "scripting"],
+  "icons": {
+    "16": "logo-infomotion16.png",
+    "48": "logo-infomotion48.png",
+    "128": "logo-infomotion128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "logo-infomotion16.png",
+      "48": "logo-infomotion48.png",
+      "128": "logo-infomotion128.png"
+    },
+    "default_title": "InfoMotion Explainer"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.pbinfo.ro/*",
+        "*://leetcode.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}

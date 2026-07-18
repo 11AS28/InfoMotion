@@ -28,6 +28,7 @@ import Marketplace from './pages/Marketplace';
 import EmailNotVerified from './pages/EmailNotVerified'; 
 import Performanta from './pages/performanta';
 import PreviewPDF from './components/PreviewPDF';
+import ExtensiePage from './pages/Extenise';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -88,6 +89,13 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
             <Route path="/preview-pdf" element={import.meta.env.DEV ? <PreviewPDF /> : <Navigate to="/" />} />
+            <Route path="/extensie" element={
+              <div>
+                <Nav />
+                <ExtensiePage />
+                <Footer />
+              </div>
+              } />
 
             <Route
               path={SECRET}
