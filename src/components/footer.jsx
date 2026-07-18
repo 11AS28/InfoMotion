@@ -1,5 +1,5 @@
 import '../components_css/footer.css';
-import { FaGithub, FaInstagram } from "react-icons/fa"; 
+import { FaDiscord, FaGithub, FaInstagram } from "react-icons/fa"; 
 import { IoLogoVercel } from "react-icons/io5";
 import { CgMail } from "react-icons/cg";
 
@@ -27,6 +27,9 @@ function Footer() {
                         </a>
                         <a href="https://www.instagram.com/info.motion2026/?hl=en" target="_blank" rel="noreferrer" aria-label="Instagram">
                             <FaInstagram />
+                        </a>
+                        <a href="https://discord.gg/4HeztyxZ" target="_blank" rel="noreferrer" aria-label="Discord">
+                            <FaDiscord />
                         </a>
 
                     </div>
