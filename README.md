@@ -4,7 +4,7 @@
 
 ### Laboratorul digital care transformă algoritmica din teorie seacă în experiență vizuală și competitivă
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live-info--motion.vercel.app-23a9b3?style=for-the-badge)](https://info-motion.vercel.app)
+[![Live Demo](https://img.shields.io/badge/🌐_Live-infomotion.space-23a9b3?style=for-the-badge)](https://infomotion.space)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
