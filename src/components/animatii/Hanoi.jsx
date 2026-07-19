@@ -34,7 +34,7 @@ export default function HanoiAnim() {
   const [towers, setTowers] = useState(() => turnuriInitiale(3));
   const [moves, setMoves] = useState(() => {
     const m = [];
-    genereazaMutari(3, 0, 2, 1, m);
+    genereazaMutari(3, 'A', 'C', 'B', m); // litere ('A','B','C'), nu numere (0,2,1)
     return m;
   });
   const [moveIndex, setMoveIndex] = useState(0);
@@ -46,6 +46,22 @@ export default function HanoiAnim() {
   const animatingRef = useRef(false);
   const timeoutsRef = useRef([]);
   const epochRef = useRef(0);
+
+  // Refs sincronizate cu starea, folosite ca "sursa de adevar" in interiorul
+  // logicii de animatie. Nu punem NICIODATA logica in interiorul functiilor
+  // date la setState (React/StrictMode le poate apela de doua ori in dev,
+  // ceea ce ar duplica mutarile). setTowers/setMoveIndex primesc mereu
+  // valori simple, deja calculate.
+  const towersRef = useRef(towers);
+  const moveIndexRef = useRef(moveIndex);
+
+  useEffect(() => {
+    towersRef.current = towers;
+  }, [towers]);
+
+  useEffect(() => {
+    moveIndexRef.current = moveIndex;
+  }, [moveIndex]);
 
   useEffect(() => {
     playingRef.current = playing;
@@ -59,16 +75,23 @@ export default function HanoiAnim() {
   useEffect(() => () => clearTimers(), []);
 
   const resetTot = useCallback((nouN) => {
+    epochRef.current += 1; // invalideaza orice timeout/animatie ramasa de la starea veche
     clearTimers();
     setPlaying(false);
     playingRef.current = false;
     animatingRef.current = false;
     setAnimState(null);
+
     const m = [];
-    genereazaMutari(nouN, 0, 2, 1, m);
+    genereazaMutari(nouN, 'A', 'C', 'B', m);
+    const towereInitiale = turnuriInitiale(nouN);
+
     setMoves(m);
-    setTowers(turnuriInitiale(nouN));
+    setTowers(towereInitiale);
     setMoveIndex(0);
+
+    towersRef.current = towereInitiale;
+    moveIndexRef.current = 0;
   }, []);
 
   const schimbaN = (nou) => {
@@ -78,71 +101,81 @@ export default function HanoiAnim() {
 
   const executaMutare = useCallback(() => {
     if (animatingRef.current) return;
-    setMoveIndex((idxCurent) => {
-      if (idxCurent >= moves.length) return idxCurent;
-      const mutare = moves[idxCurent];
-      const fromIdx = PEGS.indexOf(mutare.from);
-      const toIdx = PEGS.indexOf(mutare.to);
 
-      animatingRef.current = true;
+    const idxCurent = moveIndexRef.current;
+    if (idxCurent >= moves.length) return;
 
-      setTowers((prevTowers) => {
-        const copie = prevTowers.map((t) => [...t]);
-        const disc = copie[fromIdx].pop();
+    const localEpoch = epochRef.current;
+    const mutare = moves[idxCurent];
+    const fromIdx = PEGS.indexOf(mutare.from);
+    const toIdx = PEGS.indexOf(mutare.to);
 
-        const bottomStart = BASE_OFFSET + copie[fromIdx].length * DISC_HEIGHT;
-        const bottomEnd = BASE_OFFSET + copie[toIdx].length * DISC_HEIGHT;
-        const leftStart = pegLeftPercent(fromIdx);
-        const leftEnd = pegLeftPercent(toIdx);
+    animatingRef.current = true;
 
-        setAnimState({ discSize: disc, left: leftStart, bottom: bottomStart, phase: 'start' });
+    // Calculam noua stare O SINGURA DATA, in afara oricarei functii de setState.
+    const copieDupaRidicare = towersRef.current.map((t) => [...t]);
+    const disc = copieDupaRidicare[fromIdx].pop();
 
-        const t1 = setTimeout(() => {
-          setAnimState((prev) => (prev ? { ...prev, bottom: LIFT_BOTTOM, phase: 'lift' } : prev));
-        }, 20);
+    const bottomStart = BASE_OFFSET + copieDupaRidicare[fromIdx].length * DISC_HEIGHT;
+    const bottomEnd = BASE_OFFSET + copieDupaRidicare[toIdx].length * DISC_HEIGHT;
+    const leftStart = pegLeftPercent(fromIdx);
+    const leftEnd = pegLeftPercent(toIdx);
 
-        const t2 = setTimeout(() => {
-          setAnimState((prev) => (prev ? { ...prev, left: leftEnd, phase: 'across' } : prev));
-        }, 220);
+    towersRef.current = copieDupaRidicare;
+    setTowers(copieDupaRidicare); // valoare simpla, nu functie
+    setAnimState({ discSize: disc, left: leftStart, bottom: bottomStart, phase: 'start' });
 
-        const t3 = setTimeout(() => {
-          setAnimState((prev) => (prev ? { ...prev, bottom: bottomEnd, phase: 'drop' } : prev));
-        }, 480);
+    const t1 = setTimeout(() => {
+      if (epochRef.current !== localEpoch) return;
+      setAnimState((prev) => (prev ? { ...prev, bottom: LIFT_BOTTOM, phase: 'lift' } : prev));
+    }, 20);
 
-        const t4 = setTimeout(() => {
-          setTowers((t) => {
-            const c = t.map((x) => [...x]);
-            c[toIdx].push(disc);
-            return c;
-          });
-          setAnimState(null);
-          animatingRef.current = false;
-          setMoveIndex((i) => i + 1);
+    const t2 = setTimeout(() => {
+      if (epochRef.current !== localEpoch) return;
+      setAnimState((prev) => (prev ? { ...prev, left: leftEnd, phase: 'across' } : prev));
+    }, 220);
 
-          if (playingRef.current) {
-            const nextDelay = Math.max(80, speed - 660);
-            const t5 = setTimeout(() => {
-              if (playingRef.current) executaMutare();
-            }, nextDelay);
-            timeoutsRef.current.push(t5);
-          }
-        }, 660);
+    const t3 = setTimeout(() => {
+      if (epochRef.current !== localEpoch) return;
+      setAnimState((prev) => (prev ? { ...prev, bottom: bottomEnd, phase: 'drop' } : prev));
+    }, 480);
 
-        timeoutsRef.current.push(t1, t2, t3, t4);
-        return copie;
-      });
+    const t4 = setTimeout(() => {
+      if (epochRef.current !== localEpoch) return;
 
-      return idxCurent; // moveIndex se incrementeaza in t4, dupa ce mutarea s-a incheiat vizual
-    });
+      const copieDupaAsezare = towersRef.current.map((x) => [...x]);
+      copieDupaAsezare[toIdx].push(disc);
+
+      towersRef.current = copieDupaAsezare;
+      setTowers(copieDupaAsezare); // valoare simpla, nu functie
+
+      setAnimState(null);
+      animatingRef.current = false;
+
+      const urmatorulIndex = idxCurent + 1;
+      moveIndexRef.current = urmatorulIndex;
+      setMoveIndex(urmatorulIndex); // valoare simpla, nu functie
+
+      if (playingRef.current) {
+        const nextDelay = Math.max(80, speed - 660);
+        const t5 = setTimeout(() => {
+          if (epochRef.current !== localEpoch) return;
+          if (playingRef.current) executaMutare();
+        }, nextDelay);
+        timeoutsRef.current.push(t5);
+      }
+    }, 660);
+
+    timeoutsRef.current.push(t1, t2, t3, t4);
   }, [moves, speed]);
 
   const handlePasUrmator = () => {
-    if (moveIndex >= moves.length || animatingRef.current) return;
+    if (moveIndexRef.current >= moves.length || animatingRef.current) return;
     executaMutare();
   };
 
   const handlePlayPause = () => {
-    if (moveIndex >= moves.length) return;
+    if (moveIndexRef.current >= moves.length) return;
     const nouStatus = !playing;
     setPlaying(nouStatus);
     playingRef.current = nouStatus;
