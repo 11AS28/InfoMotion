@@ -2,162 +2,217 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://info-motion.vercel.app/</loc>
+    <loc>https://infomotion.space/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/despre</loc>
+    <loc>https://infomotion.space/despre</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/contact</loc>
+    <loc>https://infomotion.space/contact</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectii</loc>
+    <loc>https://infomotion.space/lectii</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/analiza-combinatorica</loc>
+    <loc>https://infomotion.space/lectie/analiza-combinatorica</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/bubble-sort</loc>
+    <loc>https://infomotion.space/lectie/bubble-sort</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/cautare-binara</loc>
+    <loc>https://infomotion.space/lectie/cautare-binara</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/descompunere-factori-primi</loc>
+    <loc>https://infomotion.space/lectie/complexitatea-algoritmilor</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/divide-et-impera</loc>
+    <loc>https://infomotion.space/lectie/descompunere-factori-primi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/generarea-sirului-fibonacci</loc>
+    <loc>https://infomotion.space/lectie/divide-et-impera</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/interclasare-vectori</loc>
+    <loc>https://infomotion.space/lectie/generarea-sirului-fibonacci</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/matrici</loc>
+    <loc>https://infomotion.space/lectie/grafuri-intoducere-bfs</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/merge-sort</loc>
+    <loc>https://infomotion.space/lectie/grafuri-introducere-concept</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/metoda-greedy</loc>
+    <loc>https://infomotion.space/lectie/interclasare-vectori</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/operatori-si-expresii</loc>
+    <loc>https://infomotion.space/lectie/introducere-cum-functioneaza-calculatorul-cpp</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/parcurgere-strlen</loc>
+    <loc>https://infomotion.space/lectie/introducere-in-recursivitate-stiva</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/procesarea-cifrelor-unui-numar</loc>
+    <loc>https://infomotion.space/lectie/matchmaking-jocuri</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/quick-sort</loc>
+    <loc>https://infomotion.space/lectie/matrici</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/siruri-de-caractere</loc>
+    <loc>https://infomotion.space/lectie/merge-sort</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/siruri-functii-cautare</loc>
+    <loc>https://infomotion.space/lectie/metoda-greedy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/siruri-strcat-strtok</loc>
+    <loc>https://infomotion.space/lectie/operatori-si-expresii</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/siruri-strcmp-strrev</loc>
+    <loc>https://infomotion.space/lectie/prng-pacanele</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/siruri-strlen-strcpy</loc>
+    <loc>https://infomotion.space/lectie/procesarea-cifrelor-unui-numar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/sliding-window-deque</loc>
+    <loc>https://infomotion.space/lectie/quick-sort</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/smenul-lui-mars</loc>
+    <loc>https://infomotion.space/lectie/siruri-de-caractere</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/stiva-monotona</loc>
+    <loc>https://infomotion.space/lectie/siruri-functii-cautare</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/structuri-de-date-neomogene</loc>
+    <loc>https://infomotion.space/lectie/siruri-strcat-strtok</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/sume-partiale-1d</loc>
+    <loc>https://infomotion.space/lectie/siruri-strcmp-strrev</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/sume-partiale-2d</loc>
+    <loc>https://infomotion.space/lectie/siruri-strlen-strcpy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/variabile-cpp</loc>
+    <loc>https://infomotion.space/lectie/sliding-window-deque</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/vectori-introducere</loc>
+    <loc>https://infomotion.space/lectie/smenul-lui-mars</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://info-motion.vercel.app/lectie/verificare-numar-prim</loc>
+    <loc>https://infomotion.space/lectie/sortare-insertie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/sortare-interschimbare</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/sortare-selectie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/stiva-monotona</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/structuri-de-date-neomogene</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/structuri-decizionale-if-switch</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/sume-partiale-1d</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/sume-partiale-2d</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/turnurile-din-hanoi</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/variabile-cpp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/vectori-introducere</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infomotion.space/lectie/verificare-numar-prim</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
