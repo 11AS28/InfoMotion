@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 function SidebarStats({ isOpen, onClose }) {
   const { currentUser, getStatistici, logout, actualizeazaStreak, verifyHandleOwnership, generateVerificationCode } = useAuth();
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   const [handleInput, setHandleInput] = useState(currentUser?.codeforcesHandle || "");
   const [usernameInput, setUsernameInput] = useState(currentUser?.nume || "");
@@ -229,7 +230,7 @@ useEffect(() => {
   ];
 
 
-  const navigate = useNavigate();
+ 
 
   return (
     <>
