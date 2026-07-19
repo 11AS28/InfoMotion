@@ -8,8 +8,6 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId
                     && (request.resource.data.role == 'student' || request.resource.data.role == 'teacher');
 
-      // Userul își poate edita propriile date, dar NICIODATĂ rolul, punctele
-      // totale sau câmpuri sensibile — astea trec doar prin api/admin.js.
       allow update: if request.auth != null && request.auth.uid == userId && (
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'puncte', 'puncteTotale', 'hearts', 'streakCount'])
         ||
@@ -21,38 +19,28 @@ service cloud.firestore {
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
         )
       );
-      // Orice editare de admin (rol, puncte bonus etc.) -> POST /api/admin, action: update_user
 
       allow delete: if request.auth != null && request.auth.uid == userId;
 
       match /notifications/{notificationId} {
-        // Userul citește/bifează/șterge doar ale lui.
         allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-        // Notificările "de la admin" se creează EXCLUSIV prin api/admin.js
-        // (Admin SDK, care ignoră aceste reguli). Userul poate crea doar
-        // notificări pentru el însuși (dacă vreodată ai nevoie de asta).
         allow create: if request.auth != null && request.auth.uid == userId;
       }
     }
 
     match /lectii/{lessonId} {
       allow read: if true;
-      // Scriere EXCLUSIV prin api/admin.js, action: publish_lesson / delete_lesson
       allow write: if false;
     }
 
     match /propuneri_lectii/{proposalId} {
       allow read: if true;
       allow create: if request.auth != null;
-      // Aprobare = api/admin.js (publish_lesson cu propunereInCurs)
-      // Respingere = api/admin.js, action: reject_proposal
       allow update, delete: if false;
     }
 
     match /dailyChallenges/{challengeId} {
       allow read: if true;
-      // Userii logați pot doar ADĂUGA la lista de rezolvitori a unui
-      // challenge existent, nu crea/rescrie challenge-uri întregi.
       allow create: if false;
       allow update: if request.auth != null &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rezolvitori']);
@@ -60,23 +48,25 @@ service cloud.firestore {
     }
 
     match /admin_todo/{todoId} {
-      // Citirea/scrierea trec EXCLUSIV prin api/admin.js
-      // (action: list_todos / add_todo / toggle_todo / delete_todo)
       allow read, write: if false;
     }
 
     match /conturi_admin/{adminId} {
-      // Colecția asta nu mai e sursa de adevăr pentru autentificare —
-      // poate fi chiar ștearsă din Firestore. O lăsăm blocată total
-      // pentru orice eventualitate.
       allow read, write: if false;
     }
 
     match /contact_messages/{messageId} {
       allow create: if true;
-      // Citirea/răspunsul trec EXCLUSIV prin api/admin.js
-      // (action: list_messages / reply_message)
       allow read, update, delete: if false;
+    }
+
+    match /diplomas/{diplomaId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /diplomaRequests/{requestId} {
+      allow read, write: if false;
     }
   }
 }

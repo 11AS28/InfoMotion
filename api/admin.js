@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     'Emi': process.env.ADMIN_4_PASS
   };
 
-  const ACTIUNI_FARA_SESIUNE_ADMIN = ['claim_daily_reward', 'acorda_puncte', 'check_server_time'];
+  const ACTIUNI_FARA_SESIUNE_ADMIN = ['claim_daily_reward', 'acorda_puncte', 'check_server_time', 'request_diploma'];
 
   if (!ACTIUNI_FARA_SESIUNE_ADMIN.includes(action)) {
     if (!admins[username] || !verifySessionToken(username, sessionToken)) {
@@ -156,7 +156,145 @@ export default async function handler(req, res) {
         });
       }
 
+      case 'approve_diploma': {
+        const { requestId, grant } = data;
+        const reqRef = db.collection('diplomaRequests').doc(requestId);
+        const reqDoc = await reqRef.get();
+        if (!reqDoc.exists) return res.status(404).json({ error: 'Cererea nu există.' });
 
+        const reqData = reqDoc.data();
+        if (reqData.status !== 'pending') {
+          return res.status(400).json({ error: 'Cererea a fost deja procesată.' });
+        }
+
+        if (!grant) {
+          await reqRef.update({
+            status: 'rejected',
+            decidedBy: username,
+            decidedAt: currentTimestamp,
+            rejectReason: data.rejectReason || null
+          });
+
+          await db.collection('users').doc(reqData.studentId).collection('notifications').add({
+            type: 'diploma_respinsa',
+            text: data.rejectReason
+              ? data.rejectReason
+              : 'Cererea ta de diplomă a fost respinsă. Mai lucrează și cere din nou peste ceva timp.',
+            read: false,
+            createdAt: currentTimestamp
+          });
+
+          return res.status(200).json({ success: true });
+        }
+
+        const diplomaRef = await db.collection('diplomas').add({
+          studentId: reqData.studentId,
+          studentName: reqData.studentName,
+          stats: reqData.stats,
+          grantedBy: username,
+          grantedAt: currentTimestamp,
+          tier: data.tier,
+          courseName: data.courseName || null
+        });
+
+        await reqRef.update({
+          status: 'approved',
+          diplomaId: diplomaRef.id,
+          decidedBy: username,
+          decidedAt: currentTimestamp
+        });
+
+        await db.collection('users').doc(reqData.studentId).collection('notifications').add({
+          type: 'diploma_acordata',
+          text: `Felicitări! Ai primit o diplomă. Vezi-o aici: /diploma/${diplomaRef.id}`,
+          read: false,
+          createdAt: currentTimestamp
+        });
+
+        return res.status(200).json({ success: true, diplomaId: diplomaRef.id });
+      }
+
+      case 'request_diploma': {
+        const { userToken, userId } = data;
+
+        if (!userToken || !userId) {
+          return res.status(400).json({ error: 'Date incomplete.' });
+        }
+
+        const decodedToken = await admin.auth().verifyIdToken(userToken);
+        if (decodedToken.uid !== userId) {
+          return res.status(403).json({ error: 'Identitate invalidă!' });
+        }
+
+        const existingSnap = await db.collection('diplomaRequests')
+          .where('studentId', '==', userId)
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get();
+
+        if (!existingSnap.empty) {
+          const last = existingSnap.docs[0].data();
+          const lastDate = new Date(last.createdAt);
+          const zileTrecute = (Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (zileTrecute < 7) {
+            return res.status(400).json({ error: `Mai poți cere peste ${Math.ceil(7 - zileTrecute)} zile.` });
+          }
+        }
+
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.data();
+        const progres = userData.progres || {};
+
+        const lectiiSnap = await db.collection('lectii').get();
+        const clasaPerLectie = {};
+        lectiiSnap.forEach(doc => {
+          clasaPerLectie[doc.id] = doc.data().clasa || 'necunoscut';
+        });
+
+        const statsClase = { 'clasa-9': 0, 'clasa-10': 0, 'clasa-11': 0 };
+
+        Object.keys(progres).forEach(lessonId => {
+          const dateProgres = progres[lessonId];
+          if (!dateProgres) return;
+
+          const eComplet = dateProgres.status === 'complet' ||
+            dateProgres === true ||
+            dateProgres === 'complet' ||
+            (typeof dateProgres === 'object' && !dateProgres.status);
+
+          if (!eComplet) return;
+
+          const clasa = clasaPerLectie[lessonId];
+          if (clasa === 'clasa-9') statsClase['clasa-9']++;
+          else if (clasa === 'clasa-10') statsClase['clasa-10']++;
+          else if (clasa === 'clasa-11') statsClase['clasa-11']++;
+        });
+
+        const reqRef = await db.collection('diplomaRequests').add({
+          studentId: userId,
+          studentName: userData.nume || userData.email || 'Necunoscut',
+          stats: {
+            lectiiClasa9: statsClase['clasa-9'],
+            lectiiClasa10: statsClase['clasa-10'],
+            lectiiClasa11: statsClase['clasa-11'],
+            puncteTotale: userData.puncteTotale || 0,
+            problemeRezolvate: userData.problemeRezolvateCount || 0
+          },
+          status: 'pending',
+          createdAt: currentTimestamp
+        });
+
+        return res.status(200).json({ success: true, requestId: reqRef.id });
+      }
+
+      case 'list_diploma_requests': {
+        const snap = await db.collection('diplomaRequests')
+          .where('status', '==', 'pending')
+          .orderBy('createdAt', 'desc')
+          .get();
+        const requests = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        return res.status(200).json({ success: true, requests });
+      }
 
 
       case 'acorda_puncte': {

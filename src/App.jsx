@@ -29,14 +29,15 @@ import EmailNotVerified from './pages/EmailNotVerified';
 import Performanta from './pages/performanta';
 import PreviewPDF from './components/PreviewPDF';
 import ExtensiePage from './pages/Extenise';
+import DiplomaPage from './pages/DiplomaPage';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
 
 import './theme.css';
 
-const SECRET =  '/panouadmininfomotion'; //import.meta.env.VITE_SECRET_ADMIN_PATH ||
-const SECRETU =  '/panouadminuserinfomotion';// import.meta.env.VITE_SECRET_USERS_PATH ||
+const SECRET = '/panouadmininfomotion'; //import.meta.env.VITE_SECRET_ADMIN_PATH ||
+const SECRETU = '/panouadminuserinfomotion';// import.meta.env.VITE_SECRET_USERS_PATH ||
 
 function App() {
   const location = useLocation();
@@ -57,28 +58,29 @@ function App() {
     SECRETU,
   ];
 
-  const isDynamicRouteValid = 
-    matchPath('/lectie/:idLectie', location.pathname) || 
-    matchPath('/compiler/:idLectie', location.pathname);
+  const isDynamicRouteValid =
+    matchPath('/lectie/:idLectie', location.pathname) ||
+    matchPath('/compiler/:idLectie', location.pathname) ||
+    matchPath('/diploma/:idDiploma', location.pathname);
 
   const is404Page = !validPaths.includes(location.pathname) && !isDynamicRouteValid;
 
   const isAdminPage = location.pathname === SECRET;
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
-  const isAuthActionPage = location.pathname === '/auth/action'; 
-
+  const isAuthActionPage = location.pathname === '/auth/action';
+  const isDiplomaPage = location.pathname.startsWith('/diploma');
   return (
     <ThemeProvider>
       <AuthProvider>
         <Toaster richColors position="top-right" />
-        
 
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page  && <Nav />}
-        
-        <main style={{ 
-          minHeight: '100vh', 
-          paddingTop: isAdminPage || epagadmin || isCompilerPage || is404Page ? '0' : '85px' 
+
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && <Nav />}
+
+        <main style={{
+          minHeight: '100vh',
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || isDiplomaPage || is404Page ? '0' : '85px'
         }}>
           <Routes>
 
@@ -118,36 +120,37 @@ function App() {
             <Route
               path="/lectii"
               element={
-              <ProtectedRoute>
-                <PrivateRoute>
-                  <Lectii />
-                </PrivateRoute>
-              </ProtectedRoute>
-                
+                <ProtectedRoute>
+                  <PrivateRoute>
+                    <Lectii />
+                  </PrivateRoute>
+                </ProtectedRoute>
+
               }
             />
 
             <Route
               path="/arena"
               element={
-              <ProtectedRoute>
-                <PrivateRoute>
-                  <Clasament />
-                </PrivateRoute>
-              </ProtectedRoute>
+                <ProtectedRoute>
+                  <PrivateRoute>
+                    <Clasament />
+                  </PrivateRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path="/lectie/:idLectie"
               element={
-              <ProtectedRoute>
-                <PrivateRoute>
-                  <LessonPage />
-                </PrivateRoute>
-              </ProtectedRoute>
+                <ProtectedRoute>
+                  <PrivateRoute>
+                    <LessonPage />
+                  </PrivateRoute>
+                </ProtectedRoute>
               }
             />
+            <Route path="/diploma/:id" element={<DiplomaPage />} />
 
             <Route
               path="/compiler/:idLectie"
@@ -158,15 +161,15 @@ function App() {
               }
             />
 
-            <Route 
-              path="/marketplace" 
+            <Route
+              path="/marketplace"
               element={
-              <ProtectedRoute>
-                <PrivateRoute>
-                  <Marketplace />
-                </PrivateRoute>
-              </ProtectedRoute>
-              } 
+                <ProtectedRoute>
+                  <PrivateRoute>
+                    <Marketplace />
+                  </PrivateRoute>
+                </ProtectedRoute>
+              }
             />
 
             <Route
@@ -182,7 +185,7 @@ function App() {
             <Route
               path="/verifica-email"
               element=
-              { <div>
+              {<div>
                 <Nav />
                 <EmailNotVerified />
                 <Footer />
@@ -204,48 +207,48 @@ function App() {
             <Route 
               path="*" 
               element={
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  alignItems: 'center',
                   minHeight: '85vh',
                   color: '#ffffff',
                   fontFamily: 'sans-serif',
                   textAlign: 'center',
                   padding: '20px'
                 }}>
-                  <div style={{ 
+                  <div style={{
                     display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', opacity: 0.85
                   }}>
-                    <img 
-                      src="/logo-infomotion.svg?v=2" 
-                      alt="InfoMotion Logo" 
-                      style={{ width: '42px', height: 'auto', display: 'block' }} 
+                    <img
+                      src="/logo-infomotion.svg?v=2"
+                      alt="InfoMotion Logo"
+                      style={{ width: '42px', height: 'auto', display: 'block' }}
                     />
-                    <span style={{ 
-                      fontSize: '1.6rem', fontWeight: '600', letterSpacing: '-0.5px' 
+                    <span style={{
+                      fontSize: '1.6rem', fontWeight: '600', letterSpacing: '-0.5px'
                     }}>
                       InfoMotion<span style={{ color: '#00f3ff', fontWeight: 'bold' }}>.</span>
                     </span>
                   </div>
 
-                  <h1 style={{ 
+                  <h1 style={{
                     fontSize: '6rem', fontWeight: '800', letterSpacing: '-2px',
                     margin: '0 0 10px 0', background: 'linear-gradient(180deg, #ffffff 0%, #3a4750 100%)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
                   }}>
                     404
                   </h1>
-                  
-                  <p style={{ 
-                    color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0' 
+
+                  <p style={{
+                    color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0'
                   }}>
                     Pagina pe care o cauți nu există, a fost ștearsă sau mutată într-o zonă securizată.
                   </p>
 
-                  <a 
-                    href="/" 
+                  <a
+                    href="/"
                     style={{
                       color: '#00f3ff',
                       textDecoration: 'none',
@@ -269,14 +272,13 @@ function App() {
                     Înapoi la pagina principală
                   </a>
                 </div>
-              } 
+              }
             />
           </Routes>
         </main>
 
         <Online />
-        {!isAdminPage && !epagadmin && !isCompilerPage && !is404Page && <Footer />}
-        
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && <Footer />}
       </AuthProvider>
       <SpeedInsights />
       <Analytics />

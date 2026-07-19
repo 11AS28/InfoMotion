@@ -111,7 +111,7 @@ function Arena({ datePreincarcate }) {
             badgeMap[s.uid] = s.problemeRezolvateCount || 0;
           });
           setUserBadgesMap(badgeMap);
-          return;
+          return; 
         }
 
         const controller = new AbortController();
