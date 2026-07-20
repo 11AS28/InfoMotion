@@ -560,7 +560,8 @@ function LessonPage() {
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
               <div className="lesson-theory-content">
                 {parse(DOMPurify.sanitize(proceseazaTeorie(lectie.teorie), {
-                  FORBID_ATTR: ['style', 'color', 'bgcolor']
+                  FORBID_ATTR: ['style', 'color', 'bgcolor'],
+                  FORBID_TAGS: ['div', 'section', 'style', 'script']
                 }), {
                   replace: (domNode) => {
                     if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {

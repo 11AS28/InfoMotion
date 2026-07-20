@@ -633,14 +633,14 @@ body {
 .lesson-theory-content {
   font-size: 1.15rem !important; 
   line-height: 1.75 !important;  
-  color: #e2e8f0 !important;    
+  color: var(--text-primary) !important;    
 }
 
 
 .lesson-theory-content p {
   font-size: 1.15rem !important;
   margin-bottom: 16px !important;
-  color: #e2e8f0 !important;
+  color: var(--text-primary) !important;
 }
 
 
@@ -655,7 +655,7 @@ body {
   font-size: 1.15rem !important; 
   margin-bottom: 8px !important;
   line-height: 1.6 !important;
-  color: #e2e8f0 !important;
+  color: var(--text-primary) !important;
 }
 
 .theory-highlight-box {
