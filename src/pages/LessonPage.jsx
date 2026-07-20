@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc,collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star, Wand2 } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
@@ -174,62 +174,61 @@ function LessonPage() {
   };
 
   useEffect(() => {
-    let isMounted = true;
+  let isMounted = true;
 
-    async function incarcaDatePagina() {
-      setLoading(true);
-      if (isMounted) {
-        setAnimationSteps([]);
-        setCustomInput("");
-        setAnimError(null);
-        setAiCases(null);
-        setIsAiPopoverOpen(false);
-      }
-
-      try {
-        const VERSIUNE_CURENTA = "v2_simulari_noi";
-        const cacheVersiuneSalvata = localStorage.getItem('infoMotion_cache_version');
-
-        if (cacheVersiuneSalvata !== VERSIUNE_CURENTA) {
-          localStorage.removeItem('infoMotion_lectii');
-          localStorage.setItem('infoMotion_cache_version', VERSIUNE_CURENTA);
-        }
-
-        const cachedLessonsRaw = localStorage.getItem('infoMotion_lectii');
-
-        if (cachedLessonsRaw) {
-          const toateLectiile = JSON.parse(cachedLessonsRaw);
-          const lectieGasita = toateLectiile.find(l => l.id === idLectie);
-
-          if (lectieGasita) {
-            if (isMounted) setLectie(lectieGasita);
-            const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
-            if (isMounted) setToateLectiileDinClasa(filtrateLocal);
-          } else {
-            console.error("Lecția nu a fost găsită în cache-ul local!");
-          }
-        } else {
-          const docRef = doc(db, "lectii", idLectie);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && isMounted) setLectie(docSnap.data());
-        }
-
-        if (currentUser) {
-          const terminate = currentUser.lectiiTerminate || [];
-          const gasit = terminate.some(id => String(id) === String(idLectie));
-          if (isMounted) setEsteGata(gasit);
-        }
-
-      } catch (error) {
-        console.error("Eroare la încărcarea datelor:", error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+  async function incarcaDatePagina() {
+    setLoading(true);
+    if (isMounted) {
+      setAnimationSteps([]);
+      setCustomInput("");
+      setAnimError(null);
+      setAiCases(null);
+      setIsAiPopoverOpen(false);
     }
 
-    incarcaDatePagina();
-    return () => { isMounted = false; };
-  }, [idLectie, currentUser]);
+    try {
+      const CACHE_KEY = 'infomotion_lessons_cache_v3';
+      const cachedLessonsRaw = localStorage.getItem(CACHE_KEY);
+      let toateLectiile = null;
+
+      if (cachedLessonsRaw) {
+        toateLectiile = JSON.parse(cachedLessonsRaw);
+      } else {
+        const querySnapshot = await getDocs(collection(db, "lectii"));
+        toateLectiile = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(toateLectiile));
+      }
+
+      const lectieGasita = toateLectiile.find(l => l.id === idLectie);
+
+      if (lectieGasita) {
+        if (isMounted) setLectie(lectieGasita);
+        const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
+        if (isMounted) setToateLectiileDinClasa(filtrateLocal);
+      } else {
+        const docRef = doc(db, "lectii", idLectie);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && isMounted) {
+          setLectie({ id: docSnap.id, ...docSnap.data() });
+        }
+      }
+
+      if (currentUser) {
+        const terminate = currentUser.lectiiTerminate || [];
+        const gasit = terminate.some(id => String(id) === String(idLectie));
+        if (isMounted) setEsteGata(gasit);
+      }
+
+    } catch (error) {
+      console.error("Eroare la încărcarea datelor:", error);
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  }
+
+  incarcaDatePagina();
+  return () => { isMounted = false; };
+}, [idLectie, currentUser]);
 
   const handleGenerateAnimation = async () => {
     if (!customInput) return alert("Te rog introdu datele de test!");
