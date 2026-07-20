@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../pages_css/lessons.css';
 import QuizModal from '../components/QuizModal';
 import ArrayVisualizer from '../components/ArrayVisualizer';
-import { doc, getDoc,collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { BookOpenText, Gamepad2, Code, NotebookPen, Check, Copy, Star, Wand2 } from 'lucide-react';
 import TreeVisualizer from '../components/TreeVisualizer';
@@ -174,61 +174,61 @@ function LessonPage() {
   };
 
   useEffect(() => {
-  let isMounted = true;
+    let isMounted = true;
 
-  async function incarcaDatePagina() {
-    setLoading(true);
-    if (isMounted) {
-      setAnimationSteps([]);
-      setCustomInput("");
-      setAnimError(null);
-      setAiCases(null);
-      setIsAiPopoverOpen(false);
-    }
-
-    try {
-      const CACHE_KEY = 'infomotion_lessons_cache_v3';
-      const cachedLessonsRaw = localStorage.getItem(CACHE_KEY);
-      let toateLectiile = null;
-
-      if (cachedLessonsRaw) {
-        toateLectiile = JSON.parse(cachedLessonsRaw);
-      } else {
-        const querySnapshot = await getDocs(collection(db, "lectii"));
-        toateLectiile = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        localStorage.setItem(CACHE_KEY, JSON.stringify(toateLectiile));
+    async function incarcaDatePagina() {
+      setLoading(true);
+      if (isMounted) {
+        setAnimationSteps([]);
+        setCustomInput("");
+        setAnimError(null);
+        setAiCases(null);
+        setIsAiPopoverOpen(false);
       }
 
-      const lectieGasita = toateLectiile.find(l => l.id === idLectie);
+      try {
+        const CACHE_KEY = 'infomotion_lessons_cache_v3';
+        const cachedLessonsRaw = localStorage.getItem(CACHE_KEY);
+        let toateLectiile = null;
 
-      if (lectieGasita) {
-        if (isMounted) setLectie(lectieGasita);
-        const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
-        if (isMounted) setToateLectiileDinClasa(filtrateLocal);
-      } else {
-        const docRef = doc(db, "lectii", idLectie);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && isMounted) {
-          setLectie({ id: docSnap.id, ...docSnap.data() });
+        if (cachedLessonsRaw) {
+          toateLectiile = JSON.parse(cachedLessonsRaw);
+        } else {
+          const querySnapshot = await getDocs(collection(db, "lectii"));
+          toateLectiile = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          localStorage.setItem(CACHE_KEY, JSON.stringify(toateLectiile));
         }
-      }
 
-      if (currentUser) {
-        const terminate = currentUser.lectiiTerminate || [];
-        const gasit = terminate.some(id => String(id) === String(idLectie));
-        if (isMounted) setEsteGata(gasit);
-      }
+        const lectieGasita = toateLectiile.find(l => l.id === idLectie);
 
-    } catch (error) {
-      console.error("Eroare la încărcarea datelor:", error);
-    } finally {
-      if (isMounted) setLoading(false);
+        if (lectieGasita) {
+          if (isMounted) setLectie(lectieGasita);
+          const filtrateLocal = toateLectiile.filter(l => l.clasa === lectieGasita.clasa);
+          if (isMounted) setToateLectiileDinClasa(filtrateLocal);
+        } else {
+          const docRef = doc(db, "lectii", idLectie);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && isMounted) {
+            setLectie({ id: docSnap.id, ...docSnap.data() });
+          }
+        }
+
+        if (currentUser) {
+          const terminate = currentUser.lectiiTerminate || [];
+          const gasit = terminate.some(id => String(id) === String(idLectie));
+          if (isMounted) setEsteGata(gasit);
+        }
+
+      } catch (error) {
+        console.error("Eroare la încărcarea datelor:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  }
 
-  incarcaDatePagina();
-  return () => { isMounted = false; };
-}, [idLectie, currentUser]);
+    incarcaDatePagina();
+    return () => { isMounted = false; };
+  }, [idLectie, currentUser]);
 
   const handleGenerateAnimation = async () => {
     if (!customInput) return alert("Te rog introdu datele de test!");
@@ -559,7 +559,9 @@ function LessonPage() {
             <div className="lesson-theory">
               <h2><BookOpenText size={60} color="#1fe0f9" strokeWidth={0.75} /> Teorie</h2>
               <div className="lesson-theory-content">
-                {parse(DOMPurify.sanitize(proceseazaTeorie(lectie.teorie)), {
+                {parse(DOMPurify.sanitize(proceseazaTeorie(lectie.teorie), {
+                  FORBID_ATTR: ['style', 'color', 'bgcolor']
+                }), {
                   replace: (domNode) => {
                     if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
                       const href = domNode.attribs.href;
