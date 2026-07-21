@@ -1,9 +1,9 @@
-import { Routes, Route, useLocation, matchPath, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, matchPath, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Toaster, toast } from 'sonner';
-import { Analytics } from '@vercel/analytics/react'
+import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/react';
 
 import Nav from './components/nav';
 import Footer from './components/footer';
@@ -33,11 +33,10 @@ import DiplomaPage from './pages/DiplomaPage';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 
-
 import './theme.css';
 
-const SECRET = '/panouadmininfomotion'; //import.meta.env.VITE_SECRET_ADMIN_PATH ||
-const SECRETU = '/panouadminuserinfomotion';// import.meta.env.VITE_SECRET_USERS_PATH ||
+const SECRET = '/panouadmininfomotion'; 
+const SECRETU = '/panouadminuserinfomotion';
 
 function App() {
   const location = useLocation();
@@ -54,6 +53,9 @@ function App() {
     '/marketplace',
     '/trimite-lectie',
     '/verifica-email',
+    '/performanta',
+    '/extensie',
+    '/preview-pdf',
     SECRET,
     SECRETU,
   ];
@@ -68,13 +70,12 @@ function App() {
   const isAdminPage = location.pathname === SECRET;
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
-  const isAuthActionPage = location.pathname === '/auth/action';
   const isDiplomaPage = location.pathname.startsWith('/diploma');
+
   return (
     <ThemeProvider>
       <AuthProvider>
         <Toaster richColors position="top-right" />
-
 
         {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && <Nav />}
 
@@ -83,7 +84,6 @@ function App() {
           paddingTop: isAdminPage || epagadmin || isCompilerPage || isDiplomaPage || is404Page ? '0' : '85px'
         }}>
           <Routes>
-
             <Route path="/" element={<MainPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
@@ -91,13 +91,14 @@ function App() {
             <Route path="/termeni" element={<TermsOfService />} />
             <Route path="/confidentialitate" element={<PrivacyPolicy />} />
             <Route path="/preview-pdf" element={import.meta.env.DEV ? <PreviewPDF /> : <Navigate to="/" />} />
+            
             <Route path="/extensie" element={
               <div>
                 <Nav />
                 <ExtensiePage />
                 <Footer />
               </div>
-              } />
+            } />
 
             <Route
               path={SECRET}
@@ -125,7 +126,6 @@ function App() {
                     <Lectii />
                   </PrivateRoute>
                 </ProtectedRoute>
-
               }
             />
 
@@ -150,6 +150,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route path="/diploma/:id" element={<DiplomaPage />} />
 
             <Route
@@ -181,29 +182,29 @@ function App() {
               }
             />
 
-
             <Route
               path="/verifica-email"
-              element=
-              {<div>
-                <Nav />
-                <EmailNotVerified />
-                <Footer />
-              </div>
+              element={
+                <div>
+                  <Nav />
+                  <EmailNotVerified />
+                  <Footer />
+                </div>
               }
             />
 
             <Route
               path="/performanta"
               element={
-              <div>
-                <Nav />
-                <Performanta />
-                <Footer />
-              </div>
+                <div>
+                  <Nav />
+                  <Performanta />
+                  <Footer />
+                </div>
               }
             />
 
+            {/* RUTĂ CATCH-ALL 404 */}
             <Route 
               path="*" 
               element={
@@ -212,65 +213,72 @@ function App() {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  minHeight: '85vh',
+                  minHeight: '100vh',
+                  backgroundColor: '#0a0d14', // Fix fundal dark explicit
                   color: '#ffffff',
                   fontFamily: 'sans-serif',
                   textAlign: 'center',
                   padding: '20px'
                 }}>
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', opacity: 0.85
+                    display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '30px', opacity: 0.9
                   }}>
                     <img
                       src="/logo-infomotion.svg?v=2"
                       alt="InfoMotion Logo"
-                      style={{ width: '42px', height: 'auto', display: 'block' }}
+                      style={{ width: '38px', height: 'auto', display: 'block' }}
                     />
                     <span style={{
-                      fontSize: '1.6rem', fontWeight: '600', letterSpacing: '-0.5px'
+                      fontSize: '1.5rem', fontWeight: '600', letterSpacing: '-0.5px'
                     }}>
                       InfoMotion<span style={{ color: '#00f3ff', fontWeight: 'bold' }}>.</span>
                     </span>
                   </div>
 
                   <h1 style={{
-                    fontSize: '6rem', fontWeight: '800', letterSpacing: '-2px',
-                    margin: '0 0 10px 0', background: 'linear-gradient(180deg, #ffffff 0%, #3a4750 100%)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                    fontSize: '7rem', fontWeight: '900', letterSpacing: '-2px',
+                    margin: '0 0 10px 0', 
+                    background: 'linear-gradient(180deg, #ffffff 30%, #3a4750 100%)',
+                    WebkitBackgroundClip: 'text', 
+                    WebkitTextFillColor: 'transparent',
+                    lineHeight: '1'
                   }}>
                     404
                   </h1>
 
                   <p style={{
-                    color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0'
+                    color: '#94a3b8', fontSize: '1.05rem', maxWidth: '420px', lineHeight: '1.6', margin: '0 0 30px 0'
                   }}>
                     Pagina pe care o cauți nu există, a fost ștearsă sau mutată într-o zonă securizată.
                   </p>
 
-                  <a
-                    href="/"
+                  <Link
+                    to="/"
                     style={{
                       color: '#00f3ff',
                       textDecoration: 'none',
                       fontSize: '0.95rem',
                       fontWeight: '500',
-                      border: '1px solid rgba(0, 243, 255, 0.2)',
-                      padding: '10px 20px',
+                      border: '1px solid rgba(0, 243, 255, 0.3)',
+                      padding: '12px 24px',
                       borderRadius: '8px',
-                      backgroundColor: 'rgba(0, 243, 255, 0.03)',
-                      transition: 'all 0.2s ease'
+                      backgroundColor: 'rgba(0, 243, 255, 0.05)',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 0 15px rgba(0, 243, 255, 0.1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.15)';
                       e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.6)';
+                      e.currentTarget.style.boxShadow = '0 0 25px rgba(0, 243, 255, 0.2)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.03)';
-                      e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.2)';
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 243, 255, 0.05)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.3)';
+                      e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 243, 255, 0.1)';
                     }}
                   >
                     Înapoi la pagina principală
-                  </a>
+                  </Link>
                 </div>
               }
             />
