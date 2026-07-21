@@ -135,8 +135,7 @@ npm start
 
 **Browsere:** Chrome · Firefox · Edge · Safari · Brave
 
-**Editor de cod (opțional, pentru Arena):** VS Code, Code::Blocks, Notepad++ (+ compilator C++)
-
+**Editor de cod (opțional, pentru Arena):** Nu mai este nevoie de editor deoarece avem integrat deja in paltforma!!!
 ---
 
 ## 📚 Bibliografie & resurse
