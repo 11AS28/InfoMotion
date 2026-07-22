@@ -1,5 +1,11 @@
 <div align="center">
 
+
+
+
+
+
+
 # 🎓 InfoMotion
 
 ### Laboratorul digital care transformă algoritmica din teorie seacă în experiență vizuală și competitivă
