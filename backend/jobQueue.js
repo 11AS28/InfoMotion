@@ -1,9 +1,6 @@
 /**
  * jobQueue.js
  * Coadă de joburi cu pool de workeri pentru compilare/execuție C++ și Python în Docker Sandbox
- *
- * Funcționează ca pbinfo/infoarena (Izolat complet în containere Docker):
- * request → coadă → worker liber → (compilare dacă e cazul) → execuție în Docker → răspuns
  */
 
 const { execFile, spawn } = require('child_process');
@@ -11,14 +8,14 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const MAX_WORKERS = parseInt(process.env.MAX_WORKERS) || 2; // compilări/execuții simultane
+const MAX_WORKERS = parseInt(process.env.MAX_WORKERS) || 2;
 const COMPILE_TIMEOUT_MS = parseInt(process.env.COMPILE_TIMEOUT_MS) || 10_000; // 10s
 const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS) || 2_000;          // 2s
 const MAX_OUTPUT_BYTES = 512 * 1024;                                             // 512 KB
 const TMP_DIR = process.env.TMP_DIR || '/tmp';
 
 let activeWorkers = 0;
-const queue = []; // Array de { resolve, reject, jobFn }
+const queue = [];
 
 function getQueueStats() {
   return {
@@ -41,7 +38,7 @@ function scheduleNext() {
     .catch(reject)
     .finally(() => {
       activeWorkers--;
-      scheduleNext(); // încearcă să pornească următorul job
+      scheduleNext();
     });
 }
 
@@ -52,53 +49,13 @@ function enqueue(jobFn) {
   });
 }
 
-// ─── Auto-detectare limbaj (ca să nu fie nevoie ca frontend-ul să trimită explicit) ──
-function detectLanguage(code) {
-  if (!code || typeof code !== 'string') return 'cpp';
-
-  const trimmed = code.trim();
-
-  // Semnale puternice de C/C++
-  const cppSignals = [
-    /#include\s*<\w+/,
-    /using\s+namespace\s+std/,
-    /int\s+main\s*\(/,
-    /std::/,
-    /cout\s*<</,
-    /cin\s*>>/,
-  ];
-
-  // Semnale puternice de Python
-  const pySignals = [
-    /^\s*import\s+\w+/m,
-    /^\s*from\s+\w+\s+import/m,
-    /^\s*def\s+\w+\s*\(.*\)\s*:/m,
-    /print\s*\(.*\)\s*$/m,
-    /^\s*if\s+__name__\s*==\s*['"]__main__['"]\s*:/m,
-    /:\s*$/m, // linii terminate în ':' (def/if/for/while python-style)
-  ];
-
-  let cppScore = 0;
-  let pyScore = 0;
-
-  for (const rx of cppSignals) if (rx.test(trimmed)) cppScore++;
-  for (const rx of pySignals) if (rx.test(trimmed)) pyScore++;
-
-  // Semnal decisiv: ';' la finalul liniilor + acolade => aproape sigur C++
-  const semicolonLines = (trimmed.match(/;\s*$/gm) || []).length;
-  const braceCount = (trimmed.match(/[{}]/g) || []).length;
-  if (semicolonLines > 2 || braceCount > 2) cppScore += 2;
-
-  if (pyScore > cppScore) return 'python';
-  return 'cpp'; // default, păstrează comportamentul vechi dacă nu suntem siguri
-}
-
 // ─── Utilitare fișiere ───────────────────────────────────────────────────────
 function uniqueFiles(language) {
   const id = crypto.randomBytes(8).toString('hex');
   const ext = language === 'python' ? 'py' : 'cpp';
   return {
     id,
+    containerName: `sandbox_${id}`, // Nume unic pentru Docker Container
     src: `src_${id}.${ext}`,
     exe: `exe_${id}`,
     inp: `inp_${id}.txt`,
@@ -116,7 +73,7 @@ function cleanupFiles(...files) {
   }
 }
 
-// ─── Job-ul propriu-zis (compilare, dacă e cazul, + execuție izolate în Docker) ──
+// ─── Job-ul propriu-zis ──────────────────────────────────────────────────────
 async function codeJob(language, code, input) {
   const files = uniqueFiles(language);
 
@@ -157,9 +114,8 @@ async function codeJob(language, code, input) {
         };
       }
     }
-    // Pentru Python nu există pas de compilare — sărim direct la execuție.
 
-    // 3. EXECUȚIE ÎN DOCKER SANDBOX (limitări stricte de hardware, identice pentru ambele limbaje)
+    // 3. EXECUȚIE ÎN DOCKER SANDBOX
     const runResult = await runInDockerSandbox(files, language);
 
     if (runResult.timedOut) {
@@ -191,7 +147,6 @@ async function codeJob(language, code, input) {
       language,
     };
   } finally {
-    // Cleanup garantat pentru fișierele de pe sistemul gazdă
     cleanupFiles(files.fullSrc, files.fullExe, files.fullInp);
   }
 }
@@ -201,13 +156,14 @@ function runInDockerSandbox(files, language) {
   return new Promise((resolve) => {
     const inputFd = fs.openSync(files.fullInp, 'r');
 
-    // Fără /usr/bin/time — rulăm direct programul
+    // [D] Flag-ul -B previne generarea de fișiere .pyc pe disc
     const runCmd = language === 'python'
-      ? `python3 ./${files.src}`
+      ? `python3 -B ./${files.src}`
       : `./${files.exe}`;
 
     const dockerArgs = [
       'run', '--rm',
+      '--name', files.containerName, // [A] Nume unic pentru a putea fi oprit individual
       '-i',
       '--read-only',
       '--tmpfs', '/tmp:rw,noexec,nosuid,size=4m',
@@ -254,8 +210,6 @@ function runInDockerSandbox(files, language) {
         return resolve({ timedOut: true });
       }
 
-      // Fără /usr/bin/time nu mai avem stats de memorie/timp
-      // Code 137 = OOM kill (limita --memory=64m depășită)
       const runtimeError = code !== 0 || code === 137;
 
       resolve({
@@ -267,15 +221,13 @@ function runInDockerSandbox(files, language) {
       });
     });
 
+    // [A] Timeout fixat: Omoară DOAR containerul curent folosind containerName
     const timer = setTimeout(() => {
       timedOut = true;
       proc.kill('SIGKILL');
 
-      execFile('docker', ['ps', '-q', '--filter', `ancestor=infomotion-sandbox:latest`], (err, stdout) => {
-        if (stdout) {
-          const lines = stdout.trim().split('\n');
-          lines.forEach(id => { if (id) execFile('docker', ['kill', id]); });
-        }
+      execFile('docker', ['kill', files.containerName], () => {
+        // Ignorăm erorile dacă containerul se închisese deja singur între timp
       });
     }, RUN_TIMEOUT_MS + 500);
 
@@ -285,19 +237,8 @@ function runInDockerSandbox(files, language) {
 
 // ─── Export public ───────────────────────────────────────────────────────────
 module.exports = {
-  /**
-   * Trimite un job de cod în coadă pentru a fi rulat în Sandbox.
-   * Dacă `language` nu e specificat, se detectează automat din conținutul codului.
-   * @param {string} code
-   * @param {string} input
-   * @param {string} [language] - 'cpp' | 'python' (opțional)
-   * @returns {Promise<Object>} rezultatul compilării/execuției
-   */
-  submitCodeJob(code, input, language) {
-    const finalLanguage = language || detectLanguage(code);
-    return enqueue(() => codeJob(finalLanguage, code, input));
+  submitCodeJob(code, input, language = 'cpp') {
+    return enqueue(() => codeJob(language, code, input));
   },
-
-  detectLanguage,
   getQueueStats,
 };
