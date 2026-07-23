@@ -9,6 +9,49 @@ import { useAuth } from '../context/AuthContext';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import CheatSheetPDF from '../components/CheatSheetPDF';
 
+// --- Utilitare pentru detectarea corectă a clasei (9, 10 sau 11) ---
+
+function convertRomanToNumber(roman) {
+  const map = { I: 1, V: 5, X: 10, L: 50, C: 100 };
+  let result = 0;
+  for (let i = 0; i < roman.length; i++) {
+    const current = map[roman[i]];
+    const next = map[roman[i + 1]];
+    if (next && current < next) {
+      result -= current;
+    } else {
+      result += current;
+    }
+  }
+  return result;
+}
+
+function extrageClasaNumerica(data) {
+  const surseTextuale = [data.clasa, data.titlu].filter(Boolean);
+
+  for (const sursa of surseTextuale) {
+    const text = sursa.toString();
+
+    // 1. Cifre arabe: "9", "clasa-10", "Clasa 11" etc.
+    const cifreArabe = text.match(/\b(9|10|11)\b/);
+    if (cifreArabe) {
+      return parseInt(cifreArabe[0], 10);
+    }
+
+    // 2. Cifre romane: "a IX-a", "a X-a", "a XI-a", "clasa XI" etc.
+    const cifreRomane = text.match(/\b(IX|X|XI)\b/i);
+    if (cifreRomane) {
+      const numar = convertRomanToNumber(cifreRomane[0].toUpperCase());
+      if (numar >= 9 && numar <= 11) {
+        return numar;
+      }
+    }
+  }
+
+  console.warn('⚠️ Nu am putut determina clasa pentru lecția:', data.titlu, '| clasa brută:', data.clasa);
+  return 9; // fallback
+}
+
 function Lectii() {
   const { currentUser, esteLectieSalvata, toggleBookmarkLectie } = useAuth();
 
@@ -22,7 +65,7 @@ function Lectii() {
     let emontata = true;
 
     async function fetchLectii() {
-      const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v3');
+      const cachedLessons = localStorage.getItem('infomotion_lessons_cache_v4');
       if (cachedLessons) {
         setLessonsData(JSON.parse(cachedLessons));
         setLoading(false);
@@ -37,18 +80,7 @@ function Lectii() {
           const esteOlimpiada = data.clasa?.toLowerCase() === 'olimpici' || data.categorie === 'olimpiada';
           const esteConcept = data.clasa?.toLowerCase() === 'concepte' || data.categorie === 'concepte';
 
-          let extrasClasa = 9;
-          if (data.clasa) {
-            const digits = data.clasa.toString().match(/\d+/);
-            if (digits) {
-              extrasClasa = parseInt(digits[0], 10);
-            }
-          } else if (data.titlu) {
-            const digits = data.titlu.toString().match(/\d+/);
-            if (digits) {
-              extrasClasa = parseInt(digits[0], 10);
-            }
-          }
+          const extrasClasa = extrageClasaNumerica(data);
 
           return {
             id: doc.id,
@@ -61,7 +93,7 @@ function Lectii() {
 
         if (emontata) {
           setLessonsData(lectiiDinDB);
-          localStorage.setItem('infomotion_lessons_cache_v3', JSON.stringify(lectiiDinDB));
+          localStorage.setItem('infomotion_lessons_cache_v4', JSON.stringify(lectiiDinDB));
         }
       } catch (error) {
         console.error("Eroare la preluarea lecțiilor:", error);
@@ -120,6 +152,7 @@ function Lectii() {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
+      // 1. Grupare principală: clasa 9 -> clasa 10 -> clasa 11 -> olimpiadă -> concepte
       const getGroup = (item) => {
         if (!item.esteOlimpiada && !item.esteConcept) {
           if (item.clasaNumerica === 9) return 1;
@@ -137,17 +170,18 @@ function Lectii() {
 
       if (grupA !== grupB) return grupA - grupB;
 
-      if (grupA === 10) {
-        if (a.clasaNumerica !== b.clasaNumerica) {
-          return a.clasaNumerica - b.clasaNumerica;
-        }
+      // Olimpiadă: sortăm suplimentar după clasă
+      if (grupA === 10 && a.clasaNumerica !== b.clasaNumerica) {
+        return a.clasaNumerica - b.clasaNumerica;
       }
 
+      // 2. În interiorul aceleiași clase/grup: sortare după modul (ordine)
       const ordineA = a.ordine !== undefined && a.ordine !== null ? parseInt(a.ordine, 10) : 999;
       const ordineB = b.ordine !== undefined && b.ordine !== null ? parseInt(b.ordine, 10) : 999;
 
       if (ordineA !== ordineB) return ordineA - ordineB;
 
+      // 3. Tie-breaker final: alfabetic
       return (a.titlu || "").localeCompare(b.titlu || "");
     });
 
@@ -337,34 +371,34 @@ function Lectii() {
             {selectatePDF.length} selectate
           </span>
           <PDFDownloadLink
-  document={
-    <CheatSheetPDF
-      lectii={selectatePDF.map((l) => ({
-        id: l.id,
-        titlu: l.titlu,
-        descriere: l.descriere,
-        cod: l.codCPlusPlus
-      }))}
-    />
-  }
-  fileName="copiuta-infomotion.pdf"
-  style={{
-    display: 'inline-block',
-    color: '#0F172A',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    background: '#2ea8b0',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    border: 'none'
-  }}
->
-  {({ loading: loadingPDF }) =>
-    loadingPDF ? 'Se generează...' : 'Descarcă Copiuța'
-  }
-</PDFDownloadLink>
+            document={
+              <CheatSheetPDF
+                lectii={selectatePDF.map((l) => ({
+                  id: l.id,
+                  titlu: l.titlu,
+                  descriere: l.descriere,
+                  cod: l.codCPlusPlus
+                }))}
+              />
+            }
+            fileName="copiuta-infomotion.pdf"
+            style={{
+              display: 'inline-block',
+              color: '#0F172A',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              background: '#2ea8b0',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              border: 'none'
+            }}
+          >
+            {({ loading: loadingPDF }) =>
+              loadingPDF ? 'Se generează...' : 'Descarcă Copiuța'
+            }
+          </PDFDownloadLink>
           <button
             onClick={() => setSelectatePDF([])}
             style={{

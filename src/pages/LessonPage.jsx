@@ -108,7 +108,7 @@ function LessonPage() {
   };
 
   const handleFetchAiCases = async () => {
-    if (loadingAi) return; // 🔒 Protecție suplimentară: ignorăm click-urile în timp ce se încarcă
+    if (loadingAi) return; 
 
     if (aiCases) {
       setIsAiPopoverOpen(!isAiPopoverOpen);
