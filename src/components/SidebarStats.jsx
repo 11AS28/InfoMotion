@@ -43,6 +43,21 @@ function SidebarStats({ isOpen, onClose }) {
     title_jeanG: { name: 'Legendary Coder', price: 784500, color: '#34495e', bg: 'linear-gradient(135deg, #2c3e50, #34495e)', desc: 'Alo, da? Alo, Gaoaza Romaniei la telefon!' }
   };
 
+
+    const dictionarNotificari = {
+    lectie_aprobata: { emoji: '✅', titlu: 'Lecție aprobată' },
+    lectie_respinsa: { emoji: '❌', titlu: 'Lecție respinsă' },
+    streak_pierdut: { emoji: '🔥', titlu: 'Streak Întrerupt' },
+    streak_inghetat: { emoji: '🧊', titlu: 'Streak Înghețat' },
+    contact_raspuns: { emoji: '💬', titlu: 'Răspuns la mesajul tău' },
+    diploma_acordata: { emoji: '🎓', titlu: 'Felicitări! Ai primit o diplomă' },
+    diploma_respinsa: { emoji: '📋', titlu: 'Cererea ta de diplomă' },
+    bun_venit: { emoji: '👋', titlu: 'Bun venit!' }
+  };
+ 
+  const getNotifLabel = (tip) => dictionarNotificari[tip] || { emoji: '🔔', titlu: 'Notificare' };
+ 
+
   useEffect(() => {
     if (isOpen && !isTeacher) {
       actualizeazaStreak();
@@ -384,9 +399,7 @@ function SidebarStats({ isOpen, onClose }) {
                       type="button"
                       onClick={() => {
                         markNotificationAsRead(notif.id);
-                        if (notif.type === 'contact_raspuns' || notif.type === 'diploma_acordata' || notif.type === 'diploma_respinsa') {
-                          setModalRaspuns(notif);
-                        }
+                        setModalRaspuns(notif);                        
                       }}
                       style={{
                         textAlign: 'left',
@@ -412,6 +425,7 @@ function SidebarStats({ isOpen, onClose }) {
                             {notif.type === 'contact_raspuns' && '💬 Răspuns la mesajul tău'}
                             {notif.type === 'diploma_acordata' && '🎓 Diplomă acordată'}
                             {notif.type === 'diploma_respinsa' && '📋 Cerere diplomă respinsă'}
+                            {notif.type === 'bun_venit' && '👋 Bun venit!'}
                           </div>
                           <div style={{ fontSize: '12px', lineHeight: '1.5', color: theme === 'dark' ? '#d1d5db' : '#475569' }}>
                             {notif.text}

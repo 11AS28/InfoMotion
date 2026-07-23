@@ -268,6 +268,12 @@ export function AuthProvider({ children }) {
     }
 
     await setDoc(doc(db, 'users', user.uid), userProfile);
+
+    await trimiteNotificareCuLimita(user.uid, {
+      type: "bun_venit",
+      text: `Bine ai venit în InfoMotion, ${username}! 🎉 Explorează lecțiile, adună XP și pornește-ți streak-ul de azi.`
+    });
+
     await sendEmailVerification(user);
     return userCredential;
   }
@@ -300,6 +306,12 @@ export function AuthProvider({ children }) {
         titluriDeblocate: [],
         titluEchipat: ""
       });
+
+      await trimiteNotificareCuLimita(user.uid, {
+        type: "bun_venit",
+        text: `Bine ai venit în InfoMotion, ${username}! 🎉 Explorează lecțiile, adună XP și pornește-ți streak-ul de azi.`
+      });
+
     }
     return user;
   }
