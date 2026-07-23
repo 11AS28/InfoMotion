@@ -28,9 +28,24 @@ export default function AdaugaTab({
   const [fAdaugatDe, setFAdaugatDe] = useState(d.adaugatDe || adminUsername || '');
   const [fTeorie, setFTeorie] = useState(d.teorie || '');
   const [fCod, setFCod] = useState(d.cod || d.codCPlusPlus || '');
+  const [fCodPython, setFCodPython] = useState(d.codPython || '');
   const [fCodSimulatorCPP, setFCodSimulatorCPP] = useState(d.codSimulatorCPP || '');
-  const [fAnim, setFAnim] = useState(d.animatie ? (['BubbleSortAnim', 'CautareBinaraAnim'].includes(d.animatie) ? d.animatie : 'custom') : 'null');
-  const [fAnimCustom, setFAnimCustom] = useState(!['BubbleSortAnim', 'CautareBinaraAnim', undefined, null].includes(d.animatie) ? d.animatie : '');
+   // Olistă cu animațiile tale predefinite din aplicație
+  const PREDEFINED_ANIMS = ['BubbleSortAnim', 'CautareBinaraAnim'];
+
+  // Aflăm valoarea exactă a animației primite
+  const animatieInitiala = d.animatie || d.animCustomVal || null;
+
+  const [fAnim, setFAnim] = useState(() => {
+    if (!animatieInitiala || animatieInitiala === 'null') return 'null';
+    return PREDEFINED_ANIMS.includes(animatieInitiala) ? animatieInitiala : 'custom';
+  });
+
+  const [fAnimCustom, setFAnimCustom] = useState(() => {
+    if (!animatieInitiala || animatieInitiala === 'null') return '';
+    return PREDEFINED_ANIMS.includes(animatieInitiala) ? '' : animatieInitiala;
+  });
+
   const [pbRows, setPbRows] = useState(d.problemePbinfo || d.pbRows || [{ id: '', titlu: '', url: '' }]);
   const [quiz, setQuiz] = useState(d.quiz || emptyQuiz());
   const [cfProblems, setCfProblems] = useState(d.codeforces || ['', '']);
@@ -48,6 +63,19 @@ export default function AdaugaTab({
     if (field === 'varianta') q[qIdx].variante[vIdx] = val;
     else q[qIdx][field] = val;
     setQuiz(q);
+  };
+
+  // Handler comun pentru Tab în textarea-urile de cod (folosit la C++ și la Python)
+  const handleCodeTab = (e, setter) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = e.target.selectionStart;
+      const end = e.target.selectionEnd;
+      const val = e.target.value;
+      e.target.value = val.substring(0, s) + '    ' + val.substring(end);
+      e.target.selectionStart = e.target.selectionEnd = s + 4;
+      setter(e.target.value);
+    }
   };
 
   const sendUserNotification = async (userId, type, text) => {
@@ -84,7 +112,7 @@ export default function AdaugaTab({
         id: fId.trim(), clasa: clasaFinala, categorie: categorieVal,
         ordine: ordineFinala, titlu: fTitlu.trim(), descriere: fDescriere.trim(),
         adaugatDe: fAdaugatDe || 'Echipa InfoMotion',
-        teorie: fTeorie, codCPlusPlus: fCod, codSimulatorCPP: fCodSimulatorCPP,
+        teorie: fTeorie, codCPlusPlus: fCod, codPython: fCodPython, codSimulatorCPP: fCodSimulatorCPP,
         animatie: fAnim === 'null' ? null : fAnim === 'custom' ? fAnimCustom : fAnim,
         problemePbinfo: esteConcept ? [] : pbRows.filter((r) => r.id || r.titlu),
         quiz: esteConcept ? [] : quiz,
@@ -117,7 +145,7 @@ export default function AdaugaTab({
 
       try {
         const cachedLessonsRaw = localStorage.getItem('infomotion_lessons_cache_v3');
-        
+
         if (cachedLessonsRaw) {
           const cachedLessons = JSON.parse(cachedLessonsRaw);
 
@@ -140,7 +168,7 @@ export default function AdaugaTab({
           let updatedLessons = [];
 
           if (isEditing) {
-            updatedLessons = cachedLessons.map((lectie) => 
+            updatedLessons = cachedLessons.map((lectie) =>
               lectie.id === fId.trim() ? nouaLectieCache : lectie
             );
           } else {
@@ -274,21 +302,29 @@ export default function AdaugaTab({
           <textarea
             value={fCod}
             onChange={(e) => setFCod(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const s = e.target.selectionStart;
-                const end = e.target.selectionEnd;
-                const val = e.target.value;
-                e.target.value = val.substring(0, s) + '    ' + val.substring(end);
-                e.target.selectionStart = e.target.selectionEnd = s + 4;
-                setFCod(e.target.value);
-              }
-            }}
+            onKeyDown={(e) => handleCodeTab(e, setFCod)}
             rows={8}
             placeholder="// Introdu aici implementarea algoritmului..."
             style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '14px', background: '#f8fafc', outline: 'none' }}
           />
+        </div>
+
+        {/* Cod Python */}
+        <div className="admin-field">
+          <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', marginBottom: '6px' }}>
+            Cod Python <span style={{ fontWeight: '400', color: '#94a3b8' }}>(opțional)</span>
+          </label>
+          <textarea
+            value={fCodPython}
+            onChange={(e) => setFCodPython(e.target.value)}
+            onKeyDown={(e) => handleCodeTab(e, setFCodPython)}
+            rows={8}
+            placeholder="# Introdu aici implementarea echivalentă în Python..."
+            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '14px', background: '#f8fafc', outline: 'none' }}
+          />
+          <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
+            Dacă lași gol, tab-ul Python din compilator va apărea gol pentru elevi (fără exemplu predefinit), dar tot vor putea scrie și rula cod Python liber acolo.
+          </small>
         </div>
 
         {!esteConcept && (

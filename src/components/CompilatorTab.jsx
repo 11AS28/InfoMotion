@@ -32,11 +32,29 @@ loader.init().then((monacoInstance) => {
   }
 });
 
+// Cod default afișat în editor când nu există (încă) cod salvat pentru un limbaj
+const DEFAULT_CODE_BY_LANGUAGE = {
+  cpp: "// Scrie codul tău C++ aici...\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}",
+  python: "# Scrie codul tău Python aici...\nprint(\"Hello, InfoMotion!\")\n"
+};
+
+// Numele limbajului folosit de Monaco Editor pentru syntax highlighting
+const MONACO_LANGUAGE_BY_LANGUAGE = {
+  cpp: 'cpp',
+  python: 'python'
+};
+
 function CompilerPage() {
   const { idLectie } = useParams();
   const { currentUser } = useAuth();
 
   const [titluLectie, setTitluLectie] = useState("Workspace C++");
+  const [language, setLanguage] = useState('cpp'); // 'cpp' | 'python' — limbajul curent selectat
+  // Ținem codul separat pentru fiecare limbaj, ca la comutare între tab-uri să nu se piardă ce ai scris
+  const [codeByLanguage, setCodeByLanguage] = useState({
+    cpp: DEFAULT_CODE_BY_LANGUAGE.cpp,
+    python: DEFAULT_CODE_BY_LANGUAGE.python
+  });
   const [editorCode, setEditorCode] = useState("");
   const [compilerInput, setCompilerInput] = useState("");
   const [compilerOutput, setCompilerOutput] = useState("");
@@ -45,6 +63,10 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [isMigrating, setIsMigrating] = useState(false);
+
+  // Indică dacă lecția curentă chiar are un cod Python salvat în Firestore (câmpul codPython)
+  // Momentan nicio lecție nu are acest câmp, deci va fi mereu false — arătăm un editor gol + un mesaj
+  const [pythonCodeExistsInLesson, setPythonCodeExistsInLesson] = useState(true);
 
   const [aiCases, setAiCases] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -64,6 +86,8 @@ function CompilerPage() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const esteInWorkspaceLectie = idLectie && idLectie !== "liber";
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -95,7 +119,13 @@ function CompilerPage() {
     async function incarcaCodSursa() {
       if (!idLectie || idLectie === "liber") {
         setTitluLectie("Sandbox Liber");
-        setEditorCode("// Scrie codul tău C++ aici...\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}");
+        setLanguage('cpp');
+        setPythonCodeExistsInLesson(true); // în sandbox liber nu afișăm bannerul de "lecție fără cod"
+        setCodeByLanguage({
+          cpp: DEFAULT_CODE_BY_LANGUAGE.cpp,
+          python: DEFAULT_CODE_BY_LANGUAGE.python
+        });
+        setEditorCode(DEFAULT_CODE_BY_LANGUAGE.cpp);
         setLoadingPage(false);
         return;
       }
@@ -104,8 +134,18 @@ function CompilerPage() {
         const docRef = doc(db, "lectii", idLectie);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setTitluLectie(docSnap.data().titlu);
-          setEditorCode(docSnap.data().codCPlusPlus || "// Scrie codul tău C++ aici...\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}");
+          const dataLectie = docSnap.data();
+
+          const cppCode = dataLectie.codCPlusPlus || DEFAULT_CODE_BY_LANGUAGE.cpp;
+          // codPython nu există încă în baza de date pentru nicio lecție — pregătit pentru viitor
+          const pythonCodeReal = dataLectie.codPython;
+          const pythonCode = pythonCodeReal || DEFAULT_CODE_BY_LANGUAGE.python;
+
+          setTitluLectie(dataLectie.titlu);
+          setPythonCodeExistsInLesson(!!pythonCodeReal);
+          setCodeByLanguage({ cpp: cppCode, python: pythonCode });
+          setLanguage('cpp');
+          setEditorCode(cppCode);
         }
       } catch (err) {
         console.error("Eroare la încărcarea codului:", err);
@@ -132,6 +172,26 @@ function CompilerPage() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Schimbă limbajul activ — funcționează atât în Sandbox Liber cât și într-o lecție
+  const handleLanguageChange = (newLang) => {
+    if (newLang === language) return;
+
+    setLanguage(newLang);
+    setEditorCode(codeByLanguage[newLang]);
+    setCompilerOutput("");
+    setExecutionTime(null);
+    setExecutionMemory(null);
+    setAiCases(null);
+    setIsAiPopoverOpen(false);
+  };
+
+  // Actualizează codul curent ȘI îl salvează pe limbajul activ, ca la comutare să nu se piardă
+  const handleEditorChange = (val) => {
+    const newCode = val || "";
+    setEditorCode(newCode);
+    setCodeByLanguage((prev) => ({ ...prev, [language]: newCode }));
+  };
 
   // Funcție securizată pentru preluarea cazurilor din backend-ul AI
   const handleFetchAiCases = async () => {
@@ -173,10 +233,10 @@ function CompilerPage() {
     try {
       // Injectăm textul direct în textarea STDIN din pagină
       setCompilerInput(valoareString);
-      
+
       // Opțional, îl copiem și în clipboard pentru siguranță
       await navigator.clipboard.writeText(valoareString);
-      
+
       setCopiedAiKey(cheieCaz);
       toast.success("Datele AI au fost aplicate direct în STDIN!");
       setTimeout(() => setCopiedAiKey(null), 2000);
@@ -269,7 +329,11 @@ function CompilerPage() {
     if (isMigrating) return;
 
     setLoadingCompiler(true);
-    setCompilerOutput("Se compilează și se rulează pe serverul InfoMotion...");
+    setCompilerOutput(
+      language === 'python'
+        ? "Se rulează codul Python pe serverul InfoMotion..."
+        : "Se compilează și se rulează pe serverul InfoMotion..."
+    );
 
     setExecutionTime(null);
     setExecutionMemory(null);
@@ -278,7 +342,7 @@ function CompilerPage() {
       const response = await fetch(`${baseUrl}/api/run-cpp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: editorCode, input: compilerInput })
+        body: JSON.stringify({ code: editorCode, input: compilerInput, language })
       });
       const data = await response.json();
 
@@ -322,46 +386,44 @@ function CompilerPage() {
     ? { height: `calc(100vh - 55px - ${editorHeightMobile}px - 8px)`, width: '100%' }
     : { width: `calc(100vw - ${leftWidth}px - 8px)`, height: '100%' };
 
-  const esteInWorkspaceLectie = idLectie && idLectie !== "liber";
-
   const renderAiRow = (label, colorStyle, dataKey, valoareString) => {
     if (!valoareString) return null;
 
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '8px 10px', 
-        backgroundColor: '#111115', 
-        borderRadius: '6px', 
-        border: '1px solid #27272a', 
-        gap: '8px' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '8px 10px',
+        backgroundColor: '#111115',
+        borderRadius: '6px',
+        border: '1px solid #27272a',
+        gap: '8px'
       }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: '12px', fontWeight: '600', color: colorStyle, marginBottom: '2px' }}>{label}</div>
-          <div style={{ 
-            fontSize: '11px', 
-            fontFamily: 'monospace', 
-            color: '#a1a1aa', 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap' 
+          <div style={{
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            color: '#a1a1aa',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
           }}>
             {valoareString}
           </div>
         </div>
         <button
           onClick={() => handleApplyAiValue(valoareString, dataKey)}
-          style={{ 
-            fontSize: '11px', 
-            background: '#27272a', 
-            border: 'none', 
-            color: copiedAiKey === dataKey ? '#00ffcc' : '#e4e4e7', 
-            padding: '4px 8px', 
-            borderRadius: '4px', 
-            cursor: 'pointer', 
-            flexShrink: 0 
+          style={{
+            fontSize: '11px',
+            background: '#27272a',
+            border: 'none',
+            color: copiedAiKey === dataKey ? '#00ffcc' : '#e4e4e7',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           {copiedAiKey === dataKey ? 'Aplicat!' : 'Aplică'}
@@ -369,6 +431,9 @@ function CompilerPage() {
       </div>
     );
   };
+
+  // Afișăm bannerul doar când suntem într-o lecție, avem Python selectat, și lecția n-are încă un câmp codPython real
+  const afiseazaBannerPythonLipsa = esteInWorkspaceLectie && language === 'python' && !pythonCodeExistsInLesson;
 
   return (
     <div className={`compiler-page-container ${isResizingH ? 'resizing-h-active' : ''} ${isResizingV ? 'resizing-v-active' : ''}`}>
@@ -383,6 +448,48 @@ function CompilerPage() {
           </h3>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+          <div style={{
+            display: 'flex',
+            background: '#111115',
+            borderRadius: '6px',
+            border: '1px solid #27272a',
+            overflow: 'hidden'
+          }}>
+            <button
+              onClick={() => handleLanguageChange('cpp')}
+              disabled={loadingCompiler}
+              style={{
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: loadingCompiler ? 'not-allowed' : 'pointer',
+                background: language === 'cpp' ? '#27272a' : 'transparent',
+                color: language === 'cpp' ? '#1fe0f9' : '#71717a',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              C++
+            </button>
+            <button
+              onClick={() => handleLanguageChange('python')}
+              disabled={loadingCompiler}
+              style={{
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: loadingCompiler ? 'not-allowed' : 'pointer',
+                background: language === 'python' ? '#27272a' : 'transparent',
+                color: language === 'python' ? '#1fe0f9' : '#71717a',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              Python
+            </button>
+          </div>
+
           <button
             onClick={handleRunCompilerCode}
             disabled={loadingCompiler || isMigrating}
@@ -396,30 +503,48 @@ function CompilerPage() {
 
       <div className="ide-main-body" ref={containerRef}>
 
-        <div className="ide-editor-section" style={mainSplitStyle}>
-          {fontsLoaded ? (
-            <Editor
-              height="100%"
-              language="cpp"
-              theme={monacoThemeName}
-              value={editorCode}
-              onChange={(val) => setEditorCode(val || "")}
-              onMount={handleEditorDidMount}
-              options={{
-                fontSize: isMobile ? 14 : 16,
-                minimap: { enabled: false },
-                automaticLayout: true,
-                scrollbar: { vertical: 'visible', handleMouseWheel: true },
-                tabSize: 4,
-                fontFamily: "Consolas, 'Courier New', monospace",
-                tabFocusMode: false,
-              }}
-            />
-          ) : (
-            <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
-              Se încarcă fonturile...
+        <div className="ide-editor-section" style={{ ...mainSplitStyle, display: 'flex', flexDirection: 'column' }}>
+
+          {afiseazaBannerPythonLipsa && (
+            <div style={{
+              background: 'rgba(31, 224, 249, 0.08)',
+              borderLeft: '3px solid #1fe0f9',
+              padding: '8px 14px',
+              fontSize: '12.5px',
+              color: '#a1e8f7',
+              fontFamily: 'sans-serif',
+              lineHeight: '1.4',
+              flexShrink: 0
+            }}>
+              Lecția asta încă nu are un exemplu de cod Python pregătit — dar poți scrie și rula orice cod Python vrei aici, la liber.
             </div>
           )}
+
+          <div style={{ flex: 1, minHeight: 0 }}>
+            {fontsLoaded ? (
+              <Editor
+                height="100%"
+                language={MONACO_LANGUAGE_BY_LANGUAGE[language]}
+                theme={monacoThemeName}
+                value={editorCode}
+                onChange={handleEditorChange}
+                onMount={handleEditorDidMount}
+                options={{
+                  fontSize: isMobile ? 14 : 16,
+                  minimap: { enabled: false },
+                  automaticLayout: true,
+                  scrollbar: { vertical: 'visible', handleMouseWheel: true },
+                  tabSize: 4,
+                  fontFamily: "Consolas, 'Courier New', monospace",
+                  tabFocusMode: false,
+                }}
+              />
+            ) : (
+              <div style={{ color: '#aaa', padding: '20px', fontFamily: 'monospace' }}>
+                Se încarcă fonturile...
+              </div>
+            )}
+          </div>
         </div>
 
         <div

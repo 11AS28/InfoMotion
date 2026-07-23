@@ -1,9 +1,9 @@
 /**
  * jobQueue.js
- * Coadă de joburi cu pool de workeri pentru compilare/execuție C++ în Docker Sandbox
+ * Coadă de joburi cu pool de workeri pentru compilare/execuție C++ și Python în Docker Sandbox
  *
  * Funcționează ca pbinfo/infoarena (Izolat complet în containere Docker):
- * request → coadă → worker liber → compilare în Docker → execuție în Docker → răspuns
+ * request → coadă → worker liber → (compilare dacă e cazul) → execuție în Docker → răspuns
  */
 
 const { execFile, spawn } = require('child_process');
@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const MAX_WORKERS = parseInt(process.env.MAX_WORKERS) || 2; // compilări simultane
+const MAX_WORKERS = parseInt(process.env.MAX_WORKERS) || 2; // compilări/execuții simultane
 const COMPILE_TIMEOUT_MS = parseInt(process.env.COMPILE_TIMEOUT_MS) || 10_000; // 10s
 const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS) || 2_000;          // 2s
 const MAX_OUTPUT_BYTES = 512 * 1024;                                             // 512 KB
@@ -52,16 +52,57 @@ function enqueue(jobFn) {
   });
 }
 
+// ─── Auto-detectare limbaj (ca să nu fie nevoie ca frontend-ul să trimită explicit) ──
+function detectLanguage(code) {
+  if (!code || typeof code !== 'string') return 'cpp';
+
+  const trimmed = code.trim();
+
+  // Semnale puternice de C/C++
+  const cppSignals = [
+    /#include\s*<\w+/,
+    /using\s+namespace\s+std/,
+    /int\s+main\s*\(/,
+    /std::/,
+    /cout\s*<</,
+    /cin\s*>>/,
+  ];
+
+  // Semnale puternice de Python
+  const pySignals = [
+    /^\s*import\s+\w+/m,
+    /^\s*from\s+\w+\s+import/m,
+    /^\s*def\s+\w+\s*\(.*\)\s*:/m,
+    /print\s*\(.*\)\s*$/m,
+    /^\s*if\s+__name__\s*==\s*['"]__main__['"]\s*:/m,
+    /:\s*$/m, // linii terminate în ':' (def/if/for/while python-style)
+  ];
+
+  let cppScore = 0;
+  let pyScore = 0;
+
+  for (const rx of cppSignals) if (rx.test(trimmed)) cppScore++;
+  for (const rx of pySignals) if (rx.test(trimmed)) pyScore++;
+
+  // Semnal decisiv: ';' la finalul liniilor + acolade => aproape sigur C++
+  const semicolonLines = (trimmed.match(/;\s*$/gm) || []).length;
+  const braceCount = (trimmed.match(/[{}]/g) || []).length;
+  if (semicolonLines > 2 || braceCount > 2) cppScore += 2;
+
+  if (pyScore > cppScore) return 'python';
+  return 'cpp'; // default, păstrează comportamentul vechi dacă nu suntem siguri
+}
+
 // ─── Utilitare fișiere ───────────────────────────────────────────────────────
-function uniqueFiles() {
+function uniqueFiles(language) {
   const id = crypto.randomBytes(8).toString('hex');
+  const ext = language === 'python' ? 'py' : 'cpp';
   return {
     id,
-    src: `src_${id}.cpp`,
+    src: `src_${id}.${ext}`,
     exe: `exe_${id}`,
     inp: `inp_${id}.txt`,
-    // Căile absolute folosite pentru scriere pe server (gazdă)
-    fullSrc: path.join(TMP_DIR, `src_${id}.cpp`),
+    fullSrc: path.join(TMP_DIR, `src_${id}.${ext}`),
     fullExe: path.join(TMP_DIR, `exe_${id}`),
     fullInp: path.join(TMP_DIR, `inp_${id}.txt`),
   };
@@ -75,49 +116,51 @@ function cleanupFiles(...files) {
   }
 }
 
-// ─── Job-ul propriu-zis (compilare + execuție izolate în Docker) ───────────────
-async function cppJob(code, input) {
-  const files = uniqueFiles();
+// ─── Job-ul propriu-zis (compilare, dacă e cazul, + execuție izolate în Docker) ──
+async function codeJob(language, code, input) {
+  const files = uniqueFiles(language);
 
   try {
-    // 1. Scriem fișierele temporare în folderul TMP_DIR de pe sistemul gazdă
+    // 1. Scriem fișierele temporare pe sistemul gazdă
     fs.writeFileSync(files.fullSrc, code, 'utf8');
     fs.writeFileSync(files.fullInp, input ?? '', 'utf8');
 
-    // 2. COMPILARE ÎN DOCKER
-    // Rulăm g++ în interiorul containerului mapând folderul temporar la /app
-    const compileArgs = [
-  'run', '--rm',
-  '-v', `${TMP_DIR}:/sandbox`, // Mapăm folderul temporar la /sandbox (așa cum ai definit în WORKDIR)
-  '-w', '/sandbox',
-  'infomotion-sandbox:latest', // Folosim noua ta imagine
-  'g++', files.src, '-O2', '-o', files.exe, '-std=c++17'
-];
+    // 2. COMPILARE ÎN DOCKER — doar pentru C++
+    if (language === 'cpp') {
+      const compileArgs = [
+        'run', '--rm',
+        '-v', `${TMP_DIR}:/sandbox`,
+        '-w', '/sandbox',
+        'infomotion-sandbox:latest',
+        'g++', files.src, '-O2', '-o', files.exe, '-std=c++17'
+      ];
 
-    const compileResult = await new Promise((resolve) => {
-      const proc = execFile('docker', compileArgs, { timeout: COMPILE_TIMEOUT_MS, maxBuffer: 512 * 1024 }, (err, stdout, stderr) => {
-        resolve({ err, stdout, stderr });
+      const compileResult = await new Promise((resolve) => {
+        execFile('docker', compileArgs, { timeout: COMPILE_TIMEOUT_MS, maxBuffer: 512 * 1024 }, (err, stdout, stderr) => {
+          resolve({ err, stdout, stderr });
+        });
       });
-    });
 
-    if (compileResult.err) {
-      const isTimeout =
-        compileResult.err.killed || compileResult.err.signal === 'SIGTERM' || compileResult.err.code === null;
+      if (compileResult.err) {
+        const isTimeout =
+          compileResult.err.killed || compileResult.err.signal === 'SIGTERM' || compileResult.err.code === null;
 
-      if (isTimeout) {
+        if (isTimeout) {
+          return {
+            status: 'Compile Timeout',
+            error: `Compilarea a durat mai mult de ${COMPILE_TIMEOUT_MS / 1000}s.`,
+          };
+        }
         return {
-          status: 'Compile Timeout',
-          error: `Compilarea a durat mai mult de ${COMPILE_TIMEOUT_MS / 1000}s.`,
+          status: 'Eroare de compilare',
+          error: compileResult.stderr || compileResult.err.message,
         };
       }
-      return {
-        status: 'Eroare de compilare',
-        error: compileResult.stderr || compileResult.err.message,
-      };
     }
+    // Pentru Python nu există pas de compilare — sărim direct la execuție.
 
-    // 3. EXECUȚIE ÎN DOCKER SANDBOX (cu limitări de hardware stricte)
-    const runResult = await runInDockerSandbox(files);
+    // 3. EXECUȚIE ÎN DOCKER SANDBOX (limitări stricte de hardware, identice pentru ambele limbaje)
+    const runResult = await runInDockerSandbox(files, language);
 
     if (runResult.timedOut) {
       return {
@@ -136,7 +179,7 @@ async function cppJob(code, input) {
     if (runResult.runtimeError) {
       return {
         status: 'Runtime Error',
-        error: runResult.stderr || 'Programul a crăpat în timpul execuției (Ex: Kiled / Memorie depășită).',
+        error: runResult.stderr || 'Programul a crăpat în timpul execuției (Ex: Killed / Memorie depășită).',
       };
     }
 
@@ -145,6 +188,7 @@ async function cppJob(code, input) {
       output: runResult.stdout,
       memory: runResult.memoryMb,
       time: runResult.timeSec,
+      language,
     };
   } finally {
     // Cleanup garantat pentru fișierele de pe sistemul gazdă
@@ -153,29 +197,29 @@ async function cppJob(code, input) {
 }
 
 // ─── Funcția de spawn specială pentru Sandbox ────────────────────────────
-function runInDockerSandbox(files) {
+function runInDockerSandbox(files, language) {
   return new Promise((resolve) => {
-    // Deschidem fișierul de input de pe sistemul gazdă pentru a-l injecta ca stdin
     const inputFd = fs.openSync(files.fullInp, 'r');
 
-    // Construim comanda Docker securizată
-    // --memory="64m": Limită rigidă de RAM (dacă o depășește, ia Crash/OOM instant)
-    // --cpus="0.5": Alocă maxim jumătate de nucleu de procesor ca să nu poată bloca serverul principal
-    // --network none: Blochează accesul la internet din interiorul codului C++
+    // Fără /usr/bin/time — rulăm direct programul
+    const runCmd = language === 'python'
+      ? `python3 ./${files.src}`
+      : `./${files.exe}`;
+
     const dockerArgs = [
-  'run', '--rm',
-  '-i',
-  '--read-only',              // 1. Face tot sistemul containerului Read-Only
-  '--tmpfs', '/tmp:rw,noexec,nosuid,size=4m', // 2. Permite scriere DOAR în /tmp, dar fără drept de execuție binarie acolo
-  '--user', '1000:1000',      // 3. Forțează ID-ul de utilizator non-root (elev)
-  '--memory=64m',
-  '--cpus=0.5',
-  '--network=none',
-  '-v', `${TMP_DIR}:/sandbox:rw`, // Mapăm doar folderul de lucru
-  '-w', '/sandbox',
-  'infomotion-sandbox:latest',
-  'sh', '-c', `/usr/bin/time -f "PERF_STATS MEM:%M TIME:%e" ./${files.exe}`
-];
+      'run', '--rm',
+      '-i',
+      '--read-only',
+      '--tmpfs', '/tmp:rw,noexec,nosuid,size=4m',
+      '--user', '1000:1000',
+      '--memory=64m',
+      '--cpus=0.5',
+      '--network=none',
+      '-v', `${TMP_DIR}:/sandbox:rw`,
+      '-w', '/sandbox',
+      'infomotion-sandbox:latest',
+      'sh', '-c', runCmd
+    ];
 
     const proc = spawn('docker', dockerArgs, {
       stdio: [inputFd, 'pipe', 'pipe']
@@ -206,43 +250,28 @@ function runInDockerSandbox(files) {
         return resolve({ outputExceeded: true });
       }
 
-      // Dacă a fost tăiat de watchdog-ul de proces sau semnalul Docker
       if (signal === 'SIGTERM' || signal === 'SIGKILL' || timedOut) {
         return resolve({ timedOut: true });
       }
 
-      // Parsăm statisticile scrise de utilitarul /usr/bin/time din interiorul imaginii Linux
-      const match = stderr.match(/PERF_STATS MEM:(\d+) TIME:([\d.]+)/);
-      let memoryMb = 0;
-      let timeSec = 0;
-      
-      if (match) {
-        // În Linux, %M returnează în Kilobytes, îl convertim în Megabytes curat
-        memoryMb = parseFloat((parseInt(match[1], 10) / 1024).toFixed(2));
-        timeSec = parseFloat(match[2]);
-        // Eliminăm linia tehnică din stderr ca să lăsăm doar erorile reale de execuție ale elevului
-        stderr = stderr.replace(/PERF_STATS MEM:\d+ TIME:[\d.]+\n?/, '').trim();
-      }
-
-      // Code 137 în Docker înseamnă de obicei OOM (Out Of Memory) - tăiat pentru că a depășit 64MB
-      const runtimeError = (code !== 0 && !match) || code === 137;
+      // Fără /usr/bin/time nu mai avem stats de memorie/timp
+      // Code 137 = OOM kill (limita --memory=64m depășită)
+      const runtimeError = code !== 0 || code === 137;
 
       resolve({
         stdout,
         stderr,
-        memoryMb,
-        timeSec,
-        runtimeError: runtimeError || (code !== 0 && stderr.length > 0),
+        memoryMb: null,
+        timeSec: null,
+        runtimeError: runtimeError && stderr.length >= 0 && code !== 0,
       });
     });
 
-    // Watchdog de siguranță: dacă Docker se blochează, îl dărâmăm forțat
     const timer = setTimeout(() => {
       timedOut = true;
       proc.kill('SIGKILL');
-      
-      // Backup forțat: rulăm o comandă rapidă de terminare a containerului orfan dacă e cazul
-      execFile('docker', ['ps', '-q', '--filter', `ancestor=gcc:latest`], (err, stdout) => {
+
+      execFile('docker', ['ps', '-q', '--filter', `ancestor=infomotion-sandbox:latest`], (err, stdout) => {
         if (stdout) {
           const lines = stdout.trim().split('\n');
           lines.forEach(id => { if (id) execFile('docker', ['kill', id]); });
@@ -257,12 +286,18 @@ function runInDockerSandbox(files) {
 // ─── Export public ───────────────────────────────────────────────────────────
 module.exports = {
   /**
-   * Trimite un job C++ în coadă pentru a fi rulat în Sandbox.
+   * Trimite un job de cod în coadă pentru a fi rulat în Sandbox.
+   * Dacă `language` nu e specificat, se detectează automat din conținutul codului.
+   * @param {string} code
+   * @param {string} input
+   * @param {string} [language] - 'cpp' | 'python' (opțional)
    * @returns {Promise<Object>} rezultatul compilării/execuției
    */
-  submitCppJob(code, input) {
-    return enqueue(() => cppJob(code, input));
+  submitCodeJob(code, input, language) {
+    const finalLanguage = language || detectLanguage(code);
+    return enqueue(() => codeJob(finalLanguage, code, input));
   },
 
+  detectLanguage,
   getQueueStats,
 };

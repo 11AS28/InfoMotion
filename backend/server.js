@@ -14,7 +14,7 @@ const { simulateFibonacciRecursiv } = require('./simulators/simulateFibonacci');
 const { simulateBFS } = require('./simulators/simulateBFS');
 const { simulateConceptGrafuri } = require('./simulators/simulare_introducere');
 
-const { submitCppJob, getQueueStats } = require('./jobQueue');
+const { submitCodeJob, getQueueStats } = require('./jobQueue');
 const { addLog, getLogs } = require('./logger');
 
 const app = express();
@@ -233,7 +233,7 @@ app.post('/api/simulate', async (req, res) => {
 
 
 app.post('/api/run-cpp', async (req, res) => {
-  const { code, input, username } = req.body;
+  const { code, input, language } = req.body; 
 
   if (!code) {
     return res.status(400).json({ error: 'Nu ai trimis niciun cod!' });
@@ -241,7 +241,7 @@ app.post('/api/run-cpp', async (req, res) => {
 
   const stats = getQueueStats();
   if (stats.queueLength >= 10) {
-    addLog('WARN', 'QUEUE_OVERFLOW', `Server blocat: Coada de execuție C++ a depășit limita.`);
+    addLog('WARN', 'QUEUE_OVERFLOW', `Server blocat: Coada de execuție a depășit limita.`);
     return res.status(503).json({
       status: 'Server ocupat',
       error: 'Prea multe joburi în așteptare. Încearcă din nou în câteva secunde.',
@@ -249,10 +249,10 @@ app.post('/api/run-cpp', async (req, res) => {
   }
 
   try {
-    const result = await submitCppJob(code, input);
+    const result = await submitCodeJob(code, input, language);
 
     if (result.status !== 'Succes') {
-      addLog('INFO', 'CPP_EXECUTION_ERROR', `Codul C++ rulat a returnat starea: ${result.status}`);
+      addLog('INFO', 'CODE_EXECUTION_ERROR', `Codul (${result.language || language || 'necunoscut'}) rulat a returnat starea: ${result.status}`);
       return res.status(400).json(result);
     }
 

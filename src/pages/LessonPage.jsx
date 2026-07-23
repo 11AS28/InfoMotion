@@ -64,6 +64,7 @@ function LessonPage() {
   const [loadingAi, setLoadingAi] = useState(false);
   const [isAiPopoverOpen, setIsAiPopoverOpen] = useState(false);
   const [copiedAiKey, setCopiedAiKey] = useState(null); // Ține minte ce buton a fost copiat recent
+  const [selectedLang, setSelectedLang] = useState('cpp'); // 'cpp' sau 'python'
 
   usePageTitle(lectie ? `InfoMotion - ${lectie.titlu}` : 'InfoMotion - Lecție');
 
@@ -89,9 +90,10 @@ function LessonPage() {
   const algoritmiFaraDateExtinse = ["fibonacci_recursiv"];
 
   const handleCopyCode = async () => {
-    if (!lectie?.codCPlusPlus) return;
+    const codeToCopy = selectedLang === 'cpp' ? lectie?.codCPlusPlus : lectie?.codPython;
+    if (!codeToCopy) return;
     try {
-      await navigator.clipboard.writeText(lectie.codCPlusPlus);
+      await navigator.clipboard.writeText(codeToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -108,7 +110,7 @@ function LessonPage() {
   };
 
   const handleFetchAiCases = async () => {
-    if (loadingAi) return; 
+    if (loadingAi) return;
 
     if (aiCases) {
       setIsAiPopoverOpen(!isAiPopoverOpen);
@@ -780,14 +782,19 @@ function LessonPage() {
             </div>
           </section>
 
-          {lectie.codCPlusPlus && (
+          {(lectie.codCPlusPlus || lectie.codPython) && (
             <section className="lesson-code" style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h2><Code size={60} color="#1fe0f9" strokeWidth={0.75} /> Cod C++</h2>
+              {/* Header-ul cu titlu si butonul "Modifică și Rulează codul" */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h2>
+                  <Code size={60} color="#1fe0f9" strokeWidth={0.75} />
+                  Cod Sursă {selectedLang === 'cpp' ? 'C++' : 'Python'}
+                </h2>
 
                 <button
                   onClick={() => {
-                    localStorage.setItem(`infomotion_code_${idLectie}`, lectie.codCPlusPlus);
+                    const codeToPass = selectedLang === 'cpp' ? lectie.codCPlusPlus : lectie.codPython;
+                    localStorage.setItem(`infomotion_code_${idLectie}`, codeToPass || '');
                     window.open(`/compiler/${idLectie}`, '_blank');
                   }}
                   style={{
@@ -821,6 +828,64 @@ function LessonPage() {
                 </button>
               </div>
 
+              {/* Butoanele de switch exact SUB "Cod Sursă" */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                <button
+                  onClick={() => setSelectedLang('cpp')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: selectedLang === 'cpp' ? '1px solid #1fe0f9' : '1px solid #27272a',
+                    backgroundColor: selectedLang === 'cpp' ? 'rgba(31, 224, 249, 0.15)' : '#18181b',
+                    color: selectedLang === 'cpp' ? '#1fe0f9' : '#a1a1aa',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span style={{
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: selectedLang === 'cpp' ? '#1fe0f9' : 'transparent',
+                    display: 'inline-block'
+                  }} />
+                  C++
+                </button>
+
+                <button
+                  onClick={() => setSelectedLang('python')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: selectedLang === 'python' ? '1px solid #1fe0f9' : '1px solid #27272a',
+                    backgroundColor: selectedLang === 'python' ? 'rgba(31, 224, 249, 0.15)' : '#18181b',
+                    color: selectedLang === 'python' ? '#1fe0f9' : '#a1a1aa',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span style={{
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: selectedLang === 'python' ? '#1fe0f9' : 'transparent',
+                    display: 'inline-block'
+                  }} />
+                  Python
+                </button>
+              </div>
+
+              {/* Caseta de cod cu iconita de copy inapoi pe colt */}
               <div style={{ position: 'relative', width: '100%' }}>
                 <button
                   onClick={handleCopyCode}
@@ -854,7 +919,14 @@ function LessonPage() {
                   {copied ? <Check size={18} strokeWidth={2.5} /> : <Copy size={18} strokeWidth={2} />}
                 </button>
 
-                <pre style={{ margin: 0 }}><code className="language-cpp">{lectie.codCPlusPlus}</code></pre>
+                <pre style={{ margin: 0 }}>
+                  <code className={selectedLang === 'cpp' ? 'language-cpp' : 'language-python'}>
+                    {selectedLang === 'cpp'
+                      ? (lectie.codCPlusPlus || "// Codul C++ nu este disponibil încă.")
+                      : (lectie.codPython || "# Codul Python nu este disponibil încă.")
+                    }
+                  </code>
+                </pre>
               </div>
             </section>
           )}

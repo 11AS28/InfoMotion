@@ -173,21 +173,25 @@ function Dashboard({ adminInfo, onLogout }) {
     if (lectie.categorie === 'olimpiada') clasa = 'olimpici';
     else if (lectie.categorie === 'concepte') clasa = 'concepte';
 
-    let anim = 'null'; let animCustom = '';
-    if (lectie.animatie) {
-      if (['BubbleSortAnim', 'CautareBinaraAnim'].includes(lectie.animatie)) anim = lectie.animatie;
-      else { anim = 'custom'; animCustom = lectie.animatie; }
-    }
-
     setEditData({
-      id: lectie.id, clasa, ordine: lectie.ordine || 1,
-      titlu: lectie.titlu || '', descriere: lectie.descriere || '',
-      teorie: lectie.teorie || '', cod: lectie.codCPlusPlus || '',
-      codSimulatorCPP: lectie.codSimulatorCPP || '', anim, animCustom,
+      id: lectie.id,
+      clasa,
+      ordine: lectie.ordine || 1,
+      titlu: lectie.titlu || '',
+      descriere: lectie.descriere || '',
+      adaugatDe: lectie.adaugatDe || '',
+      teorie: lectie.teorie || '',
+      cod: lectie.codCPlusPlus || '',
+      codPython: lectie.codPython || '',
+      codSimulatorCPP: lectie.codSimulatorCPP || '',
+
+      animatie: lectie.animatie || null,
+
       pbRows: lectie.problemePbinfo?.length > 0 ? lectie.problemePbinfo : [{ id: '', titlu: '', url: '' }],
       quiz: lectie.quiz || Array(5).fill(0).map(() => ({ intrebare: '', variante: ['', '', '', ''], corect: 0 })),
       codeforces: lectie.codeforces || ['', ''],
     });
+
     setIsEditing(true);
     setActiveTab('adauga');
   };

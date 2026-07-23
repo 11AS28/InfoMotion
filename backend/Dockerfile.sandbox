@@ -1,17 +1,13 @@
 FROM alpine:3.19
 
-# 1. Instalăm pachetele corecte pentru compilare și utilitara time
-# În Alpine folosim 'build-base' în loc de 'build-essential'
-RUN apk add --no-cache g++ build-base time
+# Instalăm doar ce chiar există: g++ pentru compilare, python3 pentru scripturi
+RUN apk add --no-cache g++ build-base python3
 
-# 2. Creăm un user simplu elev fără drepturi de root
+# Creăm un user simplu elev fără drepturi de root
 RUN adduser -D -g "" elev
 
-# 3. Setăm directorul de lucru în sandbox
 WORKDIR /sandbox
 
-# 4. Schimbăm proprietarul folderului pentru ca userul 'elev' să poată scrie acolo
 RUN chown -R elev:elev /sandbox
 
-# 5. Tot ce rulează mai departe va rula sub utilizatorul 'elev'
 USER elev
