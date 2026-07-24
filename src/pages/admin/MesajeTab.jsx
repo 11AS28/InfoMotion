@@ -435,7 +435,7 @@ function MesajeTab({ adminUsername, adminPassword }) {
                         {anuntText.trim() && (
                             <div style={{ marginBottom: '16px', padding: '14px 16px', borderRadius: '10px', background: '#f0fdf4', border: '1.5px solid #bbf7d0' }}>
                                 <div style={{ fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>PREVIEW NOTIFICARE</div>
-                                <div style={{ fontSize: '13px', color: '#1e293b', lineHeight: '1.6' }}>{anuntText.trim()}</div>
+                                <div style={{ fontSize: '13px', color: '#1e293b', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{anuntText.trim()}</div>
                                 <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>de la {adminUsername} • acum</div>
                             </div>
                         )}
