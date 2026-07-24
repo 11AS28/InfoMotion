@@ -1,11 +1,5 @@
 <div align="center">
 
-
-
-
-
-
-
 # 🎓 InfoMotion
 
 ### Laboratorul digital care transformă algoritmica din teorie seacă în experiență vizuală și competitivă
@@ -15,6 +9,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 
 </div>
 
@@ -22,10 +17,9 @@
 
 ## 📖 Despre proiect
 
-[**DOCUMENTATIA O GASITI AICI**](https://docs.google.com/document/d/1Z5vPx7C196fCTjE-NZTvjNK1hayeKfIs/edit?usp=sharing&ouid=115920545337278714774&rtpof=true&sd=true)
+[**DOCUMENTAȚIA O GĂSIȚI AICI**](https://docs.google.com/document/d/1Z5vPx7C196fCTjE-NZTvjNK1hayeKfIs/edit?usp=sharing&ouid=115920545337278714774&rtpof=true&sd=true)
 
-
-**InfoMotion** a fost creat pentru că algoritmii de bază sunt de obicei explicați teoretic și greoi. Platforma transformă procesul de învățare al algoritmilor într-o experiență vizuală, interactivă și motivantă — prin **animații pas-cu-pas**, un **compilator C++ integrat**, **quiz-uri**, un sistem de **gamificare** și o arenă de concurs zilnică.
+**InfoMotion** a fost creat pentru că algoritmii de bază sunt de obicei explicați teoretic și greoi. Platforma transformă procesul de învățare al algoritmilor într-o experiență vizuală, interactivă și motivantă — prin **animații pas-cu-pas**, un **mediu de execuție C++ și Python integrat**, **descărcare de cheat sheet-uri**, **quiz-uri**, un sistem de **gamificare** și o arenă de concurs zilnică.
 
 Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl vezi *mișcându-se* — nu citit din pseudocod pe tablă, ci văzut pas cu pas, cu fiecare comparație și interschimbare vizibilă pe ecran.
 
@@ -34,14 +28,17 @@ Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl 
 ## ✨ Funcționalități principale
 
 ### 📚 Lecții interactive animate
-- Explicații pe înțelesul elevilor, cu teorie, cod și probleme practice (inspirate din [pbinfo.ro](https://www.pbinfo.ro/))
+- Explicații pe înțelesul elevilor, cu teorie, cod (**C++ și Python**) și probleme practice (inspirate din [pbinfo.ro](https://www.pbinfo.ro/))
 - Animații vizuale proprii pentru algoritmi clasici: Bubble Sort, Quick Sort, Merge Sort, căutare binară, divide et impera, sume parțiale, sliding window, stivă monotonă și altele
 - Bară de căutare rapidă pentru orice concept
 
-### 💻 Compilator C++ integrat
+### 💻 Editor de cod și execuție (C++ & Python)
 - Editor de cod în browser cu **Monaco Editor** (același din spatele VS Code)
-- Compilare și rulare reală pe server (`g++`), cu măsurare de timp și memorie
-- Detectare TLE (Time Limit Exceeded), erori de compilare și erori de runtime
+- Compilare și rulare reală pe server (`g++` pentru C++ și `python3` pentru Python), cu măsurare de timp și memorie
+- Detectare TLE (Time Limit Exceeded), erori de sintaxă/compilare și erori de runtime
+
+### 📑 Cheat Sheet-uri descărcabile (NOU!)
+- Ai acces instant la esențial: poți descărca direct din platformă **cheat sheet-uri** în format digital cu codul, logica și complexitatea algoritmilor învățați, perfecte pentru recapitulare rapidă înainte de teze sau olimpiade.
 
 ### ✅ Sistem de Quiz & Gamificare
 - Fiecare lecție conține un quiz de verificare
@@ -49,7 +46,7 @@ Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl 
 - Streak de zile consecutive de activitate
 
 ### 🏆 Arena — Problema Zilei & Clasamente
-- O problemă nouă de algoritmică în fiecare zi
+- O problemă nouă de algoritmică în fiecare zi, rezolvabilă acum în **C++** sau **Python**
 - Rezolvare corectă: **30 puncte** · Bonus primii 3: **50 puncte** total
 - Clasament live, bazat pe punctele din lecții + Arena
 
@@ -73,16 +70,16 @@ Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl 
 |:---:|:---:|:---:|:---:|
 | ⚛️ React 19 | 🟢 Node.js | 🔥 Firebase Auth | 🐳 Docker |
 | ⚡ Vite | 🚂 Express 5 | 📦 Firestore | ▲ Vercel |
-| 🧭 React Router DOM | 🧩 Vercel Serverless Functions | 🛡️ firebase-admin | 🧹 ESLint |
-| 🖊️ Monaco Editor | ⚙️ C++ / g++ (execuție cod) | 🧼 DOMPurify | 🗺️ Sitemap auto-generat |
-| 🎨 CSS Grid & Flexbox | | | |
+| 🧭 React Router DOM | 🐍 Python 3 (execuție) | 🛡️ firebase-admin | 🧹 ESLint |
+| 🖊️ Monaco Editor | ⚙️ C++ / g++ (execuție) | 🧼 DOMPurify | 🗺️ Sitemap auto-generat |
+| 🎨 CSS Grid & Flexbox | 🧩 Vercel Serverless | | |
 | 📝 React Markdown | | | |
 
 </div>
 
 **Firebase** este utilizat pentru autentificare, stocarea lecțiilor și gestionarea datelor utilizatorilor (profil, punctaj, Codeforces handle).
 
-**Backend-ul de execuție cod** este containerizat cu Docker și compilează/rulează izolat codul C++ trimis de utilizatori, cu limite stricte de timp și memorie.
+**Backend-ul de execuție cod** este containerizat cu Docker și rulează izolat codul trimis de utilizatori (C++ sau Python), asigurând un mediu sigur, cu limite stricte de timp și memorie.
 
 ---
 
@@ -90,7 +87,7 @@ Ideea de bază: un algoritm devine cu adevărat înțeles abia atunci când îl 
 
 Platforma rulează direct în browser, fără instalare:
 
-1. 🌐 Accesează **[infomotion.space](https://infomotion.space)**
+1. 🌐 Accesează **[infomotion.space](https://infomotion.space/)**
 2. 🔑 Apasă **„LOGARE / CREARE CONT"**
 3. 📘 Apasă **„Începe să înveți"**
 
@@ -141,7 +138,8 @@ npm start
 
 **Browsere:** Chrome · Firefox · Edge · Safari · Brave
 
-**Editor de cod (opțional, pentru Arena):** Nu mai este nevoie de editor deoarece avem integrat deja in paltforma!!!
+**Editor de cod:** Nu mai este nevoie de niciun editor extern (IDE)! Platforma vine la pachet cu un editor integrat de top (Monaco) atât pentru C++, cât și pentru Python.
+
 ---
 
 ## 📚 Bibliografie & resurse
@@ -149,10 +147,10 @@ npm start
 - 🔗 [pbinfo.ro](https://www.pbinfo.ro/)
 - 🔗 [codeforces.com](https://codeforces.com/)
 - 🔗 [react.dev](https://react.dev/)
+- 🔗 [python.org](https://www.python.org/)
 - 🔗 [Firebase Console](https://console.firebase.google.com/)
 - 🔗 [vite.dev](https://vite.dev/)
 - 🔗 [CSS Flexbox — W3Schools](https://www.w3schools.com/csS/css3_flexbox.asp)
-- 🔗 [ES6 JavaScript Tutorial](https://www.javascripttutorial.net/es6/)
 - 🔗 [Monaco Editor](https://www.npmjs.com/package/@monaco-editor/react)
 
 ---
