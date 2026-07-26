@@ -40,12 +40,16 @@ service cloud.firestore {
     }
 
     match /dailyChallenges/{challengeId} {
-      allow read: if true;
-      allow create: if false;
-      allow update: if request.auth != null &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rezolvitori']);
-      allow delete: if false;
-    }
+  allow read: if true;
+  // Permite creare doar dacă userul e logat, structura e corectă, și solvers pornește gol
+  allow create: if request.auth != null &&
+    request.resource.data.keys().hasOnly(['data', 'easy', 'medium', 'hard', 'solvers']) &&
+    request.resource.data.solvers.size() == 0;
+  // Permite update DOAR pe câmpul 'solvers' (numele corect, nu 'rezolvitori')
+  allow update: if request.auth != null &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['solvers']);
+  allow delete: if false;
+}
 
     match /admin_todo/{todoId} {
       allow read, write: if false;
@@ -68,5 +72,9 @@ service cloud.firestore {
     match /diplomaRequests/{requestId} {
       allow read, write: if false;
     }
+    
+    match /login_attempts/{username} {
+ 			allow read, write: if false;
+		}
   }
 }
