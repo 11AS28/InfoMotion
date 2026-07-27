@@ -377,7 +377,8 @@ function Lectii() {
                   id: l.id,
                   titlu: l.titlu,
                   descriere: l.descriere,
-                  cod: l.codCPlusPlus
+                  cod: l.codCPlusPlus,
+                  codPython: l.codPython
                 }))}
               />
             }

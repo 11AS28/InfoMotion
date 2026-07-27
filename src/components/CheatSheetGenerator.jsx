@@ -82,6 +82,7 @@ export default function CheatSheetGenerator() {
         titlu: lectie.titlu,
         descriere: lectie.descriere,
         cod: lectie.codCPlusPlus,
+        codPython: lectie.codPython,
       }));
 
       setLectiiPDF(lectiiFormatate);
