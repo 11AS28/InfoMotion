@@ -98,7 +98,7 @@ function DiplomaPage() {
           <p className="diploma-subtitle">Prezentul document atestă faptul că</p>
           <h2 className="diploma-student-name">{diploma.studentName}</h2>
           <p className="diploma-course-text">
-            {diploma.tier === 'liceu' ? 'a finalizat cu brio și a stăpânit în totalitate' : 'a demonstrat dedicare și a finalizat cu succes toate lecțiile pentru'}
+            {diploma.tier === 'liceu' ? 'a finalizat cu succes și a stăpânit în totalitate' : 'a demonstrat dedicare și a finalizat cu succes toate lecțiile pentru'}
           </p>
           <h3 className="diploma-course-name">{diploma.courseName || activeTierConfig.courseDefault}</h3>
         </div>
