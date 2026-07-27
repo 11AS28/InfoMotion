@@ -48,7 +48,6 @@ function extrageClasaNumerica(data) {
     }
   }
 
-  console.warn('⚠️ Nu am putut determina clasa pentru lecția:', data.titlu, '| clasa brută:', data.clasa);
   return 9; // fallback
 }
 
