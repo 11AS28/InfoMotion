@@ -47,14 +47,116 @@ const apiLimiter = rateLimit({
  
 
 
-app.post('/api/generate-cases', async (req, res) => {
-  try {
-    const { algoritm, tipModul } = req.body;
+const DEFAULT_FALLBACK_CASES = {
+  compiler: {
+    normal: "5\n4 2 5 1 3",
+    worstCase: "5\n5 4 3 2 1",
+    bestCase: "5\n1 2 3 4 5",
+    stressTest: "10\n42 12 89 5 23 7 1 99 15 50"
+  },
+  animation: {
+    normal: "4, 2, 5, 1, 3",
+    worstCase: "5, 4, 3, 2, 1",
+    bestCase: "1, 2, 3, 4, 5",
+    stressTest: "42, 12, 89, 5, 23, 7, 1, 99, 15, 50"
+  }
+};
 
-    if (!algoritm) {
-      return res.status(400).json({ error: "Lipsește numele algoritmului." });
+const SPECIFIC_FALLBACKS = {
+  // Sorting / Sortări
+  sorting: {
+    compiler: {
+      normal: "6\n7 2 9 1 5 4",
+      worstCase: "6\n9 7 5 4 2 1",
+      bestCase: "6\n1 2 4 5 7 9",
+      stressTest: "10\n100 -5 23 0 12 88 -12 4 19 3"
+    },
+    animation: {
+      normal: "7, 2, 9, 1, 5, 4",
+      worstCase: "9, 7, 5, 4, 2, 1",
+      bestCase: "1, 2, 4, 5, 7, 9",
+      stressTest: "100, -5, 23, 0, 12, 88, -12, 4, 19, 3"
     }
+  },
+  // Căutare Binară / Vectori Căutați
+  binary_search: {
+    compiler: {
+      normal: "7\n2 5 8 12 16 23 38\n12",
+      worstCase: "7\n2 5 8 12 16 23 38\n99",
+      bestCase: "7\n2 5 8 12 16 23 38\n12",
+      stressTest: "10\n1 3 7 11 15 19 22 31 45 50\n22"
+    },
+    animation: {
+      normal: "2, 5, 8, 12, 16, 23, 38",
+      worstCase: "2, 5, 8, 12, 16, 23, 38",
+      bestCase: "2, 5, 8, 12, 16, 23, 38",
+      stressTest: "1, 3, 7, 11, 15, 19, 22, 31, 45, 50"
+    }
+  },
+  // Grafuri (BFS / DFS / Introducere)
+  graphs: {
+    compiler: {
+      normal: "4 4\n1 2\n2 3\n3 4\n4 1\n1",
+      worstCase: "5 4\n1 2\n2 3\n3 4\n4 5\n1",
+      bestCase: "3 3\n1 2\n2 3\n3 1\n1",
+      stressTest: "6 7\n1 2\n1 3\n2 4\n2 5\n3 6\n4 5\n5 6\n1"
+    },
+    animation: {
+      normal: "1-2, 2-3, 3-4, 4-1",
+      worstCase: "1-2, 2-3, 3-4, 4-5",
+      bestCase: "1-2, 2-3, 3-1",
+      stressTest: "1-2, 1-3, 2-4, 2-5, 3-6, 4-5, 5-6"
+    }
+  },
+  // Siruri de caractere / String
+  strings: {
+    compiler: {
+      normal: "infomotion",
+      worstCase: "zzzzzzzzzz",
+      bestCase: "a",
+      stressTest: "algoritmica_si_programare_2026"
+    },
+    animation: {
+      normal: "i, n, f, o, m, o, t, i, o, n",
+      worstCase: "z, z, z, z, z, z, z, z",
+      bestCase: "a",
+      stressTest: "a, l, g, o, r, i, t, m, i, c, a"
+    }
+  }
+};
 
+// Helper pentru extragerea cazurilor predefinite adecvate
+function getFallbackCases(algoritm, tipModul) {
+  const isCompiler = tipModul === 'compiler';
+  const modeKey = isCompiler ? 'compiler' : 'animation';
+  const algoLower = (algoritm || '').toLowerCase();
+
+  if (algoLower.includes('sort') || algoLower.includes('bule') || algoLower.includes('interschimbare')) {
+    return SPECIFIC_FALLBACKS.sorting[modeKey];
+  }
+  if (algoLower.includes('cautare') || algoLower.includes('binar')) {
+    return SPECIFIC_FALLBACKS.binary_search[modeKey];
+  }
+  if (algoLower.includes('graf') || algoLower.includes('bfs') || algoLower.includes('dfs')) {
+    return SPECIFIC_FALLBACKS.graphs[modeKey];
+  }
+  if (algoLower.includes('str') || algoLower.includes('sir') || algoLower.includes('text')) {
+    return SPECIFIC_FALLBACKS.strings[modeKey];
+  }
+
+  return DEFAULT_FALLBACK_CASES[modeKey];
+}
+
+
+// --- RUTA ACTUALIZATĂ ---
+app.post('/api/generate-cases', async (req, res) => {
+  const { algoritm, tipModul } = req.body;
+
+  if (!algoritm) {
+    return res.status(400).json({ error: "Lipsește numele algoritmului." });
+  }
+
+  try {
     const prompt = `
       Ești un asistent AI integrat pe platforma InfoMotion. 
       Trebuie să generezi 4 seturi de date de test pentru algoritmul/lecția: "${algoritm}".
@@ -79,15 +181,27 @@ app.post('/api/generate-cases', async (req, res) => {
       }
     });
 
-    // Parsăm JSON-ul simplu primit de la Gemini
     const testCases = JSON.parse(response.text);
-    res.json(testCases);
+
+    // Returnăm răspunsul generat de AI
+    return res.json({
+      ...testCases,
+      isFallback: false
+    });
 
   } catch (error) {
-    console.error("Eroare Gemini:", error);
-    res.status(500).json({ error: "Eroare la generarea cazurilor simple." });
+    console.error("⚠️ AI Rateu/Eroare. Se folosesc date fallback:", error.message);
+
+    // În caz de eroare AI, extragem cazurile predefinite potrivite
+    const fallbackCases = getFallbackCases(algoritm, tipModul);
+
+    return res.json({
+      ...fallbackCases,
+      isFallback: true
+    });
   }
 });
+
 
 app.post('/api/log-event', (req, res) => {
   const { type, actionCode, message } = req.body;

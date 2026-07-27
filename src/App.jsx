@@ -71,17 +71,18 @@ function App() {
   const epagadmin = location.pathname === SECRETU;
   const isCompilerPage = location.pathname.startsWith('/compiler');
   const isDiplomaPage = location.pathname.startsWith('/diploma');
+   const pdfeu = location.pathname.startsWith('/preview-pdf');
 
   return (
     <ThemeProvider>
       <AuthProvider>
         <Toaster richColors position="top-right" />
 
-        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && <Nav />}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && !pdfeu && <Nav />}
 
         <main style={{
           minHeight: '100vh',
-          paddingTop: isAdminPage || epagadmin || isCompilerPage || isDiplomaPage || is404Page ? '0' : '85px'
+          paddingTop: isAdminPage || epagadmin || isCompilerPage || isDiplomaPage || is404Page || pdfeu ? '0' : '85px'
         }}>
           <Routes>
             <Route path="/" element={<MainPage />} />
@@ -286,7 +287,7 @@ function App() {
         </main>
 
         <Online />
-        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && <Footer />}
+        {!isAdminPage && !epagadmin && !isCompilerPage && !isDiplomaPage && !is404Page && !pdfeu && <Footer />}
       </AuthProvider>
       <SpeedInsights />
       <Analytics />

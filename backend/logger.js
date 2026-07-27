@@ -38,7 +38,7 @@ function addLog(type, actionCode, message) {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const timeStr = `${hours}:${minutes}`;
 
-  // Format final exact cum ai cerut
+  // Format final exact
   const logText = `[${timeStr}] [${type}] [${actionCode}] - ${message}`;
 
   const logEntry = {
