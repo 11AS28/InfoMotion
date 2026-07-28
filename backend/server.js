@@ -1,7 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
+const Groq = require('groq-sdk');
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const { simulateStrlen } = require('./simulators/stringSim');
 const { simulateBubbleSort } = require('./simulators/arraySim');
@@ -21,7 +22,6 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
-const ai = new GoogleGenAI({});
 
 app.use(cors({
   origin: [
@@ -44,7 +44,7 @@ const apiLimiter = rateLimit({
 });
 
 //app.use('/api/generate-cases', apiLimiter);
- 
+
 
 
 const DEFAULT_FALLBACK_CASES = {
@@ -173,15 +173,15 @@ app.post('/api/generate-cases', async (req, res) => {
       Nu include blocuri de cod markdown (\`\`\`json). Returnează doar obiectul JSON pur.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json'
-      }
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile", // sau alt model Groq pe care vrei să-l folosești
+      messages: [
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" }
     });
 
-    const testCases = JSON.parse(response.text);
+    const testCases = JSON.parse(response.choices[0].message.content);
 
     // Returnăm răspunsul generat de AI
     return res.json({
@@ -239,20 +239,20 @@ app.use('/api/simulate', apiLimiter);
 app.post('/api/simulate', async (req, res) => {
   try {
     const { algorithm, array, algorithmType, inputData } = req.body;
- 
+
     const finalAlgorithm = algorithm || algorithmType;
     const finalArray = array || inputData;
- 
+
     const algoritmiFaraArray = ['bfs_dinamic', 'simulare_introducere'];
- 
+
     if (!algoritmiFaraArray.includes(finalAlgorithm)) {
       if (!finalArray || !Array.isArray(finalArray)) {
         return res.status(400).json({ error: 'Datele de intrare lipsesc sau sunt invalide!' });
       }
     }
- 
+
     let steps = [];
- 
+
     switch (finalAlgorithm) {
       case 'bubbleSort':
       case 'BubbleSortAnim': {
@@ -260,94 +260,94 @@ app.post('/api/simulate', async (req, res) => {
         steps = simulateBubbleSort(numericArray);
         break;
       }
- 
+
       case 'quick_sort_dinamic': {
         const numericArray = finalArray.map(Number);
         steps = simulateQuickSortJS(numericArray);
         break;
       }
- 
+
       case 'strlen_dinamic':
       case 'strcpy_dinamic': {
         const cuvant = finalArray.map(ascii => String.fromCharCode(ascii)).join('');
         steps = await simulateStrlen(cuvant);
         break;
       }
- 
+
       case 'cautare_binara_div_imp': {
         const numericArray = finalArray.map(Number);
         const targetCautat = req.body.target !== undefined ? parseInt(req.body.target) : numericArray[0];
         steps = simulateCautareBinaraDivImpJS(numericArray, targetCautat);
         break;
       }
- 
+
       case 'InterschimbareSort': {
         const numericArray = finalArray.map(Number);
         steps = simulateExchangeSort(numericArray);
         break;
       }
- 
+
       case 'SelectieSort': {
         const numericArray = finalArray.map(Number);
         steps = simulateSelectionSort(numericArray);
         break;
       }
- 
+
       case 'InserctieSort': {
         const numericArray = finalArray.map(Number);
         steps = simulateInsertionSort(numericArray);
         break;
       }
- 
+
       case 'fibonacci_recursiv': {
         const numericArray = finalArray.map(Number);
         steps = simulateFibonacciRecursiv(numericArray[0]);
         break;
       }
- 
+
       case 'bfs_dinamic': {
-        const muchii = req.body.edges; 
+        const muchii = req.body.edges;
         const start = req.body.startNode;
         const directionat = !!req.body.directed;
- 
+
         if (!muchii || !Array.isArray(muchii) || muchii.length === 0) {
           return res.status(400).json({ error: 'Lipsesc muchiile grafului!' });
         }
         if (!start) {
           return res.status(400).json({ error: 'Lipsește nodul de start!' });
         }
- 
+
         steps = simulateBFS(muchii, start, directionat);
         break;
       }
- 
+
       case 'simulare_introducere': {
-        const muchii = req.body.edges; 
- 
+        const muchii = req.body.edges;
+
         if (!muchii || !Array.isArray(muchii) || muchii.length === 0) {
           return res.status(400).json({ error: 'Lipsesc muchiile grafului!' });
         }
- 
+
         steps = simulateConceptGrafuri(muchii);
         break;
       }
- 
+
       default:
         return res.status(400).json({ error: 'Algoritm neimplementat' });
     }
- 
+
     return res.json({ steps });
   } catch (error) {
     console.error('Eroare la simulare:', error);
     return res.status(500).json({ error: 'Eroare internă de server' });
   }
 });
- 
+
 
 
 
 app.post('/api/run-cpp', async (req, res) => {
-  const { code, input, language } = req.body; 
+  const { code, input, language } = req.body;
 
   if (!code) {
     return res.status(400).json({ error: 'Nu ai trimis niciun cod!' });

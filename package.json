@@ -20,6 +20,7 @@
     "dompurify": "^3.4.11",
     "firebase": "^12.12.1",
     "firebase-admin": "^13.10.0",
+    "groq-sdk": "^1.4.0",
     "html-react-parser": "^6.1.3",
     "js-auto-translate": "^1.0.1",
     "lucide-react": "^1.16.0",
