@@ -16,69 +16,6 @@ import { toast } from 'sonner';
 import '../pages_css/adminusers.css';
 import usePageTitle from '../hooks/usePageTitle';
 
-/*
-  ============================================================================
-  DE CE S-A ÎNTÂMPLAT SPIKE-UL DE 5.5K READS
-  ============================================================================
-  Varianta veche făcea:
-      const querySnapshot = await getDocs(collection(db, "users"));
-  Asta citește ABSOLUT TOATE documentele din colecția "users", integral,
-  de fiecare dată când se face login în panou / se reîncarcă pagina.
-  Paginarea din UI (`.slice(indexOfFirstUser, indexOfLastUser)`) rula DUPĂ
-  ce toată colecția era deja adusă în memorie — deci nu economisea niciun
-  read, doar decidea ce se afișează pe ecran.
-
-  Rezultat: N reads per login, unde N = nr. total de documente din "users".
-  Cu React StrictMode (dublează efectele în dev) + câteva reload-uri/login-uri
-  de test, ajungi rapid la mii de reads chiar dacă ești singurul user.
-
-  ============================================================================
-  CE FACE VERSIUNEA ASTA DIFERIT
-  ============================================================================
-  1. Browsing (fără căutare activă): interogare Firestore cu orderBy + limit(30)
-     + startAfter(cursor). Se citesc DOAR cei 30 de useri afișați pe pagina
-     curentă, niciodată toată colecția.
-  2. Filtrul de rol (Profesor/Elev) se aplică ÎN interogare (where), nu în
-     JS după ce ai adus totul.
-  3. Numărul total de useri (pentru "Toți (X)" și paginare) vine din
-     getCountFromServer() — costă 1 read indiferent cât de mare e colecția,
-     NU N reads.
-  4. Căutarea (nume / handle CF) NU se declanșează la fiecare tastă apăsată.
-     Se declanșează doar la Enter / click pe "Caută", și e limitată la un
-     batch de maxim 300 documente (configurabil via SEARCH_BATCH_LIMIT).
-     Firestore nu are căutare de tip "conține substring" nativă — pentru
-     căutare completă/nelimitată ai nevoie de un serviciu dedicat
-     (Algolia, Typesense, Meilisearch) sincronizat cu Firestore, sau de
-     un câmp suplimentar `nume_lower` + interogări de tip prefix.
-     Varianta de aici e un compromis rezonabil ca cost, nu căutare globală
-     perfectă pe colecții foarte mari.
-
-  ============================================================================
-  RECOMANDARE IMPORTANTĂ DE SCHEMĂ
-  ============================================================================
-  Interogarea `where('role', '==', 'teacher')` / filtrarea pe elevi
-  presupune că fiecare document din "users" are câmpul `role` populat
-  (implicit "student" dacă lipsește). Dacă ai documente vechi fără acest
-  câmp, rulează o migrare unică (script separat, nu în acest fișier) care
-  setează `role: "student"` acolo unde lipsește — altfel filtrul pe elevi
-  riscă să nu prindă userii vechi fără câmp `role`.
-
-  ============================================================================
-  SECURITATE (pe lângă costul de reads)
-  ============================================================================
-  Am păstrat arhitectura din varianta "nouă": login prin /api/login (server),
-  NU citire directă din client pe colecția conturi_admin. Varianta veche
-  (getDoc direct pe conturi_admin din browser) cere reguli Firestore care
-  permit oricui necunoscut să citească acel document ca să compare parola
-  în client — practic parola de admin devine vizibilă oricui deschide
-  DevTools. Nu reveni la asta.
-
-  De asemenea: indiferent cât de bine paginăm din client, TREBUIE ca
-  regulile Firestore (firestore.rules) să restricționeze cine poate citi/
-  scrie colecția "users" — UI-ul ascuns nu e o măsură de securitate.
-  ============================================================================
-*/
-
 const USERS_PER_PAGE = 30;
 const SEARCH_BATCH_LIMIT = 300; 
 
@@ -118,7 +55,7 @@ function LoginScreen({ onLogin }) {
   };
 
   return (
-    <div className="admin-login-overlay" style={{ background: '#09090b' }}>
+    <div className="admin-login-overlay" style={{ background: '#f2f4f8' }}>
       <form onSubmit={handleLogin} className="admin-login-form">
         <div className="login-header">
           <h2 className="login-title">InfoMotion<span>.</span></h2>
@@ -162,7 +99,7 @@ function LoginScreen({ onLogin }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#888',
+                color: '#6b7280',
                 fontSize: '1.1rem'
               }}
             >
@@ -396,7 +333,7 @@ function AdminUsers() {
       <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #378ADD', paddingBottom: '15px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Panou Admin Suprem - Gestiune Utilizatori</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
+          <p style={{ margin: '5px 0 0 0', color: '#6b7280', fontSize: '0.85rem' }}>Apasă pe orice rând pentru a vedea detaliile complete, rolul și lecțiile parcurse.</p>
         </div>
         <button
           onClick={() => {
@@ -410,7 +347,7 @@ function AdminUsers() {
         </button>
       </div>
 
-      <div className="controls-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', background: '#1a1a24', padding: '15px', borderRadius: '6px', border: '1px solid #2d2d3d' }}>
+      <div className="controls-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', background: '#f9fafc', padding: '15px', borderRadius: '6px', border: '1px solid #e4e7ee' }}>
         <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ color: '#378ADD', fontSize: '0.85rem', fontWeight: 'bold' }}>
             Caută utilizator (Enter sau butonul "Caută" — nu se declanșează automat, ca să nu consume citiri inutil):
@@ -422,9 +359,9 @@ function AdminUsers() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               style={{
-                background: '#0f0f14',
+                background: '#f9fafc',
                 border: '1px solid #378ADD',
-                color: 'white',
+                color: '#1c1f26',
                 padding: '10px 14px',
                 borderRadius: '4px',
                 flex: 1,
@@ -434,35 +371,35 @@ function AdminUsers() {
             />
             <button type="submit" style={{ ...btnStyle, background: '#378ADD', padding: '10px 16px' }}>Caută</button>
             {activeSearch && (
-              <button type="button" onClick={clearSearch} style={{ ...btnStyle, background: '#555', padding: '10px 16px' }}>
+              <button type="button" onClick={clearSearch} style={{ ...btnStyle, background: '#94a0b3', padding: '10px 16px' }}>
                 Șterge
               </button>
             )}
           </div>
           {searchTruncated && (
-            <span style={{ color: '#ffa500', fontSize: '0.8rem' }}>
+            <span style={{ color: '#b26a00', fontSize: '0.8rem' }}>
               ⚠️ Căutarea a verificat primele {SEARCH_BATCH_LIMIT} rezultate (ordonate alfabetic) — s-ar putea să existe potriviri și mai departe. Rafinează căutarea dacă nu găsești userul.
             </span>
           )}
         </form>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ color: '#aaa', fontSize: '0.85rem', fontWeight: 'bold' }}>Filtre active:</span>
-          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#222", border: "1px solid #444" }}>Toți ({sortBy === 'all' && !activeSearch ? totalCount : '...'})</button>
-          <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#222", border: "1px solid #444" }}>Doar Profesori</button>
-          <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#222", border: "1px solid #444" }}>Doar Elevi</button>
+          <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: 'bold' }}>Filtre active:</span>
+          <button onClick={() => setSortBy("all")} style={{ ...btnStyle, background: sortBy === "all" ? "#378ADD" : "#eef1f6", border: "1px solid #dde1e9", color: sortBy === "all" ? "#ffffff" : "#1c1f26" }}>Toți ({sortBy === 'all' && !activeSearch ? totalCount : '...'})</button>
+          <button onClick={() => setSortBy("teacher")} style={{ ...btnStyle, background: sortBy === "teacher" ? "#0d47a1" : "#eef1f6", border: "1px solid #dde1e9", color: sortBy === "teacher" ? "#ffffff" : "#1c1f26" }}>Doar Profesori</button>
+          <button onClick={() => setSortBy("student")} style={{ ...btnStyle, background: sortBy === "student" ? "#1b5e20" : "#eef1f6", border: "1px solid #dde1e9", color: sortBy === "student" ? "#ffffff" : "#1c1f26" }}>Doar Elevi</button>
           {activeSearch && <span style={{ marginLeft: 'auto', color: '#639922', fontSize: '0.85rem', fontWeight: 'bold' }}>Găsiți: {totalCount} rezultate pentru "{activeSearch}"</span>}
         </div>
       </div>
 
       {loading && (
-        <div style={{ color: '#aaa', textAlign: 'center', padding: '20px' }}>Se încarcă...</div>
+        <div style={{ color: '#6b7280', textAlign: 'center', padding: '20px' }}>Se încarcă...</div>
       )}
 
       {!loading && (
       <table className="desktop-table">
         <thead>
-          <tr style={{ background: '#25252d', color: '#378ADD', textAlign: 'left' }}>
+          <tr style={{ background: '#f2f4f8', color: '#2c6fb3', textAlign: 'left' }}>
             <th style={{ padding: '12px' }}>UID</th>
             <th style={{ padding: '12px' }}>Email</th>
             <th style={{ padding: '12px' }}>Username</th>
@@ -482,21 +419,21 @@ function AdminUsers() {
               const isExpanded = expandedUserId === user.id;
               return (
                 <React.Fragment key={user.id}>
-                  <tr className="clickable-row" onClick={() => toggleExpandUser(user.id)} style={{ borderBottom: '1px solid #333', background: isExpanded ? '#15151a' : 'transparent' }}>
-                    <td style={{ padding: '12px', fontSize: '0.8rem', color: '#666' }}>{user.id.substring(0, 8)}... {isExpanded ? '▼' : '►'}</td>
+                  <tr className="clickable-row" onClick={() => toggleExpandUser(user.id)} style={{ borderBottom: '1px solid #eef0f4', background: isExpanded ? '#eef4fb' : 'transparent' }}>
+                    <td style={{ padding: '12px', fontSize: '0.8rem', color: '#8a92a3' }}>{user.id.substring(0, 8)}... {isExpanded ? '▼' : '►'}</td>
                     <td style={{ padding: '12px' }}>{mascheazaEmail(user.email)}</td>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{user.nume || "-"}</td>
-                    <td style={{ padding: '12px' }}><span style={{ padding: '2px 6px', borderRadius: '4px', background: user.role === 'teacher' ? '#0d47a1' : '#1b5e20', fontSize: '0.8rem' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></td>
+                    <td style={{ padding: '12px' }}><span style={{ padding: '2px 8px', borderRadius: '4px', background: user.role === 'teacher' ? '#0d47a1' : '#1b5e20', color: '#ffffff', fontSize: '0.8rem' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></td>
                     <td style={{ padding: '12px' }}>{user.codeforcesHandle || "-"}</td>
-                    <td style={{ padding: '12px', color: '#ffd700' }}>{user.puncteTotale || 0}</td>
-                    <td style={{ padding: '12px', color: '#ffa500', fontWeight: 'bold' }}>{user.puncte || 0}</td>
-                    <td style={{ padding: '12px', color: '#ff4500' }}>{user.streakCount || 0}</td>
+                    <td style={{ padding: '12px', color: '#b8860b', fontWeight: 'bold' }}>{user.puncteTotale || 0}</td>
+                    <td style={{ padding: '12px', color: '#c9770a', fontWeight: 'bold' }}>{user.puncte || 0}</td>
+                    <td style={{ padding: '12px', color: '#d84315', fontWeight: 'bold' }}>{user.streakCount || 0}</td>
                     <td style={{ padding: '12px' }}>{user.cfValidat ? "Da" : "Nu"}</td>
                     <td style={{ padding: '12px' }}>
                       {isEditing ? (
                         <div style={{ display: 'flex', gap: '5px' }}>
                           <button onClick={(e) => handleSaveClick(user.id, e)} style={{ ...btnStyle, background: '#639922' }}>Salvează</button>
-                          <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#555' }}>Anulează</button>
+                          <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#94a0b3' }}>Anulează</button>
                         </div>
                       ) : (
                         <button onClick={(e) => handleEditClick(user, e)} style={{ ...btnStyle, background: '#378ADD' }}>Editează rapid</button>
@@ -549,11 +486,6 @@ function AdminUsers() {
                           </div>
 
                           <div className="detaliu-field">
-                            <span className="detaliu-label">Puncte Portofel Magazin (Coins)</span>
-                            {isEditing ? <input type="number" name="puncteMagazin" value={editFormData.puncteMagazin || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.puncteMagazin || 0} puncte</span>}
-                          </div>
-
-                          <div className="detaliu-field">
                             <span className="detaliu-label">Streak Autentificare</span>
                             {isEditing ? <input type="number" name="streakCount" value={editFormData.streakCount || 0} onChange={handleInputChange} style={inputStyle} /> : <span>{user.streakCount || 0} zile</span>}
                           </div>
@@ -577,14 +509,14 @@ function AdminUsers() {
                                 onChange={(e) => handleComplexDataChange('lectiiTerminate', e.target.value)}
                               />
                             ) : (
-                              <pre style={{ margin: 0, fontSize: '0.8rem', color: '#aaa', overflowX: 'auto', background: '#111', padding: '8px', borderRadius: '4px' }}>
+                              <pre style={{ margin: 0, fontSize: '0.8rem', color: '#4b5563', overflowX: 'auto', background: '#f4f6fa', padding: '8px', borderRadius: '4px', border: '1px solid #e9ebf1' }}>
                                 {user.lectiiTerminate ? JSON.stringify(user.lectiiTerminate) : "Nicio lecție parcursă."}
                               </pre>
                             )}
                           </div>
 
                           <div className="detaliu-field" style={{ gridColumn: '1 / -1' }}>
-                            <span className="detaliu-label" style={{ color: '#00cbaf' }}>Teme Deblocate (Array JSON)</span>
+                            <span className="detaliu-label" style={{ color: '#009688' }}>Teme Deblocate (Array JSON)</span>
                             {isEditing ? (
                               <textarea
                                 style={{ ...inputStyle, height: '60px', fontFamily: 'monospace', fontSize: '0.85rem', borderColor: '#00cbaf' }}
@@ -592,7 +524,7 @@ function AdminUsers() {
                                 onChange={(e) => handleComplexDataChange('temeDeblocate', e.target.value)}
                               />
                             ) : (
-                              <pre style={{ margin: 0, fontSize: '0.8rem', color: '#00cbaf', overflowX: 'auto', background: '#111', padding: '8px', borderRadius: '4px' }}>
+                              <pre style={{ margin: 0, fontSize: '0.8rem', color: '#009688', overflowX: 'auto', background: '#f0faf9', padding: '8px', borderRadius: '4px', border: '1px solid #d6f0ec' }}>
                                 {user.temeDeblocate ? JSON.stringify(user.temeDeblocate) : '["theme_default"]'}
                               </pre>
                             )}
@@ -602,7 +534,7 @@ function AdminUsers() {
                         {isEditing && (
                           <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                             <button onClick={(e) => handleSaveClick(user.id, e)} style={{ ...btnStyle, background: '#639922', padding: '8px 20px' }}>Salvează Modificări Document</button>
-                            <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#555', padding: '8px 15px' }}>Renunță</button>
+                            <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#94a0b3', padding: '8px 15px' }}>Renunță</button>
                           </div>
                         )}
                       </td>
@@ -613,7 +545,7 @@ function AdminUsers() {
             })
           ) : (
             <tr>
-              <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#aaa' }}>Niciun utilizator găsit pentru criteriile introduse.</td>
+              <td colSpan="10" style={{ textAlign: 'center', padding: '30px', color: '#6b7280' }}>Niciun utilizator găsit pentru criteriile introduse.</td>
             </tr>
           )}
         </tbody>
@@ -634,25 +566,20 @@ function AdminUsers() {
                 style={{ borderLeft: isExpanded ? '4px solid #639922' : '4px solid #378ADD' }}
               >
                 <div className="card-row"><span className="card-label">Username:</span> <strong>{user.nume || "-"}</strong></div>
-                <div className="card-row"><span className="card-label">Rol:</span> <span style={{ color: user.role === 'teacher' ? '#64b5f6' : '#81c784' }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></div>
-                <div className="card-row"><span className="card-label">Monede:</span> <span style={{ color: '#ffa500', fontWeight: 'bold' }}>{user.puncte || 0}</span></div>
+                <div className="card-row"><span className="card-label">Rol:</span> <span style={{ color: user.role === 'teacher' ? '#1565c0' : '#2e7d32', fontWeight: 600 }}>{user.role === 'teacher' ? 'Profesor' : 'Elev'}</span></div>
+                <div className="card-row"><span className="card-label">Monede:</span> <span style={{ color: '#c9770a', fontWeight: 'bold' }}>{user.puncte || 0}</span></div>
                 <div className="card-row"><span className="card-label">Email mascat:</span> <span>{mascheazaEmail(user.email)}</span></div>
 
                 {isExpanded && (
-                  <div style={{ marginTop: '10px', padding: '10px', background: '#111', borderRadius: '6px', fontSize: '0.85rem' }} onClick={(e) => e.stopPropagation()}>
-                    <div className="card-row">
-                      <span className="card-label">Bani Shop:</span>
-                      {isEditing ? <input type="number" name="puncteMagazin" value={editFormData.puncteMagazin || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, color: '#ffb833' }} /> : <span style={{ color: '#ffb833' }}>{user.puncteMagazin || 0}</span>}
-                    </div>
-
+                  <div style={{ marginTop: '10px', padding: '10px', background: '#f9fafc', borderRadius: '6px', fontSize: '0.85rem', border: '1px solid #e9ebf1' }} onClick={(e) => e.stopPropagation()}>
                     <div className="card-row">
                       <span className="card-label">Puncte XP:</span>
                       {isEditing ? <input type="number" name="puncteTotale" value={editFormData.puncteTotale || 0} onChange={handleInputChange} style={inputStyleMobile} /> : <span>{user.puncteTotale || 0}</span>}
                     </div>
 
                     <div className="card-row">
-                      <span className="card-label" style={{ color: '#ffa500' }}>Monede:</span>
-                      {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, borderColor: '#ffa500' }} /> : <span>{user.puncte || 0}</span>}
+                      <span className="card-label" style={{ color: '#c9770a' }}>Monede:</span>
+                      {isEditing ? <input type="number" name="puncte" value={editFormData.puncte || 0} onChange={handleInputChange} style={{ ...inputStyleMobile, borderColor: '#c9770a' }} /> : <span>{user.puncte || 0}</span>}
                     </div>
 
                     <div className="card-row">
@@ -661,7 +588,7 @@ function AdminUsers() {
                     </div>
 
                     <div style={{ marginTop: '10px' }}>
-                      <span className="card-label" style={{ display: 'block', marginBottom: '4px', color: '#00cbaf' }}>Teme Deblocate:</span>
+                      <span className="card-label" style={{ display: 'block', marginBottom: '4px', color: '#009688' }}>Teme Deblocate:</span>
                       {isEditing ? (
                         <textarea
                           style={{ ...inputStyle, width: '100%', height: '50px', fontSize: '0.8rem', borderColor: '#00cbaf' }}
@@ -669,7 +596,7 @@ function AdminUsers() {
                           onChange={(e) => handleComplexDataChange('temeDeblocate', e.target.value)}
                         />
                       ) : (
-                        <code style={{ fontSize: '0.75rem', color: '#00cbaf' }}>{JSON.stringify(user.temeDeblocate || ["theme_default"])}</code>
+                        <code style={{ fontSize: '0.75rem', color: '#009688' }}>{JSON.stringify(user.temeDeblocate || ["theme_default"])}</code>
                       )}
                     </div>
 
@@ -677,7 +604,7 @@ function AdminUsers() {
                       {isEditing ? (
                         <>
                           <button onClick={(e) => handleSaveClick(user.id, e)} style={{ ...btnStyle, background: '#639922', flex: 1 }}>Salvează</button>
-                          <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#555', flex: 1 }}>Anulează</button>
+                          <button onClick={(e) => { e.stopPropagation(); setEditUserId(null); }} style={{ ...btnStyle, background: '#94a0b3', flex: 1 }}>Anulează</button>
                         </>
                       ) : (
                         <button onClick={(e) => handleEditClick(user, e)} style={{ ...btnStyle, background: '#378ADD', width: '100%' }}>Editează Datele</button>
@@ -689,7 +616,7 @@ function AdminUsers() {
             );
           })
         ) : (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#aaa', background: '#1a1a24', borderRadius: '6px' }}>Niciun utilizator găsit pentru criteriile introduse.</div>
+          <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', background: '#f9fafc', border: '1px solid #e4e7ee', borderRadius: '6px' }}>Niciun utilizator găsit pentru criteriile introduse.</div>
         )}
       </div>
       )}
@@ -701,14 +628,15 @@ function AdminUsers() {
             disabled={currentPage === 1}
             style={{
               ...btnStyle,
-              background: currentPage === 1 ? '#333' : '#378ADD',
+              background: currentPage === 1 ? '#e4e7ee' : '#378ADD',
+              color: currentPage === 1 ? '#9aa3b2' : '#ffffff',
               cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
               opacity: currentPage === 1 ? 0.5 : 1
             }}
           >
             Înapoi
           </button>
-          <span style={{ color: '#aaa', fontSize: '0.9rem', fontWeight: 'bold' }}>
+          <span style={{ color: '#6b7280', fontSize: '0.9rem', fontWeight: 'bold' }}>
             Pagina {currentPage} din {totalPages} ({totalCount} useri)
           </span>
           <button
@@ -716,7 +644,8 @@ function AdminUsers() {
             disabled={currentPage === totalPages}
             style={{
               ...btnStyle,
-              background: currentPage === totalPages ? '#333' : '#378ADD',
+              background: currentPage === totalPages ? '#e4e7ee' : '#378ADD',
+              color: currentPage === totalPages ? '#9aa3b2' : '#ffffff',
               cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
               opacity: currentPage === totalPages ? 0.5 : 1
             }}
@@ -730,9 +659,9 @@ function AdminUsers() {
 }
 
 const inputStyle = {
-  background: '#111',
-  border: '1px solid #444',
-  color: 'white',
+  background: '#f9fafc',
+  border: '1px solid #dde1e9',
+  color: '#1c1f26',
   padding: '8px',
   borderRadius: '4px',
   width: '100%',
@@ -740,9 +669,9 @@ const inputStyle = {
 };
 
 const inputStyleMobile = {
-  background: '#111',
-  border: '1px solid #444',
-  color: 'white',
+  background: '#f9fafc',
+  border: '1px solid #dde1e9',
+  color: '#1c1f26',
   padding: '4px 8px',
   borderRadius: '4px',
   width: '55%',
