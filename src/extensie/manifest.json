@@ -21,7 +21,8 @@
     {
       "matches": [
         "*://*.pbinfo.ro/*",
-        "*://leetcode.com/*"
+        "*://leetcode.com/*",
+        "*://codeforces.com/*" 
       ],
       "js": ["content.js"]
     }
