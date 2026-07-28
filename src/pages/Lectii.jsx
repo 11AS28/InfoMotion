@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import '../pages_css/Lectii.css';
-import { Search, Star } from 'lucide-react';
+import { Search, Star, Check } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -248,88 +248,117 @@ function Lectii() {
           </div>
         </div>
 
-        {loading ? (
+                {loading ? (
           <div className="loading-state">
             <div className="loader"></div>
             <p>Se încarcă modulele din Cloud...</p>
           </div>
         ) : filteredLessons.length > 0 ? (
           <div className="lectii-grid">
-            {filteredLessons.map((lectie) => (
-              <Link
-                to={`/lectie/${lectie.id}`}
-                key={lectie.id}
-                className="lectie-card"
-                style={{ position: 'relative' }}
-              >
-                <button
-                  className="bookmark-star-btn"
-                  onClick={(e) => handleToggleBookmark(e, lectie.id)}
-                  title={esteLectieSalvata(lectie.id) ? "Elimină din bookmark-uri" : "Salvează pentru mai târziu"}
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    background: 'rgba(0,0,0,0.35)',
-                    border: '1px solid rgba(31, 224, 249, 0.25)',
-                    borderRadius: '50%',
-                    padding: '6px',
-                    cursor: 'pointer',
-                    zIndex: 5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Star
-                    size={18}
-                    strokeWidth={2}
-                    color="#1fe0f9"
-                    fill={esteLectieSalvata(lectie.id) ? "#1fe0f9" : "none"}
-                  />
-                </button>
+            {filteredLessons.map((lectie) => {
+              const esteGata = currentUser?.lectiiTerminate?.some(
+                (id) => String(id) === String(lectie.id)
+              );
 
-                <button
-                  onClick={(e) => toggleSelectiePDF(e, lectie)}
-                  title={esteSelectataPDF(lectie.id) ? "Elimină din Copiuță" : "Adaugă în Copiuță"}
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '48px',
-                    background: esteSelectataPDF(lectie.id) ? '#1fe0f9' : 'rgba(0,0,0,0.35)',
-                    border: '1px solid rgba(31, 224, 249, 0.25)',
-                    borderRadius: '50%',
-                    width: '30px',
-                    height: '30px',
-                    cursor: 'pointer',
-                    zIndex: 5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: esteSelectataPDF(lectie.id) ? '#000' : '#1fe0f9',
-                    fontSize: '14px',
-                    fontWeight: 'bold'
-                  }}
+              return (
+                <Link
+                  to={`/lectie/${lectie.id}`}
+                  key={lectie.id}
+                  className="lectie-card"
+                  style={{ position: 'relative' }}
                 >
-                  {esteSelectataPDF(lectie.id) ? '✓' : '+'}
-                </button>
+                  
+                  <button
+                    className="bookmark-star-btn"
+                    onClick={(e) => handleToggleBookmark(e, lectie.id)}
+                    title={esteLectieSalvata(lectie.id) ? "Elimină din bookmark-uri" : "Salvează pentru mai târziu"}
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'rgba(0,0,0,0.35)',
+                      border: '1px solid rgba(31, 224, 249, 0.25)',
+                      borderRadius: '50%',
+                      padding: '6px',
+                      cursor: 'pointer',
+                      zIndex: 5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Star
+                      size={18}
+                      strokeWidth={2}
+                      color="#1fe0f9"
+                      fill={esteLectieSalvata(lectie.id) ? "#1fe0f9" : "none"}
+                    />
+                  </button>
 
-                <div className={`lectie-badge ${lectie.esteOlimpiada ? 'badge-olimpiada' : lectie.esteConcept ? 'badge-concepte' : ''}`}>
-                  {lectie.esteOlimpiada
-                    ? 'OLIMPIADĂ'
-                    : lectie.esteConcept
-                    ? 'CONCEPTE GENERAL'
-                    : (lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`)}
-                  {lectie.ordine ? ` • Modulul ${lectie.ordine}` : ''}
-                </div>
-                <h3 className="lectie-titlu">{lectie.titlu}</h3>
-                <p className="lectie-descriere">{lectie.descriere}</p>
-                <div className="lectie-footer-card">
-                  <span>Începe lecția</span>
-                  <span className="arrow">→</span>
-                </div>
-              </Link>
-            ))}
+                  <button
+                    onClick={(e) => toggleSelectiePDF(e, lectie)}
+                    title={esteSelectataPDF(lectie.id) ? "Elimină din Copiuță" : "Adaugă în Copiuță"}
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '48px',
+                      background: esteSelectataPDF(lectie.id) ? '#1fe0f9' : 'rgba(0,0,0,0.35)',
+                      border: '1px solid rgba(31, 224, 249, 0.25)',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      cursor: 'pointer',
+                      zIndex: 5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: esteSelectataPDF(lectie.id) ? '#000' : '#1fe0f9',
+                      fontSize: '14px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {esteSelectataPDF(lectie.id) ? '✓' : '+'}
+                  </button>
+
+                  {esteGata && (
+                    <div 
+                      title="Lecție Finalizată"
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '84px',
+                        background: 'rgba(34, 197, 94, 0.2)', 
+                        border: '1px solid rgba(34, 197, 94, 0.5)', 
+                        borderRadius: '50%',
+                        width: '30px',
+                        height: '30px',
+                        zIndex: 5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Check size={18} strokeWidth={3} color="#22c55e" />
+                    </div>
+                  )}
+
+                  <div className={`lectie-badge ${lectie.esteOlimpiada ? 'badge-olimpiada' : lectie.esteConcept ? 'badge-concepte' : ''}`}>
+                    {lectie.esteOlimpiada
+                      ? 'OLIMPIADĂ'
+                      : lectie.esteConcept
+                      ? 'CONCEPTE GENERAL'
+                      : (lectie.clasa?.toUpperCase().replace('-', ' ') || `CLASA ${lectie.clasaNumerica}`)}
+                    {lectie.ordine ? ` • Modulul ${lectie.ordine}` : ''}
+                  </div>
+                  <h3 className="lectie-titlu">{lectie.titlu}</h3>
+                  <p className="lectie-descriere">{lectie.descriere}</p>
+                  <div className="lectie-footer-card">
+                    <span>Începe lecția</span>
+                    <span className="arrow">→</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="no-results">
