@@ -200,7 +200,7 @@ function App() {
                 <div>
                   <Nav />
                   <Performanta />
-                  <Footer />
+                 
                 </div>
               }
             />
