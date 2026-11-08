@@ -65,6 +65,7 @@ function CompilerPage() {
   const [loadingCompiler, setLoadingCompiler] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [hasRunCpp, setHasRunCpp] = useState(false);
 
   // Indică dacă lecția curentă chiar are un cod Python salvat în Firestore (câmpul codPython)
   // Momentan nicio lecție nu are acest câmp, deci va fi mereu false — arătăm un editor gol + un mesaj
@@ -334,7 +335,7 @@ function CompilerPage() {
     setCompilerOutput(
       language === 'python'
         ? "Se pregătește rularea codului Python în browser..."
-        : "Se compilează și se rulează pe serverul InfoMotion..."
+        : "Se încarcă compilatorul C++, doar prima dată..."
     );
 
     setExecutionTime(null);
@@ -358,6 +359,7 @@ function CompilerPage() {
         return;
       }
 
+      setHasRunCpp(true);
       let data;
       try {
         data = await runCpp(editorCode, compilerInput, {
@@ -531,6 +533,21 @@ function CompilerPage() {
       <div className="ide-main-body" ref={containerRef}>
 
         <div className="ide-editor-section" style={{ ...mainSplitStyle, display: 'flex', flexDirection: 'column' }}>
+
+          {language === 'cpp' && !hasRunCpp && (
+            <div style={{
+              background: 'rgba(31, 224, 249, 0.08)',
+              borderLeft: '3px solid #1fe0f9',
+              padding: '8px 14px',
+              fontSize: '12.5px',
+              color: '#a1e8f7',
+              fontFamily: 'sans-serif',
+              lineHeight: '1.4',
+              flexShrink: 0
+            }}>
+              C++ în browser: programe de consolă C++17. Fără rețea, fișiere, thread-uri sau API-uri de sistem.
+            </div>
+          )}
 
           {afiseazaBannerPythonLipsa && (
             <div style={{

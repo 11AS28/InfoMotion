@@ -117,3 +117,9 @@ input (`Succes`, `5`), and the infinite loop (`Time Limit Exceeded (TLE)`,
 and WebKit were not installed in the available Playwright environment, so
 those cases are **NOT RUN**. Real iOS Safari and Android Chrome are also
 **NOT RUN** and require manual testing.
+
+The compiler page now shows the browser capability note before the first C++
+run and displays `Se încarcă compilatorul C++, doar prima dată...` while the
+first worker/toolchain initialization is underway. `isMigrating` and
+`setIsMigrating` remain unused state in `CompilatorTab.jsx`; the existing
+maintenance banner and its behavior were intentionally not changed.

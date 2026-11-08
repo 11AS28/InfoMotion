@@ -20,8 +20,11 @@ export const runCpp = (code, input, options = {}) => {
     throw new CppFallbackError('Browserul nu suportă WebAssembly pentru C++.');
   }
 
+  const isFirstWorker = !worker;
   const currentWorker = createWorker();
-  options.onProgress?.('Se încarcă compilatorul C++...');
+  if (isFirstWorker) {
+    options.onProgress?.('Se încarcă compilatorul C++, doar prima dată...');
+  }
 
   return new Promise((resolve, reject) => {
     let settled = false;
