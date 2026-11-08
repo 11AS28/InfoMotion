@@ -7,6 +7,8 @@ import { Play, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { customThemes } from './shopItems';
+import { runPython } from '../services/runPython';
+import { CppFallbackError, runCpp } from '../services/runCpp';
 import '../components_css/compiler.css';
 
 const sanitizeThemeName = (name) => {
@@ -331,7 +333,7 @@ function CompilerPage() {
     setLoadingCompiler(true);
     setCompilerOutput(
       language === 'python'
-        ? "Se rulează codul Python pe serverul InfoMotion..."
+        ? "Se pregătește rularea codului Python în browser..."
         : "Se compilează și se rulează pe serverul InfoMotion..."
     );
 
@@ -339,12 +341,37 @@ function CompilerPage() {
     setExecutionMemory(null);
 
     try {
-      const response = await fetch(`${baseUrl}/api/run-cpp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: editorCode, input: compilerInput, language })
-      });
-      const data = await response.json();
+      if (language === 'python') {
+        const data = await runPython(editorCode, compilerInput);
+
+        if (data.status === "Succes") {
+          setCompilerOutput(data.output);
+          setExecutionTime(data.time);
+          setExecutionMemory(data.memory);
+          toast.success("Rulare încheiată cu succes!");
+        } else {
+          setCompilerOutput(`${data.status}:\n${data.error}`);
+          setExecutionTime(data.time);
+          setExecutionMemory(data.memory);
+          toast.error("Eroare în cod.");
+        }
+        return;
+      }
+
+      let data;
+      try {
+        data = await runCpp(editorCode, compilerInput, {
+          onProgress: (message) => setCompilerOutput(message)
+        });
+      } catch (error) {
+        if (!(error instanceof CppFallbackError)) throw error;
+        const response = await fetch(`${baseUrl}/api/run-cpp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: editorCode, input: compilerInput, language })
+        });
+        data = await response.json();
+      }
 
       if (data.status === "Succes") {
         setCompilerOutput(data.output);
@@ -648,7 +675,7 @@ function CompilerPage() {
               </div>
             )}
 
-            {executionTime !== null && executionMemory !== null && (
+            {executionTime !== null && (
               <div className="performance-stats-bar" style={{
                 display: 'flex',
                 gap: '15px',
@@ -661,7 +688,7 @@ function CompilerPage() {
               }}>
                 <div className="performance-stats-bar">
                   <span>Timp: <strong style={{ color: '#a6e3a1' }}>{executionTime}s</strong></span>
-                  <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory} MB</strong></span>
+                  <span>Memorie: <strong style={{ color: '#74c7ec' }}>{executionMemory === null ? 'Nedisponibilă' : `${executionMemory} MB`}</strong></span>
                 </div>
               </div>
             )}

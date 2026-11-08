@@ -1,0 +1,63 @@
+# Browser C++ toolchain
+
+The browser runner uses the binji/wasm-clang layout directly. These files must
+remain together under `public/cpp-toolchain/`:
+
+| File | Role | Current size |
+|---|---|---:|
+| `clang` | Clang WASI compiler | 31,214,472 bytes |
+| `lld` | wasm-ld WASI linker | 19,490,094 bytes |
+| `memfs` | binji in-memory filesystem WASM module | 345,442 bytes |
+| `sysroot.tar` | libc++ headers and WASI libraries | 9,297,920 bytes |
+| `binji-shared.js` | binji runtime and tar extractor | 23,973 bytes |
+| `infomotion-cpp-worker.js` | InfoMotion worker adapter | source file |
+
+The four binary artifacts total **60,347,928 bytes** before HTTP compression
+(about 57.5 MiB). `binji-shared.js` is vendored from the repository's
+`shared.js` and retains its upstream license. The worker follows the upstream
+sequence: initialize `memfs`, untar `sysroot.tar`, invoke Clang to emit
+`main.o`, invoke LLD to produce `main.wasm`, then instantiate and run it with
+stdin. Successful responses are cached by the browser's normal HTTP cache.
+
+Serve these files with their correct content types and Brotli (`br`) or gzip
+compression where applicable. `.wasm` should be `application/wasm`; the
+toolchain's WASI executables are fetched as binary files and compiled with
+`WebAssembly.compile`.
+
+## Runtime limitations
+
+Supported and verified: C++ console programs using `iostream`, `vector`,
+`algorithm`, `string`, recursion, and ordinary stdin/stdout. The WASI sandbox
+does not provide network access, threads, GUI APIs, process spawning, or a
+general host filesystem. `std::filesystem`, file I/O, OS-specific headers,
+signals, and native shared libraries are not available. Exceptions may compile
+but should not be promised as a portable feature until separately tested.
+
+The UI should explain this before execution:
+
+> Browser C++ supports C++17 console programs. Network, threads, files, OS
+> APIs, and filesystem are unavailable.
+
+## Verification checklist
+
+The following cases were run in a Chromium browser against the local Vite
+server after downloading these exact files:
+
+- hello world — **PASS**
+- `cin` of integers — **PASS**
+- `getline` — **PASS**
+- `vector` + `sort` — **PASS** (after linking the sysroot's
+  `libclang_rt.builtins-wasm32.a`)
+- recursive Fibonacci — **PASS**
+- compile error with line number — **PASS** (line 3 was reported)
+- infinite loop — **PASS** (`Time Limit Exceeded (TLE)` at 2 seconds through
+  `runCpp`)
+- huge output — **PASS** (`Output Limit Exceeded` at 512 KiB)
+- missing input / EOF — **PASS**
+- runtime crash — **NOT RELIABLE** with this old binji toolchain: tested integer
+  division by zero compiled to a successful `0` result instead of a runtime
+  error. Do not present this as a guaranteed crash detector.
+
+The production C++ route should still be tested after deployment because COOP
+and COEP can block third-party resources. The current repository build and
+targeted lint pass, and the actual C++ checklist above was run locally.
