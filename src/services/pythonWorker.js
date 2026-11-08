@@ -5,9 +5,8 @@ let pyodidePromise;
 
 const loadPyodide = async () => {
   if (!pyodidePromise) {
-    const { loadPyodide: load } = await import(
-      `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.mjs`
-    );
+    const pyodideUrl = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.mjs`;
+    const { loadPyodide: load } = await import(/* @vite-ignore */ pyodideUrl);
     pyodidePromise = load({
       indexURL: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`
     });
@@ -17,8 +16,8 @@ const loadPyodide = async () => {
 
 const runPython = async ({ code, input }) => {
   const pyodide = await loadPyodide();
-  const source = JSON.stringify(code);
-  const stdin = JSON.stringify(input);
+  const source = JSON.stringify(code ?? '');
+  const stdin = JSON.stringify(input ?? '');
 
   const result = await pyodide.runPythonAsync(`
 import builtins
@@ -28,8 +27,8 @@ import sys
 import time
 import traceback
 
-code = json.loads(${source})
-input_data = json.loads(${stdin})
+code = ${source}
+input_data = ${stdin}
 
 class OutputLimitExceeded(Exception):
     pass
@@ -87,9 +86,10 @@ except BaseException as exception:
     status = "Runtime Error"
     frames = [
         frame for frame in traceback.extract_tb(exception.__traceback__)
-        if not (frame.filename.startswith("<") and frame.filename != "<student_code>")
+        if frame.filename == "<student_code>"
     ]
-    error = "".join(traceback.format_list(frames))
+    error = "Traceback (most recent call last):\\n"
+    error += "".join(traceback.format_list(frames))
     error += "".join(traceback.format_exception_only(type(exception), exception))
 finally:
     sys.stdout, sys.stderr, sys.stdin = old_stdout, old_stderr, old_stdin
