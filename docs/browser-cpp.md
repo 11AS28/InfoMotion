@@ -73,9 +73,10 @@ ordinary linear-memory accesses, and the tested recursive overflow did not
 produce a trap, so students must not be told that arbitrary memory bugs or
 stack exhaustion are reliably detected.
 
-The production C++ route should still be tested after deployment because COOP
-and COEP can block third-party resources. The current repository build and
-targeted lint pass, and the actual C++ checklist above was run locally.
+COOP/COEP are not required: the implementation uses ordinary WebAssembly
+memory and worker messages, not `SharedArrayBuffer`, `Atomics`, or
+`crossOriginIsolated`. They were removed from Vite and Vercel. Chromium
+reported `crossOriginIsolated: false` while the full checklist still passed.
 
 ## Performance measurements
 

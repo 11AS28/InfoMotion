@@ -16,8 +16,8 @@ const terminateWorker = () => {
 };
 
 export const runCpp = (code, input, options = {}) => {
-  if (typeof WebAssembly === 'undefined' || typeof SharedArrayBuffer === 'undefined') {
-    throw new CppFallbackError('Browserul nu suportă izolarea necesară pentru C++ WASM.');
+  if (typeof WebAssembly === 'undefined') {
+    throw new CppFallbackError('Browserul nu suportă WebAssembly pentru C++.');
   }
 
   const currentWorker = createWorker();
