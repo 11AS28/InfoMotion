@@ -76,3 +76,28 @@ stack exhaustion are reliably detected.
 The production C++ route should still be tested after deployment because COOP
 and COEP can block third-party resources. The current repository build and
 targeted lint pass, and the actual C++ checklist above was run locally.
+
+## Performance measurements
+
+Measured in Chromium on the local Vite server with the browser cache cleared
+before the first run. The downloaded binary payload is 60,347,928 bytes
+(57.5 MiB), excluding HTTP headers and JavaScript.
+
+| Run | Toolchain ready | Hello compile+link | Total run |
+|---|---:|---:|---:|
+| Cold cache, first run | 13.6 ms | 1,283 ms | 1,371 ms |
+| Warm cache, second run | 12.0 ms | 818 ms | 909 ms |
+| Warm `<vector>`, `<algorithm>`, `<map>` | 11.6 ms | 957 ms | 1,036 ms |
+
+The worker and its binji API remain alive for the page session. The extracted
+sysroot and compiled clang/lld/memfs modules are reused. Each run resets
+stdin/output and overwrites the fixed source/object/wasm paths, so student
+globals do not carry over. A timeout terminates the worker; the next run
+creates and initializes a fresh one. The browser timeout-then-hello test
+returned `Time Limit Exceeded (TLE)` followed by `Succes` with output `after`.
+
+The 15-second compile/link timeout is reasonable for desktop and modern phones,
+but a slow phone may need the full budget during the first download and module
+initialization. The UI timeout message explicitly says that the first load can
+take longer on slow phones. If telemetry later shows false timeouts, increase
+the compile budget to 20 seconds; keep the 2-second program runtime limit.

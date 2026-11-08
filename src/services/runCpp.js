@@ -7,9 +7,7 @@ export class CppFallbackError extends Error {}
 let worker;
 
 const createWorker = () => {
-  worker?.terminate();
-  worker = new Worker(WORKER_URL);
-  return worker;
+  return worker || (worker = new Worker(WORKER_URL));
 };
 
 const terminateWorker = () => {
@@ -36,7 +34,6 @@ export const runCpp = (code, input, options = {}) => {
       clearTimeout(timer);
       currentWorker.removeEventListener('message', handleMessage);
       currentWorker.removeEventListener('error', handleError);
-      terminateWorker();
       resolve({
         status: result.status,
         output: result.output || '',
@@ -60,7 +57,12 @@ export const runCpp = (code, input, options = {}) => {
 
     const handleMessage = ({ data }) => {
       if (data.type === 'phase' && data.phase === 'run') {
+        options.onPhase?.('run', performance.now());
         armTimeout(RUN_TIMEOUT, 'Time Limit Exceeded (TLE)', 'Programul a rulat mai mult de 2 secunde.');
+        return;
+      }
+      if (data.type === 'phase') {
+        options.onPhase?.(data.phase, performance.now());
         return;
       }
       if (data.type === 'result') {
@@ -88,7 +90,11 @@ export const runCpp = (code, input, options = {}) => {
 
     currentWorker.addEventListener('message', handleMessage);
     currentWorker.addEventListener('error', handleError);
-    armTimeout(COMPILE_TIMEOUT, 'Compile Timeout', 'Compilatorul C++ a depășit limita de 15 secunde.');
+    armTimeout(
+      COMPILE_TIMEOUT,
+      'Compile Timeout',
+      'Compilatorul C++ a depășit limita de 15 secunde. Pe telefoane lente, prima încărcare poate dura mai mult.'
+    );
     currentWorker.postMessage({ type: 'run', code, input });
   });
 };

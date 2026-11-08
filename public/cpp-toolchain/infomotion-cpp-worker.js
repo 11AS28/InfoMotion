@@ -44,11 +44,13 @@ const outputResult = () => ({
 
 const compileAndRun = async ({ code, input }) => {
   api ||= createApi();
+  self.postMessage({ type: 'phase', phase: 'toolchain-ready' });
   await api.ready;
   currentOutput = { stdout: [], stderr: [], size: 0, exceeded: false };
   api.memfs.setStdinStr(input);
 
   try {
+    self.postMessage({ type: 'phase', phase: 'compile-start' });
     await api.compile({ input: 'main.cpp', contents: code, obj: 'main.o' });
   } catch (error) {
     return { status: 'Eroare de compilare', ...outputResult(), error: outputResult().error || error.message };
@@ -56,6 +58,7 @@ const compileAndRun = async ({ code, input }) => {
 
   currentOutput = { stdout: [], stderr: [], size: 0, exceeded: false };
   try {
+    self.postMessage({ type: 'phase', phase: 'link-start' });
     await api.link('main.o', 'main.wasm');
   } catch (error) {
     return { status: 'Eroare de compilare', ...outputResult(), error: outputResult().error || error.message };
