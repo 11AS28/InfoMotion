@@ -58,6 +58,21 @@ server after downloading these exact files:
   division by zero compiled to a successful `0` result instead of a runtime
   error. Do not present this as a guaranteed crash detector.
 
+Additional runtime-error retest:
+
+- input-dependent division by zero (`10 / b`, input `0`) — **PASS**:
+  `Runtime Error`, `divide by zero`
+- exact infinite recursion — **NOT DETECTED**: `Succes` with empty output
+- vector out-of-bounds write — **NOT DETECTED**: `Succes`, output `after`
+- `return 3` — **PASS**: `Runtime Error`, `process exited with code 3.`
+- `std::abort()` — **PASS**: `Runtime Error`, `unreachable`
+
+The WASI exit-code and WebAssembly-trap paths are mapped to `Runtime Error`
+with readable messages. This toolchain does not provide bounds checking for
+ordinary linear-memory accesses, and the tested recursive overflow did not
+produce a trap, so students must not be told that arbitrary memory bugs or
+stack exhaustion are reliably detected.
+
 The production C++ route should still be tested after deployment because COOP
 and COEP can block third-party resources. The current repository build and
 targeted lint pass, and the actual C++ checklist above was run locally.
