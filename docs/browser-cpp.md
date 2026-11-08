@@ -108,3 +108,12 @@ legacy API intercepted: blocking `/cpp-toolchain/*` displayed `fallback-ok`,
 replacing the compiler worker with a crashing script displayed
 `crash-fallback-ok`, and temporarily making `window.WebAssembly` unavailable
 displayed `wasm-fallback-ok`.
+
+## Browser coverage
+
+Chromium was available and passed hello world (`Succes`, `hello`), integer
+input (`Succes`, `5`), and the infinite loop (`Time Limit Exceeded (TLE)`,
+`Programul a rulat mai mult de 2 secunde.`) after COOP/COEP removal. Firefox
+and WebKit were not installed in the available Playwright environment, so
+those cases are **NOT RUN**. Real iOS Safari and Android Chrome are also
+**NOT RUN** and require manual testing.
