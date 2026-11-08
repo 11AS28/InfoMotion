@@ -102,3 +102,9 @@ but a slow phone may need the full budget during the first download and module
 initialization. The UI timeout message explicitly says that the first load can
 take longer on slow phones. If telemetry later shows false timeouts, increase
 the compile budget to 20 seconds; keep the 2-second program runtime limit.
+
+The legacy server fallback was verified through the CompilerPage UI with the
+legacy API intercepted: blocking `/cpp-toolchain/*` displayed `fallback-ok`,
+replacing the compiler worker with a crashing script displayed
+`crash-fallback-ok`, and temporarily making `window.WebAssembly` unavailable
+displayed `wasm-fallback-ok`.
